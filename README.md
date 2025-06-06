@@ -1,54 +1,60 @@
-# React + TypeScript + Vite
+# Booking Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, scalable booking platform built with React and Supabase. This application provides a seamless experience for users to book tickets and a powerful admin portal for easy management.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **User Authentication**: Secure sign-up and login functionality.
+- **Ticket Booking**: A user-friendly interface for browsing and booking tickets.
+- **Admin Portal**: A dedicated dashboard for administrators to manage bookings, users, and available items.
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React (via Vite)
+- **Backend & Database**: Supabase
+- **Styling**: (To be decided - e.g., Tailwind CSS)
+- **Package Manager**: pnpm
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Getting Started
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Prerequisites
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Node.js (v18 or higher)
+- pnpm
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+### Installation & Setup
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/jaipkapoor99/booking-platform.git
+    cd booking-platform
+    ```
+
+2.  **Install dependencies:**
+
+    ```bash
+    pnpm install
+    ```
+
+3.  **Set up Supabase:**
+
+    - Create a `.env.local` file in the root of the project.
+    - Add your Supabase Project URL and Anon Key to the `.env.local` file:
+      ```env
+      VITE_SUPABASE_URL=YOUR_SUPABASE_URL
+      VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+      ```
+
+4.  **Run the development server:**
+    ```bash
+    pnpm dev
+    ```
+
+## Database Schema
+
+The database schema is managed via Supabase migrations and is located in the `supabase/migrations` directory.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a pull request.
