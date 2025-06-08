@@ -45,12 +45,13 @@ A modern, scalable event booking platform built with React, TypeScript, and Supa
 
 3.  **Set up Supabase Environment Variables:**
 
-    - Create a file named `.env` in the root of the project.
+    - Create a file named `.env.local` in the root of the project.
     - Add your Supabase Project URL and Anon Key to this file. You can find these in your Supabase project's API settings.
       ```env
-      VITE_SUPABASE_URL=YOUR_SUPABASE_URL
-      VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+      VITE_SUPABASE_URL="YOUR_SUPABASE_URL"
+      VITE_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
       ```
+    - **Important**: You must restart the Vite development server after creating or modifying this file.
 
 4.  **Run the development server:**
     ```bash

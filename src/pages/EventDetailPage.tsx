@@ -4,7 +4,7 @@ import { supabase } from "@/SupabaseClient";
 import { useAuth } from "@/hooks/useAuth";
 
 type EventVenue = {
-  id: number;
+  event_venue_id: number;
   event_venue_date: string;
   venues: {
     venue_name: string;
@@ -41,7 +41,7 @@ const EventDetailPage = () => {
           *,
           events_venues (
             event_venue_date,
-            id,
+            event_venue_id,
             venues (
               venue_name
             )
@@ -72,8 +72,7 @@ const EventDetailPage = () => {
 
     try {
       const { error: rpcError } = await supabase.rpc("book_ticket", {
-        p_event_venue_id: eventVenue.id,
-        p_user_id: user.id,
+        p_event_venue_id: eventVenue.event_venue_id,
       });
 
       if (rpcError) {

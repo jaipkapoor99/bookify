@@ -5,9 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.0] - 2025-06-12
 
-## [1.1.0] - 2025-06-08
+### Fixed
+
+- **Database Schema & Migrations**: Resolved numerous critical inconsistencies between local migration files and the remote database state. This involved repairing the migration history, correcting table and column definitions, and ensuring all migrations are idempotent.
+- **Ticket Booking Logic**: Completely rewrote the `book_ticket` RPC function to correctly handle user lookups, foreign key relationships (`events_venues_id`, `customer_id`), and ticket availability checks.
+- **User Signup Flow**:
+  - Corrected the `create_user_profile` trigger to successfully create a corresponding record in `public.users` after a new user signs up in `auth.users`.
+  - Refactored the `SignupPage` component to prevent automatic login after signup. The user is now correctly shown a confirmation message and redirected to the login page.
+- **Environment Loading**: Resolved a critical application crash by adding instructions for the creation and use of the `.env.local` file to provide the necessary Supabase environment variables.
+
+### Changed
+
+- The signup process no longer uses a custom Edge Function or an intermediate session-less client, relying instead on a properly configured Supabase client and backend trigger.
+
+## [1.1.0] - 2025-06-10
 
 ### Added
 

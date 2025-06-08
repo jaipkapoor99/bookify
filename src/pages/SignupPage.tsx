@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { supabase } from "@/SupabaseClient";
+import { useNavigate } from "react-router-dom";
+import { createSupabaseSignupClient } from "@/SupabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ const SignupPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +20,9 @@ const SignupPage = () => {
     setError(null);
     setMessage(null);
 
-    const { data, error } = await supabase.auth.signUp({
+    // Use the special signup client that doesn't persist the session.
+    const signupClient = createSupabaseSignupClient();
+    const { data, error } = await signupClient.auth.signUp({
       email,
       password,
     });
@@ -29,8 +33,13 @@ const SignupPage = () => {
       } else {
         setError(error.message);
       }
-    } else if (data.user) {
-      setMessage("Check your email for the confirmation link!");
+    } else if (data) {
+      setMessage(
+        "Signup successful! Please check your email for the confirmation link, then log in."
+      );
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000); // Redirect after 3 seconds
     } else {
       setError("An unexpected error occurred. Please try again.");
     }

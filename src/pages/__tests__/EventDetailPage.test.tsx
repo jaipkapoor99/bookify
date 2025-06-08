@@ -21,14 +21,14 @@ const mockEvent = {
   image_url: "https://example.com/arijit.jpg",
   events_venues: [
     {
-      id: 101, // Unique ID for this specific event-venue
+      event_venue_id: 101, // Unique ID for this specific event-venue
       event_venue_date: "2025-10-05",
       venues: {
         venue_name: "NSCI Dome",
       },
     },
     {
-      id: 102, // Unique ID for this specific event-venue
+      event_venue_id: 102, // Unique ID for this specific event-venue
       event_venue_date: "2025-10-07",
       venues: {
         venue_name: "UB City Amphitheatre",
@@ -41,7 +41,7 @@ const query = `
           *,
           events_venues (
             event_venue_date,
-            id,
+            event_venue_id,
             venues (
               venue_name
             )
@@ -125,8 +125,7 @@ describe("EventDetailPage", () => {
 
     await waitFor(() => {
       expect(supabase.rpc).toHaveBeenCalledWith("book_ticket", {
-        p_event_venue_id: mockEvent.events_venues[0].id,
-        p_user_id: mockUser.id,
+        p_event_venue_id: mockEvent.events_venues[0].event_venue_id,
       });
     });
   });
