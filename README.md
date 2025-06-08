@@ -14,14 +14,15 @@ A modern, scalable booking platform built with React and Supabase. This applicat
 - **UI Components**: shadcn/ui
 - **Backend & Database**: Supabase
 - **Styling**: Tailwind CSS
-- **Package Manager**: pnpm
+- **Testing**: Vitest & React Testing Library
+- **Package Manager**: npm
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js (v18 or higher)
-- pnpm
+- npm
 
 ### Installation & Setup
 
@@ -35,7 +36,7 @@ A modern, scalable booking platform built with React and Supabase. This applicat
 2.  **Install dependencies:**
 
     ```bash
-    pnpm install
+    npm install
     ```
 
 3.  **Set up Supabase:**
@@ -49,7 +50,7 @@ A modern, scalable booking platform built with React and Supabase. This applicat
 
 4.  **Run the development server:**
     ```bash
-    pnpm dev
+    npm run dev
     ```
 
 ## Database Schema

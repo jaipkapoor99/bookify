@@ -1,25 +1,22 @@
-import { useEffect } from "react";
-import "./App.css";
-import { supabase } from "./SupabaseClient";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import RootLayout from "./components/layout/RootLayout";
+import HomePage from "./pages/HomePage";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    children: [
+      {
+        index: true,
+        element: <HomePage />,
+      },
+    ],
+  },
+]);
 
 function App() {
-  const getData = async () => {
-    const { data, error } = await supabase.from("events").select("*");
-    if (error) {
-      console.error(error);
-    }
-    console.log(data);
-  };
-
-  useEffect(() => {
-    getData();
-  }, []);
-
-  return (
-    <>
-      <h1>Hello World</h1>
-    </>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

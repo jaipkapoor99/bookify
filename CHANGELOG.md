@@ -13,3 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integrated Supabase for database and authentication.
 - Created initial database schema and seed data.
 - Added `README.md` and `CHANGELOG.md`.
+- Configured Vitest and React Testing Library for component testing.
+- Implemented frontend routing using `react-router-dom`.
+- Created a basic layout and a home page to display events.
+- Fetched and displayed events from Supabase on the home page.
+- Added `shadcn/ui` Card component for a basic event list UI.
