@@ -4,6 +4,7 @@ import { supabase } from "@/SupabaseClient";
 import { useAuth } from "@/hooks/useAuth";
 
 type EventVenue = {
+  id: number;
   event_venue_date: string;
   venues: {
     venue_name: string;
@@ -40,6 +41,7 @@ const EventDetailPage = () => {
           *,
           events_venues (
             event_venue_date,
+            id,
             venues (
               venue_name
             )
@@ -62,16 +64,26 @@ const EventDetailPage = () => {
     }
   }, [eventId]);
 
-  const handleBookTickets = (eventVenue: EventVenue) => {
+  const handleBookTickets = async (eventVenue: EventVenue) => {
     if (!user) {
       navigate("/login");
-    } else {
-      // Placeholder for actual booking logic
-      alert(
-        `Booking tickets for ${event?.name} at ${
-          eventVenue.venues.venue_name
-        } on ${new Date(eventVenue.event_venue_date).toLocaleDateString()}`
-      );
+      return;
+    }
+
+    try {
+      const { error: rpcError } = await supabase.rpc("book_ticket", {
+        p_event_venue_id: eventVenue.id,
+        p_user_id: user.id,
+      });
+
+      if (rpcError) {
+        throw rpcError;
+      }
+
+      alert("Ticket booked successfully!");
+    } catch (bookingError) {
+      const error = bookingError as Error;
+      alert(`Error booking ticket: ${error.message}`);
     }
   };
 

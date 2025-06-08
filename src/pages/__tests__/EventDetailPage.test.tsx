@@ -7,6 +7,11 @@ import { supabase } from "@/SupabaseClient";
 import type { Mock } from "vitest";
 import { AuthContext } from "@/contexts/AuthContext.context";
 
+const mockUser = {
+  id: "a-mock-user-id",
+  // ... other user properties
+} as User;
+
 const mockEvent = {
   event_id: 1,
   name: "Arijit Singh - Live in Concert",
@@ -16,12 +21,14 @@ const mockEvent = {
   image_url: "https://example.com/arijit.jpg",
   events_venues: [
     {
+      id: 101, // Unique ID for this specific event-venue
       event_venue_date: "2025-10-05",
       venues: {
         venue_name: "NSCI Dome",
       },
     },
     {
+      id: 102, // Unique ID for this specific event-venue
       event_venue_date: "2025-10-07",
       venues: {
         venue_name: "UB City Amphitheatre",
@@ -34,6 +41,7 @@ const query = `
           *,
           events_venues (
             event_venue_date,
+            id,
             venues (
               venue_name
             )
@@ -96,6 +104,31 @@ describe("EventDetailPage", () => {
       "event_id",
       "1"
     );
+  });
+
+  it("should call the book_ticket RPC function when an authenticated user clicks 'Book Tickets'", async () => {
+    // Mock the RPC call for this test
+    (supabase.rpc as Mock).mockResolvedValue({ data: null, error: null });
+
+    renderComponent(mockUser);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: /Arijit Singh - Live in Concert/i })
+      ).toBeInTheDocument();
+    });
+
+    const bookButtons = screen.getAllByRole("button", {
+      name: /Book Tickets/i,
+    });
+    fireEvent.click(bookButtons[0]);
+
+    await waitFor(() => {
+      expect(supabase.rpc).toHaveBeenCalledWith("book_ticket", {
+        p_event_venue_id: mockEvent.events_venues[0].id,
+        p_user_id: mockUser.id,
+      });
+    });
   });
 
   it("should redirect to login when 'Book Tickets' is clicked by an unauthenticated user", async () => {

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-06-08
+
+### Added
+
+- **Core Booking Logic**: Implemented the `book_ticket` PostgreSQL function, which securely handles the ticket booking process within a transaction. This includes checking ticket availability, decrementing the ticket count, and creating a new ticket record.
+- **Ticket Security**: Added a new Row Level Security policy to the `tickets` table to ensure that users can only create bookings for themselves.
+
+### Changed
+
+- The "Book Tickets" button on the `EventDetailPage` now calls the `book_ticket` RPC function, connecting the frontend to the new backend logic.
+
 ## [1.0.1] - 2025-06-08
 
 ### Added
