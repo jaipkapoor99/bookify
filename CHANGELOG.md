@@ -18,3 +18,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created a basic layout and a home page to display events.
 - Fetched and displayed events from Supabase on the home page.
 - Added `shadcn/ui` Card component for a basic event list UI.
+- Implemented a full authentication flow with login, signup, and session management using a React Context.
+- Added dynamic Login/Signup/Logout buttons to the main layout.
+
+### Fixed
+
+- Corrected broken image URLs and invalid date formats by cleaning and re-seeding the database.
+- Enabled and configured Row Level Security (RLS) policies for all tables.
+- Resolved various data fetching and rendering bugs on the home page.
