@@ -1,9 +1,11 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import type { User } from "@supabase/supabase-js";
 import EventDetailPage from "@/pages/EventDetailPage.tsx";
 import { supabase } from "@/SupabaseClient";
 import type { Mock } from "vitest";
+import { AuthContext } from "@/contexts/AuthContext.context";
 
 const mockEvent = {
   event_id: 1,
@@ -46,14 +48,21 @@ describe("EventDetailPage", () => {
     ).mockResolvedValue({ data: mockEvent, error: null });
   });
 
-  it("should fetch and display event details including multiple venues", async () => {
-    render(
-      <MemoryRouter initialEntries={["/events/1"]}>
-        <Routes>
-          <Route path="/events/:eventId" element={<EventDetailPage />} />
-        </Routes>
-      </MemoryRouter>
+  const renderComponent = (user: User | null = null) => {
+    return render(
+      <AuthContext.Provider value={{ user, session: null, loading: false }}>
+        <MemoryRouter initialEntries={["/events/1"]}>
+          <Routes>
+            <Route path="/events/:eventId" element={<EventDetailPage />} />
+            <Route path="/login" element={<div>Login Page</div>} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
     );
+  };
+
+  it("should fetch and display event details including multiple venues", async () => {
+    renderComponent();
 
     await waitFor(() => {
       expect(
@@ -89,6 +98,25 @@ describe("EventDetailPage", () => {
     );
   });
 
+  it("should redirect to login when 'Book Tickets' is clicked by an unauthenticated user", async () => {
+    renderComponent(null); // No user is logged in
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: /Arijit Singh - Live in Concert/i })
+      ).toBeInTheDocument();
+    });
+
+    const bookButtons = screen.getAllByRole("button", {
+      name: /Book Tickets/i,
+    });
+    fireEvent.click(bookButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText("Login Page")).toBeInTheDocument();
+    });
+  });
+
   it("should display an error message if the event is not found", async () => {
     const errorMessage = "Event not found";
     (
@@ -98,13 +126,7 @@ describe("EventDetailPage", () => {
       error: { message: errorMessage },
     });
 
-    render(
-      <MemoryRouter initialEntries={["/events/999"]}>
-        <Routes>
-          <Route path="/events/:eventId" element={<EventDetailPage />} />
-        </Routes>
-      </MemoryRouter>
-    );
+    renderComponent();
 
     await waitFor(() => {
       expect(screen.getByText(/Error: Event not found/i)).toBeInTheDocument();

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/SupabaseClient";
+import { useAuth } from "@/hooks/useAuth";
 
 type EventVenue = {
   event_venue_date: string;
@@ -24,6 +25,8 @@ const EventDetailPage = () => {
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -54,8 +57,23 @@ const EventDetailPage = () => {
       setLoading(false);
     };
 
-    fetchEvent();
+    if (eventId) {
+      fetchEvent();
+    }
   }, [eventId]);
+
+  const handleBookTickets = (eventVenue: EventVenue) => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      // Placeholder for actual booking logic
+      alert(
+        `Booking tickets for ${event?.name} at ${
+          eventVenue.venues.venue_name
+        } on ${new Date(eventVenue.event_venue_date).toLocaleDateString()}`
+      );
+    }
+  };
 
   if (loading) {
     return <div>Loading event details...</div>;
@@ -99,7 +117,10 @@ const EventDetailPage = () => {
                   {new Date(eventVenue.event_venue_date).toLocaleDateString()}
                 </p>
               </div>
-              <button className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition-colors">
+              <button
+                onClick={() => handleBookTickets(eventVenue)}
+                className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+              >
                 Book Tickets
               </button>
             </li>

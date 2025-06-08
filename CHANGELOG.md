@@ -7,13 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-06-08
+
+### Added
+
+- **Authenticated Action**: Implemented logic for the "Book Tickets" button on the `EventDetailPage`. Unauthenticated users are now redirected to the login page, while authenticated users see a placeholder action.
+- **Test Coverage**: Added a new test case to verify the redirection logic for unauthenticated users, ensuring the feature is robust and reliable.
+
+### Fixed
+
+- **Missing RLS Policy**: Added a read-access RLS policy to the `events_venues` table, fixing a critical bug where venue and date information was not being displayed on the event detail page.
+
 ## [1.0.0] - 2025-06-08
 
 ### Fixed
 
 - **Corrected Data Model**: Overhauled the database schema to correctly implement a many-to-many relationship between `events` and `venues` using the `events_venues` join table. This fixes the core architectural flaw where an event was incorrectly limited to a single venue.
 - **Fixed Event Detail Page**: Refactored the `EventDetailPage` to fetch and display multiple venues and dates for a single event, resolving the critical runtime bug that caused the page to crash.
-- **Updated Test Suite**: Rewrote the entire test file for `EventDetailPage` to align with the new data model and UI logic, ensuring our test coverage is accurate and robust.
+- **Updated Test Suite**: Rewritten the entire test file for `EventDetailPage` to align with the new data model and UI logic, ensuring our test coverage is accurate and robust.
 - **Resolved Linter Errors**: Cleaned up all linter errors that were introduced during the refactoring process, bringing the project to a clean, passing state.
 - **Restored Seed Data**: Corrected the `seed.sql` file to populate the restored `events_venues` table, ensuring the database is seeded with valid, relational data.
 
