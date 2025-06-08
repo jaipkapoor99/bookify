@@ -11,8 +11,9 @@ A modern, scalable booking platform built with React and Supabase. This applicat
 ## Tech Stack
 
 - **Frontend**: React (via Vite)
+- **UI Components**: shadcn/ui
 - **Backend & Database**: Supabase
-- **Styling**: (To be decided - e.g., Tailwind CSS)
+- **Styling**: Tailwind CSS
 - **Package Manager**: pnpm
 
 ## Getting Started
