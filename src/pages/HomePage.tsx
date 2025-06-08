@@ -11,7 +11,7 @@ import {
 export type Event = {
   id: number;
   name: string;
-  date: string;
+  start_time: string;
   venue_id: number;
   image_url: string;
 };
@@ -56,7 +56,7 @@ const HomePage = () => {
               <CardTitle>{event.name}</CardTitle>
             </CardContent>
             <CardFooter className="p-4 bg-gray-50">
-              <p>{new Date(event.date).toLocaleDateString()}</p>
+              <p>{new Date(event.start_time).toLocaleDateString()}</p>
             </CardFooter>
           </Card>
         ))}
