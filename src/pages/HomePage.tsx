@@ -30,7 +30,11 @@ const HomePage = () => {
         .abortSignal(abortController.signal);
 
       if (error) {
-        if (error.name !== "AbortError") {
+        // In React StrictMode, development servers will intentionally
+        // unmount and remount components, triggering cleanup functions.
+        // This causes our AbortController to fire, which is expected.
+        // We can safely ignore errors that start with "AbortError".
+        if (!error.message.startsWith("AbortError")) {
           console.error("Error fetching events:", error);
         }
       } else {

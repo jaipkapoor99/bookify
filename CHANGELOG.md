@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-06-08
+
+### Fixed
+
+- **Corrected Data Model**: Overhauled the database schema to correctly implement a many-to-many relationship between `events` and `venues` using the `events_venues` join table. This fixes the core architectural flaw where an event was incorrectly limited to a single venue.
+- **Fixed Event Detail Page**: Refactored the `EventDetailPage` to fetch and display multiple venues and dates for a single event, resolving the critical runtime bug that caused the page to crash.
+- **Updated Test Suite**: Rewrote the entire test file for `EventDetailPage` to align with the new data model and UI logic, ensuring our test coverage is accurate and robust.
+- **Resolved Linter Errors**: Cleaned up all linter errors that were introduced during the refactoring process, bringing the project to a clean, passing state.
+- **Restored Seed Data**: Corrected the `seed.sql` file to populate the restored `events_venues` table, ensuring the database is seeded with valid, relational data.
+
+### Added
+
+- **Richer Event Detail UI**: The `EventDetailPage` now features a list of dates and venues for each event, with "Book Tickets" buttons for each entry.
+
+### Changed
+
+- **Database Migrations**: Created new migrations to drop the incorrect `venue_id` column from `events` and to re-create the `events_venues` table with the proper foreign key constraints.
+
+---
+
+### Previous "Unreleased" Changes
+
 ### Added
 
 - Initial project setup with Vite and React.

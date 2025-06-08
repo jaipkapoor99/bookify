@@ -1,16 +1,19 @@
 # Booking Platform
 
-A modern, scalable booking platform built with React and Supabase. This application provides a seamless experience for users to book tickets and a powerful admin portal for easy management.
+A modern, scalable event booking platform built with React, TypeScript, and Supabase. This application provides a seamless experience for users to discover, view details, and book tickets for various events, while ensuring data integrity and a robust, test-driven development process.
 
-## Features
+## Key Features
 
-- **User Authentication**: Secure sign-up and login functionality.
-- **Ticket Booking**: A user-friendly interface for browsing and booking tickets.
-- **Admin Portal**: A dedicated dashboard for administrators to manage bookings, users, and available items.
+- **User Authentication**: Secure sign-up and login functionality powered by Supabase Auth.
+- **Event Discovery**: Users can browse a list of events on the home page.
+- **Detailed Event Views**: A dedicated page for each event, showcasing multiple dates and venues.
+- **Test-Driven Development**: A strict TDD workflow ensures code quality and reliability.
+- **Database Migrations**: Schema is managed via Supabase migrations located in the `supabase/migrations` directory.
 
 ## Tech Stack
 
-- **Frontend**: React (via Vite)
+- **Framework**: React (with Vite)
+- **Language**: TypeScript
 - **UI Components**: shadcn/ui
 - **Backend & Database**: Supabase
 - **Styling**: Tailwind CSS
@@ -21,10 +24,11 @@ A modern, scalable booking platform built with React and Supabase. This applicat
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- npm
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [npm](https://www.npmjs.com/) (usually comes with Node.js)
+- [Supabase Account](https://supabase.com/) for deploying the backend.
 
-### Installation & Setup
+### Local Development Setup
 
 1.  **Clone the repository:**
 
@@ -39,10 +43,10 @@ A modern, scalable booking platform built with React and Supabase. This applicat
     npm install
     ```
 
-3.  **Set up Supabase:**
+3.  **Set up Supabase Environment Variables:**
 
-    - Create a `.env.local` file in the root of the project.
-    - Add your Supabase Project URL and Anon Key to the `.env.local` file:
+    - Create a file named `.env` in the root of the project.
+    - Add your Supabase Project URL and Anon Key to this file. You can find these in your Supabase project's API settings.
       ```env
       VITE_SUPABASE_URL=YOUR_SUPABASE_URL
       VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
@@ -52,10 +56,19 @@ A modern, scalable booking platform built with React and Supabase. This applicat
     ```bash
     npm run dev
     ```
+    The application will be available at `http://localhost:5173`.
+
+## Project Health Check
+
+This project includes a PowerShell script to ensure code quality and correctness. To run all checks (linting, TypeScript compilation, and tests), use:
+
+```bash
+npm run check
+```
 
 ## Database Schema
 
-The database schema is managed via Supabase migrations and is located in the `supabase/migrations` directory.
+The database is designed to support a many-to-many relationship between events and venues, allowing a single event (like a tour) to occur at multiple venues on different dates.
 
 ```mermaid
 classDiagram
@@ -67,6 +80,7 @@ classDiagram
         +text description
         +timestamptz start_time
         +timestamptz end_time
+        +text image_url
     }
 
     class venues {
@@ -95,14 +109,14 @@ classDiagram
     class tickets {
         +int ticket_id (PK)
         +int customer_id (FK)
-        +int event_venue_id (FK)
+        +int events_venues_id (FK)
         +int ticket_price
     }
 
     class events_venues {
-        +int event_venue_id (PK)
-        +int event_id (FK)
-        +int venue_id (FK)
+        +bigint id (PK)
+        +bigint event_id (FK)
+        +bigint venue_id (FK)
         +int no_of_tickets
         +date event_venue_date
     }
@@ -112,42 +126,18 @@ classDiagram
         note "This represents the auth.users table"
     }
 
-    events "1" -- "0..*" events_venues
-    venues "1" -- "0..*" events_venues
+    events "1" -- "0..*" events_venues : hosts
+    venues "1" -- "0..*" events_venues : is held at
     locations "1" -- "0..*" venues
     locations "1" -- "0..*" users
     events_venues "1" -- "0..*" tickets
-    users "1" -- "0..*" tickets
+    users "1" -- "0..*" tickets : books
     auth_users "1" -- "1" users
 ```
 
-## Frontend Architecture Plan
-
-This is a high-level blueprint for the application's design.
-
-### 1. Page & Component Structure
-
-- **Pages (`src/pages/`)**: `Home`, `AllEvents`, `EventDetails`, `MyBookings` (protected), `SignIn`, `SignUp`, and `NotFound`.
-- **Reusable Components (`src/components/`)**:
-  - **Layout**: `Layout` (with Sidebar), `Sidebar`.
-  - **Events**: `EventCard`, `EventList`.
-  - **Auth**: `AuthForm`, `ProtectedRoute`.
-  - **Booking**: `BookingForm`.
-
-### 2. Navigation and User Flow
-
-- **Unauthenticated Users**: Can browse events but will be redirected to the `SignIn` page upon attempting to book.
-- **Authenticated Users**: Can book tickets, view their own bookings on the `MyBookings` page, and see a `Logout` option.
-
-### 3. Data Flow with Supabase
-
-- **Authentication**: Use `supabase.auth` for sign-in, sign-up, and session management.
-- **Public Data**: Fetch event and venue information using standard `select` queries.
-- **Protected Data**: Fetch user-specific bookings using a secure RPC function (`get_my_bookings`) and enforce access control with Row Level Security (RLS) policies.
-
 ## Contributing
 
-We welcome contributions! To ensure a smooth and consistent development process, please follow the guidelines below.
+We welcome contributions! To ensure a smooth and consistent development process, please refer to the project's **Test-Driven Development (TDD)** workflow.
 
 ### Development Workflow: Test-Driven Development (TDD)
 
@@ -160,7 +150,7 @@ This project follows a strict **Test-Driven Development (TDD)** approach. Every 
 ### Testing Rules & Conventions
 
 - **Test Files**: All test files are located in `src/pages/__tests__/`.
-- **Mocking**: External dependencies, such as the Supabase client and `react-router-dom` hooks, must be mocked at the top of the test file to ensure tests are isolated and predictable.
+- **Mocking**: External dependencies, such as the Supabase client and `react-router-dom` hooks, are mocked globally via `src/setupTests.ts` and `src/__mocks__/`.
 - **Router Context**: Components that use `react-router-dom`'s `Link` or other navigation features must be wrapped in a `<MemoryRouter>` during testing.
 - **Asynchronous Operations**: Use `waitFor` from React Testing Library to handle state updates after asynchronous operations.
 
@@ -168,5 +158,5 @@ This project follows a strict **Test-Driven Development (TDD)** approach. Every 
 
 - **TypeScript**: The project is written entirely in TypeScript. Please adhere to the defined types and interfaces.
 - **Path Aliases**: Use the `@/` alias for imports from the `src` directory (e.g., `import MyComponent from '@/components/MyComponent'`).
-- **Linting**: The project uses ESLint for code quality. Please ensure your code follows the linting rules before submitting a contribution.
+- **Linting**: The project uses ESLint for code quality. Please ensure your code follows the linting rules (`npm run lint`) before submitting a contribution.
 - **Component Library**: We use `shadcn/ui` for UI components. Please familiarize yourself with its usage.

@@ -1,16 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import HomePage from "@/pages/HomePage";
-import { supabase } from "@/SupabaseClient";
 import { MemoryRouter } from "react-router-dom";
-
-// Mock the Supabase client
-vi.mock("@/SupabaseClient", () => ({
-  supabase: {
-    from: vi.fn().mockReturnThis(),
-    select: vi.fn(),
-  },
-}));
+import { supabase } from "@/SupabaseClient";
+import type { Mock } from "vitest";
 
 const mockEvents = [
   {
@@ -30,10 +23,17 @@ const mockEvents = [
 ];
 
 describe("HomePage", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
   it("should render loading state initially and then display events", async () => {
-    // Mock the select query
-    const mockedSelect = supabase.from("events").select as Mock;
-    mockedSelect.mockResolvedValueOnce({ data: mockEvents, error: null });
+    (
+      supabase.from("events").select("*").abortSignal as Mock
+    ).mockResolvedValueOnce({
+      data: mockEvents,
+      error: null,
+    });
 
     render(
       <MemoryRouter>
@@ -41,19 +41,15 @@ describe("HomePage", () => {
       </MemoryRouter>
     );
 
-    // Check for loading state
     expect(screen.getByText("Loading events...")).toBeInTheDocument();
 
-    // Wait for events to be displayed
     await waitFor(() => {
       expect(screen.getByText("Test Event 1")).toBeInTheDocument();
       expect(screen.getByText("Test Event 2")).toBeInTheDocument();
     });
 
-    // Check that loading state is gone
     expect(screen.queryByText("Loading events...")).not.toBeInTheDocument();
 
-    // Check for other event details
     const event1Date = new Date(mockEvents[0].start_time).toLocaleDateString();
     expect(screen.getByText(event1Date)).toBeInTheDocument();
 
@@ -63,8 +59,12 @@ describe("HomePage", () => {
   });
 
   it("should wrap event cards in links to the event detail page", async () => {
-    const mockedSelect = supabase.from("events").select as Mock;
-    mockedSelect.mockResolvedValueOnce({ data: mockEvents, error: null });
+    (
+      supabase.from("events").select("*").abortSignal as Mock
+    ).mockResolvedValueOnce({
+      data: mockEvents,
+      error: null,
+    });
 
     render(
       <MemoryRouter>
@@ -73,23 +73,20 @@ describe("HomePage", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Test Event 1")).toBeInTheDocument();
+      const link = screen.getByText("Test Event 1").closest("a");
+      expect(link).toHaveAttribute("href", `/events/${mockEvents[0].event_id}`);
     });
-
-    const link = screen.getByText("Test Event 1").closest("a");
-    expect(link).toHaveAttribute("href", `/events/${mockEvents[0].event_id}`);
   });
 
-  it("should display an error message if fetching events fails", async () => {
-    // Mock the select query to return an error
-    const mockedSelect = supabase.from("events").select as Mock;
+  it("should display a message if fetching events fails", async () => {
     const errorMessage = "Failed to fetch events";
-    mockedSelect.mockResolvedValueOnce({
+    (
+      supabase.from("events").select("*").abortSignal as Mock
+    ).mockResolvedValueOnce({
       data: null,
-      error: { message: errorMessage },
+      error: new Error(errorMessage),
     });
 
-    // Mock console.error
     const consoleErrorSpy = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});
@@ -100,19 +97,13 @@ describe("HomePage", () => {
       </MemoryRouter>
     );
 
-    // Wait for the component to finish loading
     await waitFor(() => {
       expect(screen.queryByText("Loading events...")).not.toBeInTheDocument();
     });
 
-    // Since the component just logs the error and shows no events,
-    // we can check that no events are rendered.
     expect(screen.queryByText("Test Event 1")).not.toBeInTheDocument();
 
-    // Check if console.error was called with the error
     expect(consoleErrorSpy).toHaveBeenCalled();
-
-    // Restore console.error
     consoleErrorSpy.mockRestore();
   });
 });
