@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 
 export type Event = {
-  id: number;
+  event_id: number;
   name: string;
   start_time: string;
   venue_id: number;
@@ -27,7 +27,7 @@ const HomePage = () => {
       if (error) {
         console.error("Error fetching events:", error);
       } else {
-        setEvents(data);
+        setEvents(data as Event[]);
       }
       setLoading(false);
     };
@@ -44,7 +44,7 @@ const HomePage = () => {
       <h2 className="text-3xl font-bold mb-6">Upcoming Events</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.map((event) => (
-          <Card key={event.id} className="overflow-hidden">
+          <Card key={event.event_id} className="overflow-hidden">
             <CardHeader className="p-0">
               <img
                 src={event.image_url}
