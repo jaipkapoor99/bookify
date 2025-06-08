@@ -1,31 +1,41 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import RootLayout from "./components/layout/RootLayout";
-import HomePage from "./pages/HomePage";
-import { AuthProvider } from "./contexts/AuthContext";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
-import EventDetailPage from "./pages/EventDetailPage";
+import { AuthProvider } from "@/contexts/AuthContext";
+import RootLayout from "@/components/layout/RootLayout";
+import HomePage from "@/pages/HomePage";
+import LoginPage from "@/pages/LoginPage";
+import SignupPage from "@/pages/SignupPage";
+import EventDetailPage from "@/pages/EventDetailPage";
+import MyBookingsPage from "@/pages/MyBookingsPage";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
-    path: "/",
     element: <RootLayout />,
     children: [
       {
-        index: true,
+        path: "/",
         element: <HomePage />,
       },
       {
-        path: "login",
+        path: "/login",
         element: <LoginPage />,
       },
       {
-        path: "signup",
+        path: "/signup",
         element: <SignupPage />,
       },
       {
-        path: "events/:eventId",
+        path: "/events/:eventId",
         element: <EventDetailPage />,
+      },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: "/my-bookings",
+            element: <MyBookingsPage />,
+          },
+        ],
       },
     ],
   },
