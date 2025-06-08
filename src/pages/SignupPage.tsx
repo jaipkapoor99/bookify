@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "../SupabaseClient";
+import { supabase } from "@/SupabaseClient";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,11 +26,15 @@ const SignupPage = () => {
     });
 
     if (error) {
-      setError(error.message);
-    } else if (data.user && data.user.identities?.length === 0) {
-      setError("This email is already taken.");
-    } else {
+      if (error.message.includes("User already registered")) {
+        setError("This email is already taken.");
+      } else {
+        setError(error.message);
+      }
+    } else if (data.user) {
       setMessage("Check your email for the confirmation link!");
+    } else {
+      setError("An unexpected error occurred. Please try again.");
     }
     setLoading(false);
   };

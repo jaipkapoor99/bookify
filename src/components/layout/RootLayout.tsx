@@ -1,7 +1,7 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { supabase } from "../SupabaseClient";
-import { Button } from "./ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/SupabaseClient";
+import { Button } from "@/components/ui/button";
 
 const RootLayout = () => {
   const { user, loading } = useAuth();

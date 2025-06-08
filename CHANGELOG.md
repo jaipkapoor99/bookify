@@ -21,8 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented a full authentication flow with login, signup, and session management using a React Context.
 - Added dynamic Login/Signup/Logout buttons to the main layout.
 
+### Changed
+
+- Refactored `HomePage` to use an `AbortController` for safer, cancellable data fetching.
+
 ### Fixed
 
 - Corrected broken image URLs and invalid date formats by cleaning and re-seeding the database.
 - Enabled and configured Row Level Security (RLS) policies for all tables.
 - Resolved various data fetching and rendering bugs on the home page.
+- Fixed `act` warnings across the test suite by using `waitFor` to handle asynchronous state updates correctly.
+- Improved test reliability by replacing `vi.clearAllMocks()` with `vi.resetAllMocks()` to prevent mock state from leaking between tests.
+- Corrected TypeScript module resolution errors related to path aliases by updating `tsconfig.app.json` and fixing import paths.

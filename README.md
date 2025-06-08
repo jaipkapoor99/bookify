@@ -147,4 +147,26 @@ This is a high-level blueprint for the application's design.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a pull request.
+We welcome contributions! To ensure a smooth and consistent development process, please follow the guidelines below.
+
+### Development Workflow: Test-Driven Development (TDD)
+
+This project follows a strict **Test-Driven Development (TDD)** approach. Every new feature or bug fix must start with a failing test. The workflow is as follows:
+
+1.  **Red**: Write a new test that captures the requirements of the new feature or the bug to be fixed. This test should fail because the implementation does not yet exist.
+2.  **Green**: Write the simplest, most straightforward code possible to make the test pass.
+3.  **Refactor**: Clean up and optimize the code you've just written while ensuring all tests continue to pass.
+
+### Testing Rules & Conventions
+
+- **Test Files**: All test files are located in `src/pages/__tests__/`.
+- **Mocking**: External dependencies, such as the Supabase client and `react-router-dom` hooks, must be mocked at the top of the test file to ensure tests are isolated and predictable.
+- **Router Context**: Components that use `react-router-dom`'s `Link` or other navigation features must be wrapped in a `<MemoryRouter>` during testing.
+- **Asynchronous Operations**: Use `waitFor` from React Testing Library to handle state updates after asynchronous operations.
+
+### Coding Style
+
+- **TypeScript**: The project is written entirely in TypeScript. Please adhere to the defined types and interfaces.
+- **Path Aliases**: Use the `@/` alias for imports from the `src` directory (e.g., `import MyComponent from '@/components/MyComponent'`).
+- **Linting**: The project uses ESLint for code quality. Please ensure your code follows the linting rules before submitting a contribution.
+- **Component Library**: We use `shadcn/ui` for UI components. Please familiarize yourself with its usage.

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../SupabaseClient";
+import { Link } from "react-router-dom";
+import { supabase } from "@/SupabaseClient";
 import {
   Card,
   CardContent,
@@ -21,11 +22,17 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const abortController = new AbortController();
     const fetchEvents = async () => {
-      const { data, error } = await supabase.from("events").select("*");
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .abortSignal(abortController.signal);
 
       if (error) {
-        console.error("Error fetching events:", error);
+        if (error.name !== "AbortError") {
+          console.error("Error fetching events:", error);
+        }
       } else {
         setEvents(data as Event[]);
       }
@@ -33,6 +40,10 @@ const HomePage = () => {
     };
 
     fetchEvents();
+
+    return () => {
+      abortController.abort();
+    };
   }, []);
 
   if (loading) {
@@ -44,21 +55,23 @@ const HomePage = () => {
       <h2 className="text-3xl font-bold mb-6">Upcoming Events</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.map((event) => (
-          <Card key={event.event_id} className="overflow-hidden">
-            <CardHeader className="p-0">
-              <img
-                src={event.image_url}
-                alt={event.name}
-                className="w-full h-48 object-cover"
-              />
-            </CardHeader>
-            <CardContent className="p-4">
-              <CardTitle>{event.name}</CardTitle>
-            </CardContent>
-            <CardFooter className="p-4 bg-gray-50">
-              <p>{new Date(event.start_time).toLocaleDateString()}</p>
-            </CardFooter>
-          </Card>
+          <Link to={`/events/${event.event_id}`} key={event.event_id}>
+            <Card className="overflow-hidden h-full hover:shadow-lg transition-shadow">
+              <CardHeader className="p-0">
+                <img
+                  src={event.image_url}
+                  alt={event.name}
+                  className="w-full h-48 object-cover"
+                />
+              </CardHeader>
+              <CardContent className="p-4">
+                <CardTitle>{event.name}</CardTitle>
+              </CardContent>
+              <CardFooter className="p-4 bg-gray-50">
+                <p>{new Date(event.start_time).toLocaleDateString()}</p>
+              </CardFooter>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
