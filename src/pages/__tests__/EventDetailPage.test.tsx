@@ -1,11 +1,10 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import EventDetailPage from "@/pages/EventDetailPage";
 import { supabase } from "@/SupabaseClient";
-import type { Mock } from "vitest";
-import { AuthContext } from "@/contexts/AuthContext.context";
+import { useAuth } from "@/hooks/useAuth";
 
 // Mock react-router-dom before importing components
 const mockNavigate = vi.fn();
@@ -17,6 +16,9 @@ vi.mock("react-router-dom", async () => {
     useNavigate: () => mockNavigate,
   };
 });
+
+// Mock the hooks
+vi.mock("@/hooks/useAuth");
 
 const mockEvent = {
   event_id: 1,
@@ -30,7 +32,7 @@ const mockEvent = {
       event_venue_id: 101, // Unique ID for this specific event-venue
       event_venue_date: "2025-10-05",
       no_of_tickets: 150,
-      price: 3500,
+      price: 350000, // Price in paise
       venues: {
         venue_name: "NSCI Dome",
         locations: {
@@ -42,7 +44,7 @@ const mockEvent = {
       event_venue_id: 102, // Unique ID for this specific event-venue
       event_venue_date: "2025-10-07",
       no_of_tickets: 200,
-      price: 2800,
+      price: 280000, // Price in paise
       venues: {
         venue_name: "UB City Amphitheatre",
         locations: {
@@ -75,24 +77,15 @@ describe("EventDetailPage", () => {
     (supabase.from as Mock).mockReturnValue({ select: selectMock });
   });
 
-  const renderComponent = (user: User | null = null) => {
+  const renderComponent = (user: { id: string } | null = null) => {
+    (useAuth as Mock).mockReturnValue({ user });
     return render(
-      <AuthContext.Provider
-        value={{
-          user,
-          session: null,
-          loading: false,
-          login: async () => ({ error: null }),
-          logout: async () => ({ error: null }),
-        }}
-      >
-        <MemoryRouter initialEntries={["/events/1"]}>
-          <Routes>
-            <Route path="/events/:eventId" element={<EventDetailPage />} />
-            <Route path="/login" element={<div>Login Page</div>} />
-          </Routes>
-        </MemoryRouter>
-      </AuthContext.Provider>
+      <MemoryRouter initialEntries={["/events/1"]}>
+        <Routes>
+          <Route path="/events/:eventId" element={<EventDetailPage />} />
+          <Route path="/login" element={<div>Login Page</div>} />
+        </Routes>
+      </MemoryRouter>
     );
   };
 
@@ -122,9 +115,9 @@ describe("EventDetailPage", () => {
       .closest("div.flex.items-center.justify-between");
     expect(secondVenue).toHaveTextContent("October 7, 2025");
 
-    // Check if prices are displayed
-    expect(screen.getByText("₹3500")).toBeInTheDocument();
-    expect(screen.getByText("₹2800")).toBeInTheDocument();
+    // Check if prices are displayed correctly formatted
+    expect(screen.getByText("₹3,500.00")).toBeInTheDocument();
+    expect(screen.getByText("₹2,800.00")).toBeInTheDocument();
 
     // Verify the correct Supabase query was made
     expect(supabase.from).toHaveBeenCalledWith("events");

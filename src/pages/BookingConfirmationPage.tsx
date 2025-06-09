@@ -13,6 +13,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Ticket, MapPin, Calendar, CreditCard } from "lucide-react";
 import { toast } from "sonner";
+import { formatCurrency } from "@/lib/utils";
 
 // Corrected Type: This now matches the structure from the error message.
 type RawConfirmationData = {
@@ -44,8 +45,8 @@ type ConfirmationDetails = {
 const BookingConfirmationPage = () => {
   const { eventVenueId } = useParams<{ eventVenueId: string }>();
   const [searchParams] = useSearchParams();
-  const quantity = parseInt(searchParams.get('quantity') || '1', 10);
-  
+  const quantity = parseInt(searchParams.get("quantity") || "1", 10);
+
   const [details, setDetails] = useState<ConfirmationDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
@@ -133,7 +134,7 @@ const BookingConfirmationPage = () => {
     // Validate quantity
     if (quantity > details.availableTickets) {
       toast.error("Not enough tickets available", {
-        description: `Only ${details.availableTickets} tickets remaining.`
+        description: `Only ${details.availableTickets} tickets remaining.`,
       });
       return;
     }
@@ -150,9 +151,11 @@ const BookingConfirmationPage = () => {
       if (rpcError) throw rpcError;
 
       toast.success("Booking successful!", {
-        description: `You have booked ${quantity} ticket${quantity > 1 ? 's' : ''}.`
+        description: `You have booked ${quantity} ticket${
+          quantity > 1 ? "s" : ""
+        }.`,
       });
-      
+
       setTimeout(() => {
         navigate("/my-bookings");
       }, 1500);
@@ -160,7 +163,7 @@ const BookingConfirmationPage = () => {
       const e = bookingError as Error;
       setError(`Booking failed: ${e.message}`);
       toast.error("Booking failed", {
-        description: e.message
+        description: e.message,
       });
     } finally {
       setBooking(false);
@@ -196,13 +199,14 @@ const BookingConfirmationPage = () => {
         <CardHeader>
           <CardTitle className="text-2xl">Confirm Your Booking</CardTitle>
           <CardDescription>
-            Please review the details below before confirming your ticket{quantity > 1 ? 's' : ''}.
+            Please review the details below before confirming your ticket
+            {quantity > 1 ? "s" : ""}.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-4">
             <h3 className="font-semibold text-lg mb-4">Event Details</h3>
-            
+
             <div className="flex items-start gap-3">
               <Ticket className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div className="flex-1">
@@ -225,11 +229,11 @@ const BookingConfirmationPage = () => {
               <div className="flex-1">
                 <p className="font-medium">Date</p>
                 <p className="text-muted-foreground">
-                  {new Date(details.eventDate).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
+                  {new Date(details.eventDate).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
                   })}
                 </p>
               </div>
@@ -241,11 +245,11 @@ const BookingConfirmationPage = () => {
               <CreditCard className="h-5 w-5" />
               Payment Summary
             </h3>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Ticket Price:</span>
-                <span>₹{details.price}</span>
+                <span>{formatCurrency(details.price)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Quantity:</span>
@@ -253,7 +257,9 @@ const BookingConfirmationPage = () => {
               </div>
               <div className="flex justify-between items-center pt-3 border-t">
                 <span className="font-bold text-lg">Total Amount:</span>
-                <span className="font-bold text-lg">₹{getTotalPrice()}</span>
+                <span className="font-bold text-lg">
+                  {formatCurrency(getTotalPrice())}
+                </span>
               </div>
             </div>
           </div>
@@ -262,7 +268,8 @@ const BookingConfirmationPage = () => {
             <Alert>
               <AlertTitle>Limited Availability</AlertTitle>
               <AlertDescription>
-                Only {details.availableTickets} tickets remaining for this event.
+                Only {details.availableTickets} tickets remaining for this
+                event.
               </AlertDescription>
             </Alert>
           )}
@@ -280,7 +287,9 @@ const BookingConfirmationPage = () => {
             className="w-full"
             size="lg"
           >
-            {booking ? "Processing..." : `Confirm & Book ${quantity} Ticket${quantity > 1 ? 's' : ''}`}
+            {booking
+              ? "Processing..."
+              : `Confirm & Book ${quantity} Ticket${quantity > 1 ? "s" : ""}`}
           </Button>
         </CardFooter>
       </Card>

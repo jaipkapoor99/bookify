@@ -12,56 +12,13 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 
-CREATE EXTENSION IF NOT EXISTS "pgsodium";
+CREATE SCHEMA IF NOT EXISTS "public";
 
 
-
-
+ALTER SCHEMA "public" OWNER TO "pg_database_owner";
 
 
 COMMENT ON SCHEMA "public" IS 'standard public schema';
-
-
-
-CREATE EXTENSION IF NOT EXISTS "pg_graphql" WITH SCHEMA "graphql";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "pgjwt" WITH SCHEMA "extensions";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA "vault";
-
-
-
-
-
-
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
-
-
-
 
 
 
@@ -127,60 +84,6 @@ $$;
 ALTER FUNCTION "public"."book_ticket"("p_event_venue_id" bigint) OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."book_ticket"("p_event_venue_id" bigint, "p_quantity" integer) RETURNS "void"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-  v_auth_uuid UUID;
-  v_internal_user_id INT;
-  v_venue_details RECORD;
-BEGIN
-  -- 1. Get the current user's auth UUID
-  SELECT auth.uid() INTO v_auth_uuid;
-  IF v_auth_uuid IS NULL THEN
-    RAISE EXCEPTION 'User is not authenticated.';
-  END IF;
-
-  -- 2. Get the internal user_id from the public users table
-  SELECT user_id INTO v_internal_user_id
-  FROM public.users
-  WHERE supabase_id = v_auth_uuid
-  LIMIT 1;
-
-  IF v_internal_user_id IS NULL THEN
-    RAISE EXCEPTION 'User profile not found. Please complete your profile before booking.';
-  END IF;
-
-  -- 3. Check for ticket availability and lock the row for the transaction
-  SELECT * INTO v_venue_details
-  FROM public.events_venues
-  WHERE event_venue_id = p_event_venue_id FOR UPDATE;
-
-  IF v_venue_details.event_venue_id IS NULL THEN
-    RAISE EXCEPTION 'Event venue not found.';
-  END IF;
-
-  -- 4. Check if enough tickets are available for the requested quantity
-  IF v_venue_details.no_of_tickets < p_quantity THEN
-    RAISE EXCEPTION 'Not enough tickets available. Only % remaining.', v_venue_details.no_of_tickets;
-  END IF;
-
-  -- 5. Decrement the ticket count by the purchased quantity
-  UPDATE public.events_venues
-  SET no_of_tickets = no_of_tickets - p_quantity
-  WHERE event_venue_id = p_event_venue_id;
-
-  -- 6. Create the ticket record, now including the quantity
-  INSERT INTO public.tickets(customer_id, events_venues_id, ticket_price, quantity)
-  VALUES (v_internal_user_id, p_event_venue_id, v_venue_details.price, p_quantity);
-
-END;
-$$;
-
-
-ALTER FUNCTION "public"."book_ticket"("p_event_venue_id" bigint, "p_quantity" integer) OWNER TO "postgres";
-
-
 CREATE OR REPLACE FUNCTION "public"."create_user_profile"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public'
@@ -207,8 +110,7 @@ CREATE TABLE IF NOT EXISTS "public"."tickets" (
     "created_at" timestamp with time zone DEFAULT "now"(),
     "updated_at" timestamp with time zone DEFAULT "now"(),
     "ticket_price" bigint NOT NULL,
-    "events_venues_id" bigint,
-    "quantity" integer DEFAULT 1 NOT NULL
+    "events_venues_id" bigint
 );
 
 
@@ -395,11 +297,6 @@ ALTER TABLE ONLY "public"."users"
 
 
 ALTER TABLE ONLY "public"."events"
-    ADD CONSTRAINT "events_name_key" UNIQUE ("name");
-
-
-
-ALTER TABLE ONLY "public"."events"
     ADD CONSTRAINT "events_pkey" PRIMARY KEY ("event_id");
 
 
@@ -441,11 +338,6 @@ ALTER TABLE ONLY "public"."users"
 
 ALTER TABLE ONLY "public"."venues"
     ADD CONSTRAINT "venues_pkey" PRIMARY KEY ("venue_id");
-
-
-
-ALTER TABLE ONLY "public"."venues"
-    ADD CONSTRAINT "venues_venue_name_key" UNIQUE ("venue_name");
 
 
 
@@ -562,11 +454,6 @@ ALTER TABLE "public"."users" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "public"."venues" ENABLE ROW LEVEL SECURITY;
 
 
-
-
-ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
-
-
 GRANT USAGE ON SCHEMA "public" TO "postgres";
 GRANT USAGE ON SCHEMA "public" TO "anon";
 GRANT USAGE ON SCHEMA "public" TO "authenticated";
@@ -574,192 +461,9 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 GRANT ALL ON FUNCTION "public"."book_ticket"("p_event_venue_id" bigint) TO "anon";
 GRANT ALL ON FUNCTION "public"."book_ticket"("p_event_venue_id" bigint) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."book_ticket"("p_event_venue_id" bigint) TO "service_role";
-
-
-
-GRANT ALL ON FUNCTION "public"."book_ticket"("p_event_venue_id" bigint, "p_quantity" integer) TO "anon";
-GRANT ALL ON FUNCTION "public"."book_ticket"("p_event_venue_id" bigint, "p_quantity" integer) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."book_ticket"("p_event_venue_id" bigint, "p_quantity" integer) TO "service_role";
 
 
 
@@ -778,30 +482,6 @@ GRANT ALL ON TABLE "public"."tickets" TO "service_role";
 GRANT ALL ON FUNCTION "public"."get_my_bookings"() TO "anon";
 GRANT ALL ON FUNCTION "public"."get_my_bookings"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_my_bookings"() TO "service_role";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -871,12 +551,6 @@ GRANT ALL ON SEQUENCE "public"."venues_venue_id_seq" TO "service_role";
 
 
 
-
-
-
-
-
-
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES  TO "postgres";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES  TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES  TO "authenticated";
@@ -901,30 +575,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES  TO "service_role";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

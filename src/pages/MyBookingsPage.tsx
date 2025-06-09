@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/SupabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { BookingQueryResult } from "@/types/database.types";
+import { formatCurrency } from "@/lib/utils";
 
 const MyBookingsPage = () => {
   const { user } = useAuth();
@@ -75,6 +76,7 @@ const MyBookingsPage = () => {
             ticket_price,
             created_at,
             customer_id,
+            quantity,
             events_venues!events_venues_id (
               event_venue_date,
               price,
@@ -185,13 +187,6 @@ const MyBookingsPage = () => {
 
     // Fallback to pincode while location is being fetched
     return `Pincode: ${location.pincode}`;
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(amount / 100);
   };
 
   const formatDate = (dateString: string) => {
@@ -363,13 +358,13 @@ const MyBookingsPage = () => {
                     <div className="mb-2">
                       <span className="text-sm text-gray-500">Quantity:</span>
                       <p className="text-lg font-semibold text-gray-900">
-                        1 ticket
+                        {ticket.quantity} ticket{ticket.quantity > 1 ? "s" : ""}
                       </p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Total:</span>
                       <p className="text-xl font-bold text-green-600">
-                        {formatCurrency(ticket.ticket_price)}
+                        {formatCurrency(ticket.ticket_price * ticket.quantity)}
                       </p>
                     </div>
                   </div>

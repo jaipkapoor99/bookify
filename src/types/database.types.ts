@@ -70,15 +70,14 @@ export interface Ticket {
 }
 
 // Query result types for complex joins
-export interface BookingQueryResult {
+export type BookingQueryResult = {
   ticket_id: number;
   ticket_price: number;
   created_at: string;
   customer_id: number;
-  events_venues_id?: number;
-  // Note: NO quantity field exists in current schema
-  events_venues?: {
-    event_venue_date?: string;
+  quantity: number;
+  events_venues: {
+    event_venue_date: string;
     price: number;
     no_of_tickets?: number;
     venues?: {
@@ -98,7 +97,7 @@ export interface BookingQueryResult {
       image_path?: string;
     };
   };
-}
+};
 
 // User lookup result (what we get from the users table)
 export interface UserLookupResult {

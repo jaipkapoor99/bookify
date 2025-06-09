@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Minus, Plus, Calendar, MapPin, Ticket } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 // Corrected Type: This now matches the structure from the error message.
 interface EventVenue {
@@ -265,7 +266,7 @@ const EventDetailPage = () => {
                           </div>
                           <div className="text-right space-y-2">
                             <p className="text-2xl font-bold">
-                              ₹{eventVenue.price}
+                              {formatCurrency(eventVenue.price)}
                             </p>
                             <p className="text-sm text-muted-foreground">
                               per ticket
@@ -364,11 +365,11 @@ const EventDetailPage = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Price per ticket:</span>
-                <span>₹{selectedVenue?.price || 0}</span>
+                <span>{formatCurrency(selectedVenue?.price || 0)}</span>
               </div>
               <div className="flex justify-between font-bold text-lg">
                 <span>Total:</span>
-                <span>₹{getTotalPrice()}</span>
+                <span>{formatCurrency(getTotalPrice())}</span>
               </div>
             </div>
           </div>

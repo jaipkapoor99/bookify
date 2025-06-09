@@ -76,8 +76,9 @@ describe("BookingConfirmationPage", () => {
       expect(screen.getByText("Grand Convention Hall")).toBeInTheDocument();
       expect(screen.getByText("Total Amount:")).toBeInTheDocument();
 
-      // The price appears twice (ticket price and total), so we use getAllByText
-      const priceElements = screen.getAllByText("₹1500");
+      // Check for the correctly formatted price.
+      // It appears once as "Ticket Price" and once as "Total Amount".
+      const priceElements = screen.getAllByText("₹15.00");
       expect(priceElements).toHaveLength(2);
     });
   });
