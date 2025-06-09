@@ -95,10 +95,7 @@ classDiagram
 
     class locations {
         +int location_id (PK)
-        +text city
-        +text state
         +text pincode
-        +text area
     }
 
     class users {

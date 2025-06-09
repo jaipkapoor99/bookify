@@ -22,8 +22,7 @@ type RawConfirmationData = {
   venues: {
     venue_name: string;
     locations: {
-      city: string;
-      state: string;
+      pincode: string;
     } | null;
   }; // It's an object now
 };
@@ -35,6 +34,7 @@ type ConfirmationDetails = {
   eventDate: string;
   price: number;
   location: string;
+  pincode?: string;
 };
 
 const BookingConfirmationPage = () => {
@@ -43,6 +43,7 @@ const BookingConfirmationPage = () => {
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState<string>("Loading location...");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,7 +58,7 @@ const BookingConfirmationPage = () => {
           price,
           event_venue_date,
           events!inner ( name ),
-          venues!inner ( venue_name, locations!inner ( city, state ) )
+          venues!inner ( venue_name, locations!inner ( pincode ) )
         `
         )
         .eq("event_venue_id", eventVenueId)
@@ -65,6 +66,7 @@ const BookingConfirmationPage = () => {
 
       if (fetchError) {
         setError(`Error fetching details: ${fetchError.message}`);
+        setLocation("Location not available");
       } else if (data) {
         const rawData = data as unknown as RawConfirmationData;
         const eventData = rawData.events;
@@ -77,12 +79,12 @@ const BookingConfirmationPage = () => {
             eventDate: rawData.event_venue_date,
             eventName: eventData.name,
             venueName: venueData.venue_name,
-            location: locationData
-              ? `${locationData.city}, ${locationData.state}`
-              : "Location not available",
+            location: "Loading location...", // Default value
+            pincode: locationData?.pincode,
           });
         } else {
           setError("Could not retrieve complete event and venue details.");
+          setLocation("Location not available");
         }
       }
       setLoading(false);
@@ -90,6 +92,31 @@ const BookingConfirmationPage = () => {
 
     fetchConfirmationDetails();
   }, [eventVenueId]);
+
+  useEffect(() => {
+    const fetchLocationFromPincode = async () => {
+      if (!details?.pincode) return;
+
+      const { data, error } = await supabase.functions.invoke(
+        "get-location-from-pincode",
+        {
+          body: { pincode: details.pincode },
+        }
+      );
+
+      if (error) {
+        setLocation("Location not available");
+      } else {
+        setLocation(
+          `${data.area}, ${data.city}, ${data.state} - ${details.pincode}`
+        );
+      }
+    };
+
+    if (details) {
+      fetchLocationFromPincode();
+    }
+  }, [details]);
 
   const handleConfirmBooking = async () => {
     if (!eventVenueId) return;
@@ -152,7 +179,7 @@ const BookingConfirmationPage = () => {
           </div>
           <div className="flex justify-between items-center">
             <span className="font-semibold text-lg">Location:</span>
-            <span className="text-lg">{details.location}</span>
+            <span className="text-lg">{location}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="font-semibold text-lg">Date:</span>

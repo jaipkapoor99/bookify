@@ -14,8 +14,7 @@ interface EventVenue {
   venues: {
     venue_name: string;
     locations: {
-      city: string;
-      state: string;
+      pincode: string;
     } | null;
   }; // venues is now an object
 }
@@ -33,6 +32,7 @@ interface EventDetail {
 const EventDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [eventDetails, setEventDetails] = useState<EventDetail | null>(null);
+  const [locations, setLocations] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
@@ -59,7 +59,7 @@ const EventDetailPage = () => {
             price,
             venues!inner (
               venue_name,
-              locations!inner ( city, state )
+              locations!inner ( pincode )
             )
           )
         `
@@ -77,6 +77,45 @@ const EventDetailPage = () => {
 
     fetchEventDetails();
   }, [eventId]);
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      if (!eventDetails) return;
+
+      const pincodes = [
+        ...new Set(
+          eventDetails.events_venues
+            .map((ev) => ev.venues.locations?.pincode)
+            .filter((p): p is string => !!p)
+        ),
+      ];
+
+      const locationPromises = pincodes.map(async (pincode) => {
+        const { data, error } = await supabase.functions.invoke(
+          "get-location-from-pincode",
+          { body: { pincode } }
+        );
+        return { pincode, data, error };
+      });
+
+      const results = await Promise.all(locationPromises);
+
+      const newLocations: Record<string, string> = {};
+      results.forEach(({ pincode, data, error }) => {
+        if (error) {
+          newLocations[pincode] = "Location not available";
+        } else {
+          newLocations[
+            pincode
+          ] = `${data.area}, ${data.city}, ${data.state} - ${pincode}`;
+        }
+      });
+
+      setLocations(newLocations);
+    };
+
+    fetchLocations();
+  }, [eventDetails]);
 
   const handleBookTickets = (eventVenue: EventVenue) => {
     if (!user) {
@@ -120,7 +159,8 @@ const EventDetailPage = () => {
             <ul className="space-y-4">
               {eventDetails.events_venues.map((eventVenue) => {
                 const venueData = eventVenue.venues;
-                const locationData = venueData?.locations;
+                const pincode = venueData.locations?.pincode;
+                const locationStr = pincode ? locations[pincode] : null;
 
                 return (
                   <li
@@ -131,12 +171,10 @@ const EventDetailPage = () => {
                       <>
                         <div>
                           <p className="font-bold">{venueData.venue_name}</p>
-                          {locationData ? (
-                            <p>
-                              {locationData.city}, {locationData.state}
-                            </p>
+                          {locationStr ? (
+                            <p>{locationStr}</p>
                           ) : (
-                            <p>Location not specified.</p>
+                            <p>Loading location...</p>
                           )}
                           <p>
                             Date:{" "}

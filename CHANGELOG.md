@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Database Schema**: Added a `price` column to the `events_venues` table to store the cost of a ticket for a specific event at a specific venue.
+- **Location Data Architecture**: Refactored the application to fetch location data (city, state, area) from a new Supabase Edge Function (`get-location-from-pincode`) instead of storing it in the database. The `locations` table now only stores the `pincode`.
 
 ## [1.2.0] - 2025-06-12
 
