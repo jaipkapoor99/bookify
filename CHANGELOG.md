@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Booking Confirmation Page**: Created a new page (`/book/confirm/:eventVenueId`) where users can review booking details (event, venue, date, price) before finalizing their purchase.
 - **My Bookings Page**: Implemented the "My Bookings" page (`/my-bookings`) to display a list of all tickets a user has purchased.
+- **Test Coverage**: Added comprehensive test suites for the `BookingConfirmationPage` and `MyBookingsPage`, ensuring the booking and ticket viewing flows are robust and reliable.
 
 ### Fixed
 

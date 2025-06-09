@@ -1,137 +1,121 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter } from "react-router-dom";
-import type { User } from "@supabase/supabase-js";
 import MyBookingsPage from "@/pages/MyBookingsPage";
-import { AuthContext } from "@/contexts/AuthContext.context";
 import { supabase } from "@/SupabaseClient";
+import { useAuth } from "@/hooks/useAuth";
 
-const mockUser = { id: "a-mock-user-id" } as User;
+// Mock the entire Supabase client
+vi.mock("@/SupabaseClient", () => ({
+  supabase: {
+    rpc: vi.fn(),
+  },
+}));
 
-const mockTickets = [
-  {
-    ticket_id: 1,
-    ticket_price: 500,
-    events_venues: [
-      {
-        event_venue_date: "2025-10-05",
-        venues: [
-          {
-            venue_name: "NSCI Dome",
-          },
-        ],
-        events: [
-          {
-            name: "Arijit Singh - Live in Concert",
-            image_url: "https://example.com/arijit.jpg",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    ticket_id: 2,
-    ticket_price: 1200,
-    events_venues: [
-      {
-        event_venue_date: "2026-04-12",
-        venues: [
-          {
-            venue_name: "Wankhede Stadium",
-          },
-        ],
-        events: [
-          {
-            name: "IPL: Mumbai Indians vs CSK",
-            image_url: "https://example.com/ipl.jpg",
-          },
-        ],
-      },
-    ],
-  },
-];
+// Mock the useAuth hook
+vi.mock("@/hooks/useAuth");
 
 describe("MyBookingsPage", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
+    (useAuth as Mock).mockReturnValue({ user: { id: "user-123" } });
   });
 
-  const renderComponent = (user: User | null = mockUser) => {
-    return render(
-      <AuthContext.Provider value={{ user, session: null, loading: false }}>
-        <MemoryRouter>
-          <MyBookingsPage />
-        </MemoryRouter>
-      </AuthContext.Provider>
+  it("should display a loading message initially", () => {
+    (supabase.rpc as Mock).mockResolvedValue({ data: [], error: null });
+
+    render(
+      <MemoryRouter>
+        <MyBookingsPage />
+      </MemoryRouter>
     );
-  };
 
-  it("should render loading state and then display user's bookings", async () => {
-    const selectMock = vi
-      .fn()
-      .mockResolvedValue({ data: mockTickets, error: null });
-    vi.spyOn(supabase, "from").mockReturnValue({
-      select: selectMock,
-    } as unknown as ReturnType<typeof supabase.from>);
+    expect(screen.getByText(/loading your bookings/i)).toBeInTheDocument();
+  });
 
-    renderComponent();
+  it('should display "You have no bookings yet" when no tickets are fetched', async () => {
+    (supabase.rpc as Mock).mockResolvedValue({ data: [], error: null });
+
+    render(
+      <MemoryRouter>
+        <MyBookingsPage />
+      </MemoryRouter>
+    );
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: /My Bookings/i })
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Arijit Singh - Live in Concert")
-      ).toBeInTheDocument();
-      expect(screen.getByText("NSCI Dome")).toBeInTheDocument();
-      expect(
-        screen.getByText("IPL: Mumbai Indians vs CSK")
-      ).toBeInTheDocument();
-      expect(screen.getByText("Wankhede Stadium")).toBeInTheDocument();
+      expect(screen.getByText("You have no bookings yet.")).toBeInTheDocument();
+    });
+  });
+
+  it("should display a list of bookings when tickets are fetched successfully", async () => {
+    const mockBookings = [
+      {
+        ticket_id: 1,
+        ticket_price: 2500,
+        events_venues: {
+          event_venue_date: "2025-11-20T00:00:00",
+          venues: { venue_name: "City Arena" },
+          events: {
+            name: "Rock Fest 2025",
+            image_url: "/rock-fest.png",
+          },
+        },
+      },
+      {
+        ticket_id: 2,
+        ticket_price: 300,
+        events_venues: {
+          event_venue_date: "2025-12-05T00:00:00",
+          venues: { venue_name: "Community Theater" },
+          events: {
+            name: "Winter Gala",
+            image_url: "/winter-gala.png",
+          },
+        },
+      },
+    ];
+
+    (supabase.rpc as Mock).mockResolvedValue({
+      data: mockBookings,
+      error: null,
     });
 
-    expect(supabase.from).toHaveBeenCalledWith("tickets");
-    expect(selectMock).toHaveBeenCalledWith(
-      expect.stringContaining("ticket_id")
+    render(
+      <MemoryRouter>
+        <MyBookingsPage />
+      </MemoryRouter>
     );
-    expect(selectMock).toHaveBeenCalledWith(
-      expect.stringContaining("events_venues")
-    );
-    expect(selectMock).toHaveBeenCalledWith(
-      expect.stringContaining("venue_name")
-    );
-    expect(selectMock).toHaveBeenCalledWith(expect.stringContaining("events"));
-  });
-
-  it("should display a message when the user has no bookings", async () => {
-    const selectMock = vi.fn().mockResolvedValue({ data: [], error: null });
-    vi.spyOn(supabase, "from").mockReturnValue({
-      select: selectMock,
-    } as unknown as ReturnType<typeof supabase.from>);
-
-    renderComponent();
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/You have no bookings yet./i)
-      ).toBeInTheDocument();
+      expect(screen.getByText("Rock Fest 2025")).toBeInTheDocument();
+      expect(screen.getByText("City Arena")).toBeInTheDocument();
+      expect(screen.getByText("11/20/2025")).toBeInTheDocument();
+      expect(screen.getByText("Price: ₹2500")).toBeInTheDocument();
+
+      expect(screen.getByText("Winter Gala")).toBeInTheDocument();
+      expect(screen.getByText("Community Theater")).toBeInTheDocument();
+      expect(screen.getByText("12/5/2025")).toBeInTheDocument();
+      expect(screen.getByText("Price: ₹300")).toBeInTheDocument();
     });
   });
 
   it("should display an error message if fetching bookings fails", async () => {
     const errorMessage = "Failed to fetch bookings";
-    const selectMock = vi.fn().mockResolvedValue({
+    (supabase.rpc as Mock).mockResolvedValue({
       data: null,
       error: { message: errorMessage },
     });
-    vi.spyOn(supabase, "from").mockReturnValue({
-      select: selectMock,
-    } as unknown as ReturnType<typeof supabase.from>);
 
-    renderComponent();
+    render(
+      <MemoryRouter>
+        <MyBookingsPage />
+      </MemoryRouter>
+    );
 
     await waitFor(() => {
-      expect(screen.getByText(`Error: ${errorMessage}`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`Error fetching bookings: ${errorMessage}`)
+      ).toBeInTheDocument();
     });
   });
 });
