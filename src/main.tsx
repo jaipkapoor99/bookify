@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
+import { createRoutesFromElements, Route } from "react-router-dom";
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import RootLayout from "@/components/layout/RootLayout";
@@ -13,43 +14,23 @@ import MyBookingsPage from "@/pages/MyBookingsPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <RootLayout />,
-    children: [
-      {
-        index: true,
-        element: <HomePage />,
-      },
-      {
-        path: "login",
-        element: <LoginPage />,
-      },
-      {
-        path: "signup",
-        element: <SignupPage />,
-      },
-      {
-        path: "events/:eventId",
-        element: <EventDetailPage />,
-      },
-      {
-        element: <ProtectedRoute />,
-        children: [
-          {
-            path: "my-bookings",
-            element: <MyBookingsPage />,
-          },
-          {
-            path: "book/confirm/:eventVenueId",
-            element: <BookingConfirmationPage />,
-          },
-        ],
-      },
-    ],
-  },
-]);
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <>
+      <Route path="/" element={<RootLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="/events/:eventId" element={<EventDetailPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/my-bookings" element={<MyBookingsPage />} />
+        <Route
+          path="/book/confirm/:eventVenueId"
+          element={<BookingConfirmationPage />}
+        />
+      </Route>
+    </>
+  )
+);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
