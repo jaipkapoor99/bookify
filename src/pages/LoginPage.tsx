@@ -31,6 +31,19 @@ const LoginPage = () => {
     setLoading(false);
   };
 
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError(null);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+    });
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+    }
+    // No need to navigate, Supabase handles the redirect
+  };
+
   return (
     <div className="flex justify-center items-center h-screen">
       <Card className="w-full max-w-sm">
@@ -64,6 +77,15 @@ const LoginPage = () => {
               {error && <p className="text-red-500 text-sm">{error}</p>}
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Logging in..." : "Login"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+              >
+                Sign in with Google
               </Button>
             </div>
           </form>
