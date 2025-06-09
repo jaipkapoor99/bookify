@@ -4,6 +4,7 @@ import React, {
   useState,
   useCallback,
   ReactNode,
+  useRef,
 } from "react";
 import { Event } from "@/pages/HomePage";
 import { supabase } from "@/SupabaseClient";
@@ -76,6 +77,9 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     cache: {},
   });
 
+  // Use ref for cache to avoid circular dependencies in useCallbacks
+  const cacheRef = useRef<Record<string, CacheItem<unknown>>>({});
+
   const setLoading = useCallback((key: string, isLoading: boolean) => {
     setState((prev) => {
       const newLoading = { ...prev.loading };
@@ -100,15 +104,19 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   const setCache = useCallback(
     <T,>(key: string, data: T, ttl: number = DEFAULT_TTL) => {
+      const cacheItem = {
+        data,
+        timestamp: Date.now(),
+        ttl,
+      };
+      cacheRef.current[key] = cacheItem;
+
+      // Also update state for any components that might need to read cache
       setState((prev) => ({
         ...prev,
         cache: {
           ...prev.cache,
-          [key]: {
-            data,
-            timestamp: Date.now(),
-            ttl,
-          },
+          [key]: cacheItem,
         },
       }));
     },
@@ -120,8 +128,8 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const cacheKey = "events";
 
       if (!force) {
-        // Check cache inline to avoid circular dependency
-        const cached = state.cache[cacheKey];
+        // Check cache using ref to avoid circular dependency
+        const cached = cacheRef.current[cacheKey];
         if (cached) {
           const now = Date.now();
           if (now - cached.timestamp <= cached.ttl) {
@@ -190,7 +198,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [setCache, setLoading]
+    [setCache, setLoading, state.cache]
   );
 
   const fetchEventVenue = useCallback(
@@ -198,8 +206,8 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const cacheKey = `event-venues-${eventId}`;
 
       if (!force) {
-        // Check cache inline to avoid circular dependency
-        const cached = state.cache[cacheKey];
+        // Check cache using ref to avoid circular dependency
+        const cached = cacheRef.current[cacheKey];
         if (cached) {
           const now = Date.now();
           if (now - cached.timestamp <= cached.ttl) {
@@ -252,7 +260,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [setCache, setLoading]
+    [setCache, setLoading, state.cache]
   );
 
   const fetchVenues = useCallback(
@@ -260,8 +268,8 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const cacheKey = "venues";
 
       if (!force) {
-        // Check cache inline to avoid circular dependency
-        const cached = state.cache[cacheKey];
+        // Check cache using ref to avoid circular dependency
+        const cached = cacheRef.current[cacheKey];
         if (cached) {
           const now = Date.now();
           if (now - cached.timestamp <= cached.ttl) {
@@ -302,10 +310,11 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [setCache, setLoading]
+    [setCache, setLoading, state.cache]
   );
 
   const clearCache = useCallback(() => {
+    cacheRef.current = {};
     setState((prev) => ({
       ...prev,
       cache: {},
