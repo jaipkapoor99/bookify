@@ -77,7 +77,13 @@ describe("EventDetailPage", () => {
 
   const renderComponent = (user: User | null = null) => {
     return render(
-      <AuthContext.Provider value={{ user, session: null, loading: false }}>
+      <AuthContext.Provider value={{ 
+        user, 
+        session: null, 
+        loading: false,
+        login: async () => ({ error: null }),
+        logout: async () => ({ error: null })
+      }}>
         <MemoryRouter initialEntries={["/events/1"]}>
           <Routes>
             <Route path="/events/:eventId" element={<EventDetailPage />} />

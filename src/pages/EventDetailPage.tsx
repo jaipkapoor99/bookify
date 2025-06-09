@@ -309,7 +309,7 @@ const EventDetailPage = () => {
                   variant="outline"
                   size="icon"
                   onClick={() => handleQuantityChange(1)}
-                  disabled={ticketQuantity >= 10 || (selectedVenue && ticketQuantity >= selectedVenue.no_of_tickets)}
+                  disabled={ticketQuantity >= 10 || (selectedVenue ? ticketQuantity >= selectedVenue.no_of_tickets : false)}
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
