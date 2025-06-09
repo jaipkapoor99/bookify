@@ -113,7 +113,7 @@ const LoginPage = () => {
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center gap-3 mb-6">
             <img
-              src="/Bookify Icon.png"
+              src="/Bookify_SVG.svg"
               alt="Bookify"
               className="h-12 w-12 object-contain"
             />

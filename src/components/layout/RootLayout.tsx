@@ -30,7 +30,7 @@ const RootLayout = () => {
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3">
             <img
-              src="/Bookify Icon.png"
+              src="/Bookify_SVG.svg"
               alt="Bookify"
               className="h-8 w-8 object-contain"
             />
@@ -82,7 +82,7 @@ const RootLayout = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <img
-                src="/Bookify Icon.png"
+                src="/Bookify_SVG.svg"
                 alt="Bookify"
                 className="h-6 w-6 object-contain opacity-60"
               />
