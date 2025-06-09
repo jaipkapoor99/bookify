@@ -35,7 +35,7 @@ const RootLayout = () => {
                   >
                     Account
                   </Link>
-                  <span>{user.email}</span>
+                  <span>{user.user_metadata.full_name || user.email}</span>
                   <Button onClick={handleLogout}>Logout</Button>
                 </>
               ) : (
