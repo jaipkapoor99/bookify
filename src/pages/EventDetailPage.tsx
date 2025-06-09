@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { Minus, Plus, Calendar, MapPin, Ticket } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import StorageImage from "@/components/ui/StorageImage";
 
 // Corrected Type: This now matches the structure from the error message.
 interface EventVenue {
@@ -36,6 +37,7 @@ interface EventDetail {
   name: string;
   description: string;
   image_url: string;
+  image_path: string | null;
   start_time: string;
   end_time: string;
   events_venues: EventVenue[];
@@ -65,6 +67,7 @@ const EventDetailPage = () => {
           name,
           description,
           image_url,
+          image_path,
           start_time,
           end_time,
           events_venues!inner (
@@ -181,16 +184,10 @@ const EventDetailPage = () => {
     <div className="container mx-auto p-4">
       <Card>
         <CardHeader>
-          <img
-            src={eventDetails.image_url || "/placeholder.svg"}
+          <StorageImage
+            imagePath={eventDetails.image_path}
             alt={eventDetails.name}
             className="w-full h-64 object-cover rounded-t-lg"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              if (target.src !== "/placeholder.svg") {
-                target.src = "/placeholder.svg";
-              }
-            }}
           />
           <CardTitle className="mt-4 text-4xl font-bold">
             {eventDetails.name}

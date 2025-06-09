@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppState } from "@/contexts/AppStateContext";
-import { getImageUrl } from "@/lib/storage";
 import {
   Card,
   CardContent,
@@ -35,6 +34,7 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { supabase } from "@/SupabaseClient";
+import StorageImage from "@/components/ui/StorageImage";
 
 export type Event = {
   event_id: number;
@@ -65,7 +65,6 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [filterCity, setFilterCity] = useState<string>("all");
-  const [eventImages, setEventImages] = useState<Record<number, string>>({});
   const [locations, setLocations] = useState<Record<string, LocationInfo>>({});
   const [cities, setCities] = useState<string[]>([]);
 
@@ -152,34 +151,6 @@ const HomePage = () => {
 
     setFilteredEvents(filtered);
   }, [state.events, searchQuery, sortBy, filterCity, locations]);
-
-  useEffect(() => {
-    const loadImageUrls = async () => {
-      const imageMap: Record<number, string> = {};
-      for (const event of state.events) {
-        try {
-          if (event.image_path) {
-            const url = await getImageUrl(event.image_path);
-            imageMap[event.event_id] =
-              url || event.image_url || "/placeholder.svg";
-          } else {
-            imageMap[event.event_id] = event.image_url || "/placeholder.svg";
-          }
-        } catch (error) {
-          console.warn(
-            `Failed to load image for event ${event.event_id}:`,
-            error
-          );
-          imageMap[event.event_id] = "/placeholder.svg";
-        }
-      }
-      setEventImages(imageMap);
-    };
-
-    if (state.events.length > 0) {
-      loadImageUrls();
-    }
-  }, [state.events]);
 
   const loading = isLoading("events");
 
@@ -286,20 +257,10 @@ const HomePage = () => {
                   <Link to={`/events/${event.event_id}`}>
                     <CardHeader className="p-0">
                       <div className="relative overflow-hidden">
-                        <img
-                          src={
-                            eventImages[event.event_id] ||
-                            event.image_url ||
-                            "/placeholder.svg"
-                          }
+                        <StorageImage
+                          imagePath={event.image_path}
                           alt={event.name}
                           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            if (target.src !== "/placeholder.svg") {
-                              target.src = "/placeholder.svg";
-                            }
-                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>

@@ -144,7 +144,13 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           .from("events")
           .select(
             `
-          *,
+          event_id,
+          name,
+          description,
+          start_time,
+          end_time,
+          image_url,
+          image_path,
           events_venues (
             venues (
               venue_name,
@@ -171,7 +177,10 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           });
         }
 
-        const events = data as Event[];
+        // The shape returned by Supabase with joins is complex.
+        // We cast it to 'unknown' first, then to our expected 'Event[]' type.
+        // This tells TypeScript we are confident the shape is correct.
+        const events = data as unknown as Event[];
 
         setState((prev) => ({
           ...prev,
