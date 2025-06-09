@@ -11,6 +11,7 @@ import SignupPage from "@/pages/SignupPage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import MyBookingsPage from "@/pages/MyBookingsPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
           {
             path: "my-bookings",
             element: <MyBookingsPage />,
+          },
+          {
+            path: "book/confirm/:eventVenueId",
+            element: <BookingConfirmationPage />,
           },
         ],
       },

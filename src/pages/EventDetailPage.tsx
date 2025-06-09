@@ -1,49 +1,65 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/SupabaseClient";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 
-type EventVenue = {
+// Corrected Type: This now matches the structure from the error message.
+interface EventVenue {
   event_venue_id: number;
   event_venue_date: string;
+  no_of_tickets: number;
+  price: number;
   venues: {
     venue_name: string;
-  };
-};
+    locations: {
+      city: string;
+      state: string;
+    } | null;
+  }; // venues is now an object
+}
 
-type EventDetail = {
+interface EventDetail {
   event_id: number;
   name: string;
   description: string;
+  image_url: string;
   start_time: string;
   end_time: string;
-  image_url: string;
   events_venues: EventVenue[];
-};
+}
 
 const EventDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
-  const [event, setEvent] = useState<EventDetail | null>(null);
+  const [eventDetails, setEventDetails] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchEvent = async () => {
+    const fetchEventDetails = async () => {
       if (!eventId) return;
 
-      setLoading(true);
-      const { data, error: fetchError } = await supabase
+      const { data, error: queryError } = await supabase
         .from("events")
         .select(
           `
-          *,
-          events_venues (
+          event_id,
+          name,
+          description,
+          image_url,
+          start_time,
+          end_time,
+          events_venues!inner (
+            event_venue_id, 
             event_venue_date,
-            event_venue_id,
-            venues (
-              venue_name
+            no_of_tickets,
+            price,
+            venues!inner (
+              venue_name,
+              locations!inner ( city, state )
             )
           )
         `
@@ -51,93 +67,106 @@ const EventDetailPage = () => {
         .eq("event_id", eventId)
         .single();
 
-      if (fetchError) {
-        setError(`Error: ${fetchError.message}`);
-      } else {
-        setEvent(data as EventDetail);
+      if (queryError) {
+        setError(queryError.message);
+      } else if (data) {
+        setEventDetails(data as unknown as EventDetail);
       }
       setLoading(false);
     };
 
-    if (eventId) {
-      fetchEvent();
-    }
+    fetchEventDetails();
   }, [eventId]);
 
-  const handleBookTickets = async (eventVenue: EventVenue) => {
+  const handleBookTickets = (eventVenue: EventVenue) => {
     if (!user) {
       navigate("/login");
       return;
     }
-
-    try {
-      const { error: rpcError } = await supabase.rpc("book_ticket", {
-        p_event_venue_id: eventVenue.event_venue_id,
-      });
-
-      if (rpcError) {
-        throw rpcError;
-      }
-
-      alert("Ticket booked successfully!");
-    } catch (bookingError) {
-      const error = bookingError as Error;
-      alert(`Error booking ticket: ${error.message}`);
-    }
+    navigate(`/book/confirm/${eventVenue.event_venue_id}`);
   };
 
-  if (loading) {
-    return <div>Loading event details...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
-  if (!event) {
-    return <div>Event not found.</div>;
-  }
+  if (loading)
+    return <div className="container mx-auto p-4 text-center">Loading...</div>;
+  if (error)
+    return (
+      <div className="container mx-auto p-4 text-red-500">Error: {error}</div>
+    );
+  if (!eventDetails)
+    return <div className="container mx-auto p-4">Event not found.</div>;
 
   return (
     <div className="container mx-auto p-4">
-      <img
-        src={event.image_url}
-        alt={event.name}
-        className="w-full h-96 object-cover rounded-lg mb-4"
-      />
-      <h1 className="text-4xl font-bold mb-2">{event.name}</h1>
-      <p className="text-xl text-gray-600 mb-4">
-        {new Date(event.start_time).toLocaleString()} -{" "}
-        {new Date(event.end_time).toLocaleString()}
-      </p>
-      <p className="text-lg text-gray-800 mb-6">{event.description}</p>
+      <Card>
+        <CardHeader>
+          <img
+            src={eventDetails.image_url}
+            alt={eventDetails.name}
+            className="w-full h-64 object-cover rounded-t-lg"
+          />
+          <CardTitle className="mt-4 text-4xl font-bold">
+            {eventDetails.name}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 mb-4">
+            {new Date(eventDetails.start_time).toLocaleDateString()} -{" "}
+            {new Date(eventDetails.end_time).toLocaleDateString()}
+          </p>
+          <p className="text-lg mb-6">{eventDetails.description}</p>
 
-      <div className="bg-gray-100 p-6 rounded-lg">
-        <h2 className="text-3xl font-bold mb-4">Dates and Venues</h2>
-        <ul className="space-y-4">
-          {event.events_venues.map((eventVenue: EventVenue) => (
-            <li
-              key={eventVenue.venues.venue_name + eventVenue.event_venue_date}
-              className="p-4 bg-white rounded-md shadow-sm flex justify-between items-center"
-            >
-              <div>
-                <p className="font-semibold text-xl text-gray-800">
-                  {eventVenue.venues.venue_name}
-                </p>
-                <p className="text-gray-600">
-                  {new Date(eventVenue.event_venue_date).toLocaleDateString()}
-                </p>
-              </div>
-              <button
-                onClick={() => handleBookTickets(eventVenue)}
-                className="bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-              >
-                Book Tickets
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+          <h3 className="text-2xl font-bold mb-4">Dates and Venues</h3>
+          {eventDetails.events_venues.length > 0 ? (
+            <ul className="space-y-4">
+              {eventDetails.events_venues.map((eventVenue) => {
+                const venueData = eventVenue.venues;
+                const locationData = venueData?.locations;
+
+                return (
+                  <li
+                    key={eventVenue.event_venue_id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    {venueData ? (
+                      <>
+                        <div>
+                          <p className="font-bold">{venueData.venue_name}</p>
+                          {locationData ? (
+                            <p>
+                              {locationData.city}, {locationData.state}
+                            </p>
+                          ) : (
+                            <p>Location not specified.</p>
+                          )}
+                          <p>
+                            Date:{" "}
+                            {new Date(
+                              eventVenue.event_venue_date
+                            ).toLocaleDateString()}
+                          </p>
+                          <p>Tickets Left: {eventVenue.no_of_tickets}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-semibold mb-2">
+                            ₹{eventVenue.price}
+                          </p>
+                          <Button onClick={() => handleBookTickets(eventVenue)}>
+                            Book Tickets
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <p>Venue details not available.</p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p>No tickets available for this event yet.</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
