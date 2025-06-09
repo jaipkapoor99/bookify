@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { Image } from "@/components/ui/image";
 import { Loader2 } from "lucide-react";
 
 const ProtectedRoute = () => {
@@ -10,7 +11,7 @@ const ProtectedRoute = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <img
+            <Image
               src="/Bookify Icon.png"
               alt="Bookify"
               className="h-12 w-12 object-contain opacity-75"

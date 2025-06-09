@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Image } from "@/components/ui/image";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -112,7 +113,7 @@ const LoginPage = () => {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <img
+            <Image
               src="/Bookify Icon.png"
               alt="Bookify"
               className="h-12 w-12 object-contain"
