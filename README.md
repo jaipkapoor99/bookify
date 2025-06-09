@@ -7,6 +7,8 @@ A modern, scalable event booking platform built with React, TypeScript, and Supa
 - **User Authentication**: Secure sign-up and login functionality powered by Supabase Auth.
 - **Event Discovery**: Users can browse a list of events on the home page.
 - **Detailed Event Views**: A dedicated page for each event, showcasing multiple dates and venues.
+- **Booking Confirmation**: A dedicated page to review and confirm booking details before purchase.
+- **My Bookings Page**: A user-specific page to view all past and upcoming bookings.
 - **Test-Driven Development**: A strict TDD workflow ensures code quality and reliability.
 - **Database Migrations**: Schema is managed via Supabase migrations located in the `supabase/migrations` directory.
 
@@ -120,6 +122,7 @@ classDiagram
         +bigint venue_id (FK)
         +int no_of_tickets
         +date event_venue_date
+        +bigint price
     }
 
     class auth_users {

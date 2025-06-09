@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-06-14
+
+### Added
+
+- **Booking Confirmation Page**: Created a new page (`/book/confirm/:eventVenueId`) where users can review booking details (event, venue, date, price) before finalizing their purchase.
+- **My Bookings Page**: Implemented the "My Bookings" page (`/my-bookings`) to display a list of all tickets a user has purchased.
+
+### Fixed
+
+- **Comprehensive Data Fetching Overhaul**:
+  - Resolved a persistent and complex bug where bookings were not appearing on the "My Bookings" page. The final solution involved refactoring the data access logic to use a `SECURITY DEFINER` RPC function (`get_my_bookings`), which provides a more robust and secure way to fetch user-specific data.
+  - Corrected numerous Row Level Security (RLS) configuration issues across `events`, `venues`, `locations`, `events_venues`, and `tickets` tables, including enabling RLS and creating the correct public-read and user-specific policies.
+  - Standardized all frontend queries (`EventDetailPage`, `BookingConfirmationPage`, `MyBookingsPage`) to use `!inner` joins, simplifying the code, flattening the data structure, and ensuring relationships are handled correctly.
+- **UI Components**: Added the `Alert` component from `shadcn/ui` and populated its file, resolving module import errors.
+
+### Changed
+
+- **Database Schema**: Added a `price` column to the `events_venues` table to store the cost of a ticket for a specific event at a specific venue.
+
 ## [1.2.0] - 2025-06-12
 
 ### Fixed
