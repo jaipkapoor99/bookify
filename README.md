@@ -1,6 +1,119 @@
-# Booking Platform
+# Event Booking Platform
 
-A modern, scalable event booking platform built with React, TypeScript, and Supabase. This application provides a seamless experience for users to discover, view details, and book tickets for various events, while ensuring data integrity and a robust, test-driven development process.
+A modern event booking platform built with React, TypeScript, and Supabase.
+
+## Features
+
+- ✅ User authentication (signup/login)
+- ✅ Browse events with filtering and search
+- ✅ Book multiple tickets in one transaction
+- ✅ View booking history
+- ✅ Real-time ticket availability
+- ✅ Location-based event filtering
+- ✅ State management with caching
+- ✅ Image storage support
+- ✅ Form validation with Zod
+- ✅ Modern UI with shadcn/ui components
+- **User Authentication**: Sign up, log in, and manage sessions via Supabase.
+- **Event Browsing**: View upcoming events with search, filtering by city, and sorting options.
+- **Event Details**: Detailed view of events with venue information and multiple date options.
+- **Ticket Booking**: Book multiple tickets (1-10) in a single transaction with real-time availability checking.
+- **Booking History**: View all past and upcoming bookings with ticket quantities.
+- **Profile Management**: Update user profile information.
+- **Admin Event Management**: Create, edit, and delete events with image upload functionality.
+- **State Management**: Efficient caching system to minimize API calls (5-minute TTL).
+- **Modern UI**: Beautiful, responsive interface built with shadcn/ui components.
+- **Form Validation**: Robust form validation using Zod and React Hook Form.
+- **Image Storage**: Support for event image uploads using Supabase Storage.
+
+## Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- Supabase account
+
+## Setup
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. Add your Supabase credentials to `.env`:
+   ```
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+5. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Database Schema
+
+The platform uses the following main tables:
+
+- `users` - User profiles with authentication
+- `events` - Event information
+- `venues` - Venue details
+- `events_venues` - Junction table for events at specific venues
+- `tickets` - Booking records with quantity support
+- `locations` - Location/address information
+
+Recent updates include:
+- Added `quantity` column to tickets table for multiple ticket purchases
+- Added `image_path` column to events table for file storage
+- Created storage bucket for event images
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run test` - Run tests
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
+
+## Technologies Used
+
+- **Frontend**: React 18, TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui
+- **State Management**: React Context API with caching
+- **Form Handling**: React Hook Form + Zod
+- **Backend**: Supabase (Auth, Database, Storage)
+- **Build Tool**: Vite
+- **Testing**: Vitest, React Testing Library
+
+## Project Structure
+
+```
+src/
+├── components/     # Reusable UI components
+│   ├── ui/        # shadcn/ui components
+│   ├── auth/      # Authentication components
+│   └── layout/    # Layout components
+├── contexts/      # React contexts (Auth, AppState)
+├── hooks/         # Custom React hooks
+├── lib/           # Utility functions
+├── pages/         # Page components
+└── SupabaseClient.ts # Supabase configuration
+```
+
+## Recent Updates
+
+- ✅ Multiple ticket booking support
+- ✅ State management with caching to reduce API calls
+- ✅ Image file storage integration
+- ✅ Enhanced UI with more shadcn components
+- ✅ Zod form validation
+- ✅ Toast notifications
+- ✅ Improved error handling
 
 ## Key Features
 
@@ -167,3 +280,39 @@ This project follows a strict **Test-Driven Development (TDD)** approach. Every 
 - **Path Aliases**: Use the `@/` alias for imports from the `src` directory (e.g., `import MyComponent from '@/components/MyComponent'`).
 - **Linting**: The project uses ESLint for code quality. Please ensure your code follows the linting rules (`npm run lint`) before submitting a contribution.
 - **Component Library**: We use `shadcn/ui` for UI components. Please familiarize yourself with its usage.
+
+## Testing
+
+Run the test suite:
+```bash
+npm test
+```
+
+## TypeScript Configuration
+
+The project uses TypeScript with strict type checking and enhanced module resolution:
+
+- **Module Resolution**: Configured with `moduleResolution: "bundler"` for optimal compatibility with Vite
+- **Type Roots**: TypeScript looks for type declarations in `node_modules/@types` and `src/types`
+- **Path Aliases**: `@/*` is configured to resolve to `src/*` for cleaner imports
+- **Built-in Types**: Radix UI and Lucide React packages include their own TypeScript definitions, so no separate @types packages are needed
+- **Strict Mode**: Full strict type checking is enabled for better type safety
+
+## Troubleshooting
+
+## Admin Features
+
+### Event Management
+
+Admins can access the event management page at `/admin/events` to:
+
+- **Create Events**: Add new events with details including name, description, start/end times, and images
+- **Edit Events**: Update existing event information and replace images
+- **Delete Events**: Remove events and their associated images from storage
+- **Image Upload**: Support for JPEG, PNG, and WebP formats (max 5MB)
+
+The admin interface includes:
+- Real-time form validation
+- Image preview before upload
+- Automatic image optimization and storage in Supabase Storage
+- Toast notifications for user feedback

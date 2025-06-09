@@ -5,6 +5,7 @@ import "./index.css";
 import { createRoutesFromElements, Route } from "react-router-dom";
 
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AppStateProvider } from "@/contexts/AppStateContext";
 import RootLayout from "@/components/layout/RootLayout";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
@@ -14,6 +15,8 @@ import MyBookingsPage from "@/pages/MyBookingsPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
 import AccountPage from "@/pages/AccountPage";
+import AdminEventPage from "@/pages/AdminEventPage";
+import { Toaster } from "@/components/ui/sonner";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -30,6 +33,7 @@ const router = createBrowserRouter(
             element={<BookingConfirmationPage />}
           />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/admin/events" element={<AdminEventPage />} />
         </Route>
       </Route>
     </>
@@ -39,7 +43,10 @@ const router = createBrowserRouter(
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <AppStateProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </AppStateProvider>
     </AuthProvider>
   </StrictMode>
 );

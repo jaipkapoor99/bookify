@@ -3,8 +3,18 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
 import { supabase } from "@/SupabaseClient";
+import { AppStateProvider } from "@/contexts/AppStateContext";
+import React from "react";
 
 // The Supabase client is mocked globally in `src/setupTests.ts`
+
+const renderWithProviders = (ui: React.ReactElement) => {
+  return render(
+    <MemoryRouter>
+      <AppStateProvider>{ui}</AppStateProvider>
+    </MemoryRouter>
+  );
+};
 
 describe("HomePage", () => {
   beforeEach(() => {
@@ -29,20 +39,12 @@ describe("HomePage", () => {
       },
     ];
 
-    // Mock the entire chain: from().select().abortSignal()
-    const abortSignalMock = vi
-      .fn()
-      .mockResolvedValue({ data: mockEvents, error: null });
-    const selectMock = vi
-      .fn()
-      .mockReturnValue({ abortSignal: abortSignalMock });
-    (supabase.from as Mock).mockReturnValue({ select: selectMock });
+    (supabase.from as Mock).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: mockEvents, error: null }),
+    });
 
-    render(
-      <MemoryRouter>
-        <HomePage />
-      </MemoryRouter>
-    );
+    renderWithProviders(<HomePage />);
 
     await waitFor(() => {
       expect(screen.getByText("Rock Concert")).toBeInTheDocument();
@@ -61,48 +63,33 @@ describe("HomePage", () => {
       },
     ];
 
-    // Mock the entire chain
-    const abortSignalMock = vi
-      .fn()
-      .mockResolvedValue({ data: mockEvents, error: null });
-    const selectMock = vi
-      .fn()
-      .mockReturnValue({ abortSignal: abortSignalMock });
-    (supabase.from as Mock).mockReturnValue({ select: selectMock });
+    (supabase.from as Mock).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: mockEvents, error: null }),
+    });
 
-    render(
-      <MemoryRouter>
-        <HomePage />
-      </MemoryRouter>
-    );
+    renderWithProviders(<HomePage />);
 
     await waitFor(() => {
-      const link = screen.getByRole("link");
-      expect(link).toHaveAttribute("href", "/events/1");
+      const links = screen.getAllByRole("link", { name: /view details/i });
+      expect(links[0]).toHaveAttribute("href", "/events/1");
     });
   });
 
   it("should display a message if fetching events fails", async () => {
-    // Mock the entire chain with error
-    const abortSignalMock = vi.fn().mockResolvedValue({
-      data: null,
-      error: { message: "Network error" },
+    (supabase.from as Mock).mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      order: vi
+        .fn()
+        .mockResolvedValue({ data: null, error: { message: "Network error" } }),
     });
-    const selectMock = vi
-      .fn()
-      .mockReturnValue({ abortSignal: abortSignalMock });
-    (supabase.from as Mock).mockReturnValue({ select: selectMock });
 
-    render(
-      <MemoryRouter>
-        <HomePage />
-      </MemoryRouter>
-    );
+    renderWithProviders(<HomePage />);
 
-    // The component logs errors to console but doesn't display them
     await waitFor(() => {
-      // Check if error was logged (you might need to spy on console.error)
-      expect(screen.queryByText("Loading events...")).not.toBeInTheDocument();
+      // The app state context will catch the error and toast it.
+      // The page itself will show "0 Events Found".
+      expect(screen.getByText("0 Events Found")).toBeInTheDocument();
     });
   });
 });

@@ -4,18 +4,25 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import SignupPage from "@/pages/SignupPage";
 import { createSupabaseSignupClient } from "@/SupabaseClient";
+import { Toaster } from "@/components/ui/sonner";
+import React from "react";
 
-// The createSupabaseSignupClient is mocked globally in `src/setupTests.ts`
+// Mock the navigation and Supabase client
+vi.mock("react-router-dom", async (importActual) => ({
+  ...(await importActual<typeof import("react-router-dom")>()),
+  useNavigate: () => vi.fn(),
+}));
 
-// Mock useNavigate
-const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
+// The Supabase client is mocked globally in `src/setupTests.ts`
+
+const renderWithToaster = (ui: React.ReactElement) => {
+  return render(
+    <MemoryRouter>
+      {ui}
+      <Toaster />
+    </MemoryRouter>
+  );
+};
 
 describe("SignupPage", () => {
   beforeEach(() => {
@@ -23,78 +30,72 @@ describe("SignupPage", () => {
   });
 
   it("renders the signup form", () => {
-    render(
-      <MemoryRouter>
-        <SignupPage />
-      </MemoryRouter>
-    );
+    renderWithToaster(<SignupPage />);
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("m@example.com")).toBeInTheDocument();
+    // Use getAllBy since there are two password fields
+    const passwordInputs = screen.getAllByPlaceholderText("••••••••");
+    expect(passwordInputs).toHaveLength(2);
     expect(
-      screen.getByRole("button", { name: /sign up/i })
+      screen.getByRole("button", { name: /create account/i })
     ).toBeInTheDocument();
   });
 
   it("shows a success message after successful signup", async () => {
-    // Mock successful signup
-    const mockAuth = {
-      signUp: vi.fn().mockResolvedValue({
-        data: { user: { id: "123" } },
-        error: null,
-      }),
-    };
-    (createSupabaseSignupClient as Mock).mockReturnValue({ auth: mockAuth });
+    (createSupabaseSignupClient as Mock).mockReturnValue({
+      auth: {
+        signUp: vi.fn().mockResolvedValue({ data: { user: {} }, error: null }),
+      },
+    });
 
-    render(
-      <MemoryRouter>
-        <SignupPage />
-      </MemoryRouter>
-    );
+    renderWithToaster(<SignupPage />);
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    const submitButton = screen.getByRole("button", { name: /sign up/i });
+    const emailInput = screen.getByPlaceholderText("m@example.com");
+    const passwordInputs = screen.getAllByPlaceholderText("••••••••");
+    const fullNameInput = screen.getByPlaceholderText("John Doe");
+    const termsCheckbox = screen.getByRole("checkbox");
+    const submitButton = screen.getByRole("button", {
+      name: /create account/i,
+    });
 
+    fireEvent.change(fullNameInput, { target: { value: "Test User" } });
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.change(passwordInputs[0], { target: { value: "Password123" } });
+    fireEvent.change(passwordInputs[1], { target: { value: "Password123" } });
+    fireEvent.click(termsCheckbox);
     fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(screen.getByText(/signup successful/i)).toBeInTheDocument();
+      expect(screen.getByText(/please check your email/i)).toBeInTheDocument();
     });
-
-    // Check that navigation happens after 3 seconds
-    await waitFor(
-      () => {
-        expect(mockNavigate).toHaveBeenCalledWith("/login");
-      },
-      { timeout: 4000 }
-    );
   });
 
   it("shows an error message if signup fails", async () => {
-    // Mock failed signup
-    const mockAuth = {
-      signUp: vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: "Signup failed" },
-      }),
-    };
-    (createSupabaseSignupClient as Mock).mockReturnValue({ auth: mockAuth });
+    (createSupabaseSignupClient as Mock).mockReturnValue({
+      auth: {
+        signUp: vi.fn().mockResolvedValue({
+          data: { user: null },
+          error: { message: "Network error" },
+        }),
+      },
+    });
 
-    render(
-      <MemoryRouter>
-        <SignupPage />
-      </MemoryRouter>
-    );
+    renderWithToaster(<SignupPage />);
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    const submitButton = screen.getByRole("button", { name: /sign up/i });
+    const emailInput = screen.getByPlaceholderText("m@example.com");
+    const passwordInputs = screen.getAllByPlaceholderText("••••••••");
+    const fullNameInput = screen.getByPlaceholderText("John Doe");
+    const termsCheckbox = screen.getByRole("checkbox");
+    const submitButton = screen.getByRole("button", {
+      name: /create account/i,
+    });
 
-    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.change(fullNameInput, { target: { value: "Test User" } });
+    fireEvent.change(emailInput, { target: { value: "fail@example.com" } });
+    fireEvent.change(passwordInputs[0], { target: { value: "Password123" } });
+    fireEvent.change(passwordInputs[1], { target: { value: "Password123" } });
+    fireEvent.click(termsCheckbox);
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -103,32 +104,37 @@ describe("SignupPage", () => {
   });
 
   it("shows an error if the email is already taken", async () => {
-    // Mock email already taken error
-    const mockAuth = {
-      signUp: vi.fn().mockResolvedValue({
-        data: null,
-        error: { message: "User already registered" },
-      }),
-    };
-    (createSupabaseSignupClient as Mock).mockReturnValue({ auth: mockAuth });
+    (createSupabaseSignupClient as Mock).mockReturnValue({
+      auth: {
+        signUp: vi.fn().mockResolvedValue({
+          data: { user: null },
+          error: { message: "User already registered" },
+        }),
+      },
+    });
 
-    render(
-      <MemoryRouter>
-        <SignupPage />
-      </MemoryRouter>
-    );
+    renderWithToaster(<SignupPage />);
 
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/password/i);
-    const submitButton = screen.getByRole("button", { name: /sign up/i });
+    const emailInput = screen.getByPlaceholderText("m@example.com");
+    const passwordInputs = screen.getAllByPlaceholderText("••••••••");
+    const fullNameInput = screen.getByPlaceholderText("John Doe");
+    const termsCheckbox = screen.getByRole("checkbox");
+    const submitButton = screen.getByRole("button", {
+      name: /create account/i,
+    });
 
+    fireEvent.change(fullNameInput, { target: { value: "Test User" } });
     fireEvent.change(emailInput, { target: { value: "taken@example.com" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.change(passwordInputs[0], { target: { value: "Password123" } });
+    fireEvent.change(passwordInputs[1], { target: { value: "Password123" } });
+    fireEvent.click(termsCheckbox);
     fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(
-        screen.getByText("This email is already taken.")
+        screen.getByText(
+          "This email is already registered. Please login instead."
+        )
       ).toBeInTheDocument();
     });
   });

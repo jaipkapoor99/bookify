@@ -77,7 +77,15 @@ describe("EventDetailPage", () => {
 
   const renderComponent = (user: User | null = null) => {
     return render(
-      <AuthContext.Provider value={{ user, session: null, loading: false }}>
+      <AuthContext.Provider
+        value={{
+          user,
+          session: null,
+          loading: false,
+          login: async () => ({ error: null }),
+          logout: async () => ({ error: null }),
+        }}
+      >
         <MemoryRouter initialEntries={["/events/1"]}>
           <Routes>
             <Route path="/events/:eventId" element={<EventDetailPage />} />
@@ -98,42 +106,32 @@ describe("EventDetailPage", () => {
       expect(
         screen.getByText("Experience the soulful voice of Arijit Singh.")
       ).toBeInTheDocument();
-      expect(screen.getByText("NSCI Dome")).toBeInTheDocument();
-      expect(screen.getByText("UB City Amphitheatre")).toBeInTheDocument();
     });
 
     // Check if the list of venues and dates is rendered
     expect(screen.getByText("Dates and Venues")).toBeInTheDocument();
-    expect(screen.getByText("NSCI Dome")).toBeInTheDocument();
 
-    // Use more flexible date matching
-    await waitFor(() => {
-      expect(screen.getByText(/Date:.*5.*10.*2025/)).toBeInTheDocument();
-    });
+    // Use more flexible date matching by checking for parts of the date string
+    const firstVenue = screen
+      .getByText("NSCI Dome")
+      .closest("div.flex.items-center.justify-between");
+    expect(firstVenue).toHaveTextContent("October 5, 2025");
 
-    expect(screen.getByText("UB City Amphitheatre")).toBeInTheDocument();
-    await waitFor(() => {
-      expect(screen.getByText(/Date:.*7.*10.*2025/)).toBeInTheDocument();
-    });
+    const secondVenue = screen
+      .getByText("UB City Amphitheatre")
+      .closest("div.flex.items-center.justify-between");
+    expect(secondVenue).toHaveTextContent("October 7, 2025");
 
     // Check if prices are displayed
-    expect(screen.getByText(/3500/)).toBeInTheDocument();
-    expect(screen.getByText(/2800/)).toBeInTheDocument();
+    expect(screen.getByText("₹3500")).toBeInTheDocument();
+    expect(screen.getByText("₹2800")).toBeInTheDocument();
 
     // Verify the correct Supabase query was made
     expect(supabase.from).toHaveBeenCalledWith("events");
   });
 
-  it("should call the book_ticket RPC function when an authenticated user clicks 'Book Tickets'", async () => {
+  it("should open the booking dialog when an authenticated user clicks 'Book Tickets'", async () => {
     const mockUser = { id: "user-123", email: "test@example.com" } as User;
-
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({ data: mockEvent, error: null }),
-        }),
-      }),
-    });
 
     renderComponent(mockUser);
 
@@ -146,9 +144,23 @@ describe("EventDetailPage", () => {
     const bookButtons = screen.getAllByText("Book Tickets");
     fireEvent.click(bookButtons[0]); // Click the first "Book Tickets" button
 
-    // Should navigate to booking confirmation page
+    // Check if the booking dialog appears
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByText("Select Ticket Quantity")).toBeInTheDocument();
+    });
+
+    // Check that navigation has NOT been called yet
+    expect(mockNavigate).not.toHaveBeenCalled();
+
+    // Check that clicking "Continue to Booking" navigates
+    const continueButton = screen.getByRole("button", {
+      name: /Continue to Booking/i,
+    });
+    fireEvent.click(continueButton);
+
     expect(mockNavigate).toHaveBeenCalledWith(
-      `/book/confirm/${mockEvent.events_venues[0].event_venue_id}`
+      `/book/confirm/${mockEvent.events_venues[0].event_venue_id}?quantity=1`
     );
   });
 

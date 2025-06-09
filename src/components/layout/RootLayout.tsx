@@ -35,6 +35,12 @@ const RootLayout = () => {
                   >
                     Account
                   </Link>
+                  <Link
+                    to="/admin/events"
+                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    Admin
+                  </Link>
                   <span>{user.user_metadata.full_name || user.email}</span>
                   <Button onClick={handleLogout}>Logout</Button>
                 </>

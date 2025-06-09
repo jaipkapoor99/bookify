@@ -1,41 +1,45 @@
 import { vi } from "vitest";
 
-const abortSignal = vi.fn();
-const single = vi.fn(() => Promise.resolve({ data: {}, error: null }));
+const single = vi.fn();
 const eq = vi.fn(() => ({ single }));
-const select = vi.fn(() => ({ eq, abortSignal }));
-const from = vi.fn(() => ({ select }));
-const rpc = vi.fn(() => Promise.resolve({ data: [], error: null }));
+const rpc = vi.fn(() => ({ select: vi.fn() }));
 
-const onAuthStateChange = vi.fn((_event, callback) => {
-  const mockSession = {
-    access_token: "mock-access-token",
-    user: { id: "mock-user-id", email: "user@example.com" },
-  };
-  if (callback) {
-    callback("INITIAL_SESSION", mockSession);
-  }
-  return {
+const from = vi.fn(() => ({
+  select: vi.fn(() => ({
+    eq,
+    single,
+    order: vi.fn(() => ({
+      eq,
+      single,
+    })),
+  })),
+}));
+
+const signUp = vi.fn();
+const signInWithPassword = vi.fn();
+const signOut = vi.fn();
+
+const auth = {
+  signUp,
+  signInWithPassword,
+  signOut,
+  onAuthStateChange: vi.fn(() => ({
     data: { subscription: { unsubscribe: vi.fn() } },
-  };
-});
+  })),
+  getSession: vi.fn(() => ({ data: { session: null } })),
+};
 
-const getSession = vi.fn(() =>
-  Promise.resolve({
-    data: {
-      session: {
-        access_token: "mock-access-token",
-        user: { id: "mock-user-id", email: "user@example.com" },
-      },
-    },
-  })
-);
+const functions = {
+  invoke: vi.fn(),
+};
 
 export const supabase = {
   from,
-  auth: {
-    onAuthStateChange,
-    getSession,
-  },
   rpc,
+  auth,
+  functions,
 };
+
+export const createSupabaseSignupClient = vi.fn(() => ({
+  auth,
+}));

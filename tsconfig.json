@@ -7,7 +7,13 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
-    }
+      "@/*": ["src/*"],
+      "@radix-ui/*": ["node_modules/@radix-ui/*"],
+      "lucide-react": ["node_modules/lucide-react"]
+    },
+    "typeRoots": ["node_modules/@types", "src/types"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   }
 }
