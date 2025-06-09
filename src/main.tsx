@@ -14,6 +14,7 @@ import MyBookingsPage from "@/pages/MyBookingsPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
 import AccountPage from "@/pages/AccountPage";
+import { Toaster } from "@/components/ui/sonner";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -40,6 +41,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
       <RouterProvider router={router} />
+      <Toaster />
     </AuthProvider>
   </StrictMode>
 );
