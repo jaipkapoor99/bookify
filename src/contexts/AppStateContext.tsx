@@ -98,25 +98,6 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     [state.loading]
   );
 
-  const isCacheValid = useCallback(
-    <T,>(
-      key: string,
-      cache: Record<string, CacheItem<unknown>>
-    ): { valid: boolean; data?: T } => {
-      const cached = cache[key];
-      if (!cached) return { valid: false };
-
-      const now = Date.now();
-      if (now - cached.timestamp > cached.ttl) {
-        // Cache expired
-        return { valid: false };
-      }
-
-      return { valid: true, data: cached.data as T };
-    },
-    []
-  );
-
   const setCache = useCallback(
     <T,>(key: string, data: T, ttl: number = DEFAULT_TTL) => {
       setState((prev) => ({
@@ -139,9 +120,13 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const cacheKey = "events";
 
       if (!force) {
-        const cached = isCacheValid<Event[]>(cacheKey, state.cache);
-        if (cached.valid && cached.data) {
-          return cached.data;
+        // Check cache inline to avoid circular dependency
+        const cached = state.cache[cacheKey];
+        if (cached) {
+          const now = Date.now();
+          if (now - cached.timestamp <= cached.ttl) {
+            return cached.data as Event[];
+          }
         }
       }
 
@@ -213,9 +198,13 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const cacheKey = `event-venues-${eventId}`;
 
       if (!force) {
-        const cached = isCacheValid<EventVenue[]>(cacheKey, state.cache);
-        if (cached.valid && cached.data) {
-          return cached.data;
+        // Check cache inline to avoid circular dependency
+        const cached = state.cache[cacheKey];
+        if (cached) {
+          const now = Date.now();
+          if (now - cached.timestamp <= cached.ttl) {
+            return cached.data as EventVenue[];
+          }
         }
       }
 
@@ -271,9 +260,13 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       const cacheKey = "venues";
 
       if (!force) {
-        const cached = isCacheValid<Venue[]>(cacheKey, state.cache);
-        if (cached.valid && cached.data) {
-          return cached.data;
+        // Check cache inline to avoid circular dependency
+        const cached = state.cache[cacheKey];
+        if (cached) {
+          const now = Date.now();
+          if (now - cached.timestamp <= cached.ttl) {
+            return cached.data as Venue[];
+          }
         }
       }
 
