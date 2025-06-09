@@ -14,6 +14,17 @@ A modern event booking platform built with React, TypeScript, and Supabase.
 - ✅ Image storage support
 - ✅ Form validation with Zod
 - ✅ Modern UI with shadcn/ui components
+- **User Authentication**: Sign up, log in, and manage sessions via Supabase.
+- **Event Browsing**: View upcoming events with search, filtering by city, and sorting options.
+- **Event Details**: Detailed view of events with venue information and multiple date options.
+- **Ticket Booking**: Book multiple tickets (1-10) in a single transaction with real-time availability checking.
+- **Booking History**: View all past and upcoming bookings with ticket quantities.
+- **Profile Management**: Update user profile information.
+- **Admin Event Management**: Create, edit, and delete events with image upload functionality.
+- **State Management**: Efficient caching system to minimize API calls (5-minute TTL).
+- **Modern UI**: Beautiful, responsive interface built with shadcn/ui components.
+- **Form Validation**: Robust form validation using Zod and React Hook Form.
+- **Image Storage**: Support for event image uploads using Supabase Storage.
 
 ## Prerequisites
 
@@ -288,3 +299,20 @@ The project uses TypeScript with strict type checking and enhanced module resolu
 - **Strict Mode**: Full strict type checking is enabled for better type safety
 
 ## Troubleshooting
+
+## Admin Features
+
+### Event Management
+
+Admins can access the event management page at `/admin/events` to:
+
+- **Create Events**: Add new events with details including name, description, start/end times, and images
+- **Edit Events**: Update existing event information and replace images
+- **Delete Events**: Remove events and their associated images from storage
+- **Image Upload**: Support for JPEG, PNG, and WebP formats (max 5MB)
+
+The admin interface includes:
+- Real-time form validation
+- Image preview before upload
+- Automatic image optimization and storage in Supabase Storage
+- Toast notifications for user feedback

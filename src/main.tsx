@@ -15,6 +15,7 @@ import MyBookingsPage from "@/pages/MyBookingsPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
 import AccountPage from "@/pages/AccountPage";
+import AdminEventPage from "@/pages/AdminEventPage";
 import { Toaster } from "@/components/ui/sonner";
 
 const router = createBrowserRouter(
@@ -32,6 +33,7 @@ const router = createBrowserRouter(
             element={<BookingConfirmationPage />}
           />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/admin/events" element={<AdminEventPage />} />
         </Route>
       </Route>
     </>
