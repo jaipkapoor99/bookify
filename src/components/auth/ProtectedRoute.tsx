@@ -9,11 +9,16 @@ const ProtectedRoute = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <img
-            src="/Bookify_Transparent.png"
-            alt="Bookify"
-            className="h-16 w-auto mx-auto mb-4 opacity-75"
-          />
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <img
+              src="/Bookify Icon.png"
+              alt="Bookify"
+              className="h-12 w-12 object-contain opacity-75"
+            />
+            <span className="text-2xl font-bold text-gray-700 opacity-75">
+              Bookify
+            </span>
+          </div>
           <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
           <p className="text-muted-foreground">Authenticating...</p>
         </div>

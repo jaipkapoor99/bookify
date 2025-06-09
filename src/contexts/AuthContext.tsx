@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setLoadingProfile(true);
+
     try {
       const { data, error } = await supabase
         .from("users")

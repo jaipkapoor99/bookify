@@ -77,10 +77,18 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   });
 
   const setLoading = useCallback((key: string, isLoading: boolean) => {
-    setState((prev) => ({
-      ...prev,
-      loading: { ...prev.loading, [key]: isLoading },
-    }));
+    setState((prev) => {
+      const newLoading = { ...prev.loading };
+      if (isLoading) {
+        newLoading[key] = true;
+      } else {
+        delete newLoading[key]; // Remove the key entirely when not loading
+      }
+      return {
+        ...prev,
+        loading: newLoading,
+      };
+    });
   }, []);
 
   const isLoading = useCallback(
@@ -197,7 +205,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [isCacheValid, setCache, setLoading, state.cache]
+    [isCacheValid, setCache, setLoading]
   );
 
   const fetchEventVenue = useCallback(
@@ -255,7 +263,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [isCacheValid, setCache, setLoading, state.cache]
+    [isCacheValid, setCache, setLoading]
   );
 
   const fetchVenues = useCallback(
@@ -301,7 +309,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [isCacheValid, setCache, setLoading, state.cache]
+    [isCacheValid, setCache, setLoading]
   );
 
   const clearCache = useCallback(() => {
