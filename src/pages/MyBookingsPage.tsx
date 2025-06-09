@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/SupabaseClient";
 import { useAuth } from "@/hooks/useAuth";
 
-// Corrected Type: This now matches the structure from the error message.
-// events_venues, venues, and events are all treated as arrays.
+// Corrected & Simplified Type
 type Ticket = {
   ticket_id: number;
   ticket_price: number;
@@ -11,17 +10,12 @@ type Ticket = {
     event_venue_date: string;
     venues: {
       venue_name: string;
-    }[];
+    };
     events: {
       name: string;
       image_url: string;
-    }[];
-  }[];
-};
-
-// This type is needed to correctly model the result from our new query
-type UserProfileWithTickets = {
-  tickets: Ticket[];
+    };
+  };
 };
 
 const MyBookingsPage = () => {
@@ -37,28 +31,37 @@ const MyBookingsPage = () => {
         return;
       }
 
-      // Corrected Query: Remove .single() to handle multiple user profiles
+      // New Approach: Call the get_my_bookings RPC function.
+      // The function itself is SECURITY DEFINER, ensuring we get the tickets.
+      // We then select the nested details needed for display.
       const { data, error: fetchError } = await supabase
-        .from("users")
+        .rpc(
+          "get_my_bookings",
+          {},
+          {
+            // The function returns a SETOF tickets, so we need to select from it
+            // as if it were a table.
+            head: false,
+            // We cast the count to 'exact' to get a single value for the count.
+            count: "exact",
+          }
+        )
         .select(
           `
-          tickets!customer_id (
-            ticket_id,
-            ticket_price,
-            events_venues (
-              event_venue_date,
-              venues (
-                venue_name
-              ),
-              events (
-                name,
-                image_url
-              )
+          ticket_id,
+          ticket_price,
+          events_venues!inner (
+            event_venue_date,
+            venues!inner (
+              venue_name
+            ),
+            events!inner (
+              name,
+              image_url
             )
           )
         `
-        )
-        .eq("supabase_id", user.id); // This will now return an array of users
+        );
 
       // --- START DEBUG LOGS ---
       console.log("Fetching bookings for user:", user.id);
@@ -68,16 +71,10 @@ const MyBookingsPage = () => {
 
       if (fetchError) {
         setError(fetchError.message);
-      } else if (data && data.length > 0) {
-        // Corrected Logic: Process the result as an array
-        // and take the tickets from the first user profile found.
-        const userProfile = data[0] as UserProfileWithTickets;
-        if (userProfile && userProfile.tickets) {
-          console.log("Tickets found for user:", userProfile.tickets); // Log found tickets
-          setTickets(userProfile.tickets);
-        } else {
-          console.log("No tickets found on user profile object."); // Log if tickets property is missing
-        }
+      } else if (data) {
+        // The RPC call returns the tickets directly, simplifying the logic.
+        console.log("Tickets found for user:", data); // Log found tickets
+        setTickets(data as unknown as Ticket[]);
       } else {
         console.log("Data is null or empty array."); // Log if data is empty
       }
@@ -112,11 +109,10 @@ const MyBookingsPage = () => {
       ) : (
         <div className="space-y-6">
           {tickets.map((ticket) => {
-            // This logic correctly and safely accesses the nested data
-            // by taking the first element from each nested array.
-            const eventVenue = ticket.events_venues?.[0];
-            const event = eventVenue?.events?.[0];
-            const venue = eventVenue?.venues?.[0];
+            // Simplified data access
+            const eventVenue = ticket.events_venues;
+            const event = eventVenue?.events;
+            const venue = eventVenue?.venues;
 
             return (
               <div
