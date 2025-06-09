@@ -180,16 +180,6 @@ const BookingConfirmationPage = () => {
       <div className="container mx-auto p-4 text-center">
         <div className="flex items-center justify-center min-h-[40vh]">
           <div className="text-center">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <img
-                src="/Bookify_SVG.svg"
-                alt="Bookify"
-                className="h-12 w-12 object-contain opacity-75"
-              />
-              <span className="text-2xl font-bold text-gray-700 opacity-75">
-                Bookify
-              </span>
-            </div>
             <div className="text-muted-foreground">
               Loading confirmation details...
             </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAppState } from "@/contexts/AppStateContext";
+import { useAppState } from "@/hooks/useAppState";
 import {
   Card,
   CardContent,
@@ -36,6 +36,8 @@ import {
 import { supabase } from "@/SupabaseClient";
 import StorageImage from "@/components/ui/StorageImage";
 
+console.log(`🔥 HomePage module loading`);
+
 export type Event = {
   event_id: number;
   name: string;
@@ -60,7 +62,17 @@ type LocationInfo = {
 };
 
 const HomePage = () => {
-  const { state, fetchEvents, isLoading } = useAppState();
+  console.log(`�� HomePage component instantiated`);
+  console.log(`🏠 HomePage component rendering`);
+  const { state, fetchEvents, isLoading } =
+    useAppState() as import("@/contexts/AppStateTypes").AppStateContextType;
+  console.log(`📊 HomePage - Current state:`, {
+    eventsCount: state.events.length,
+    eventVenuesCount: Object.keys(state.eventVenues).length,
+    venuesCount: state.venues.length,
+    loading: state.loading,
+  });
+
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
@@ -73,27 +85,39 @@ const HomePage = () => {
   }, [fetchEvents]);
 
   useEffect(() => {
+    console.log(
+      `🔧 HomePage useEffect[fetchLocations] - state.events length:`,
+      state.events.length
+    );
     const fetchLocations = async () => {
       const pincodes = [
         ...new Set(
           state.events
             .map(
-              (event) => event.events_venues?.[0]?.venues?.locations?.pincode
+              (event: Event) =>
+                event.events_venues?.[0]?.venues?.locations?.pincode
             )
-            .filter((p): p is string => !!p)
+            .filter((p): p is string => typeof p === "string")
         ),
       ];
+      console.log(`📍 Found pincodes to fetch:`, pincodes);
 
       const newLocations: Record<string, LocationInfo> = {};
-      const locationPromises = pincodes.map(async (pincode) => {
-        if (!locations[pincode]) {
+      const locationPromises = pincodes.map(async (pincode: string) => {
+        // Use a ref to get current locations to avoid dependency loop
+        const currentLocations = locations;
+        if (!currentLocations[pincode]) {
+          console.log(`📍 Fetching location for pincode: ${pincode}`);
           // Fetch only if not already in state
           const { data, error } = await supabase.functions.invoke(
             "get-location-from-pincode",
             { body: { pincode } }
           );
           if (!error) {
-            newLocations[pincode] = data;
+            console.log(`✅ Location data for ${pincode}:`, data);
+            newLocations[pincode] = data as LocationInfo;
+          } else {
+            console.error(`❌ Error fetching location for ${pincode}:`, error);
           }
         }
       });
@@ -101,6 +125,7 @@ const HomePage = () => {
       await Promise.all(locationPromises);
 
       if (Object.keys(newLocations).length > 0) {
+        console.log(`🔄 Updating locations state with:`, newLocations);
         setLocations((prev) => ({ ...prev, ...newLocations }));
       }
     };
@@ -108,19 +133,29 @@ const HomePage = () => {
     if (state.events.length > 0) {
       fetchLocations();
     }
-  }, [state.events]); // Removed locations from dependency array to prevent infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.events]); // Removed 'locations' to prevent infinite loop
 
   useEffect(() => {
+    console.log(
+      `🔧 HomePage useEffect[cities] - locations count:`,
+      Object.keys(locations).length
+    );
     if (Object.keys(locations).length > 0) {
       const uniqueCities = [
         ...new Set(Object.values(locations).map((l) => l.city)),
       ].sort();
+      console.log(`🏙️ Setting cities:`, uniqueCities);
       setCities(uniqueCities);
     }
   }, [locations]);
 
   useEffect(() => {
+    console.log(
+      `🔧 HomePage useEffect[filtering] - Filtering events with searchQuery: "${searchQuery}", filterCity: "${filterCity}", sortBy: "${sortBy}"`
+    );
     let filtered = [...state.events];
+    console.log(`📋 Starting with ${filtered.length} events`);
 
     if (searchQuery) {
       filtered = filtered.filter(
@@ -130,6 +165,7 @@ const HomePage = () => {
             .toLowerCase()
             .includes(searchQuery.toLowerCase())
       );
+      console.log(`🔍 After search filter: ${filtered.length} events`);
     }
 
     if (filterCity !== "all") {
@@ -137,6 +173,7 @@ const HomePage = () => {
         const pincode = event.events_venues?.[0]?.venues?.locations?.pincode;
         return pincode ? locations[pincode]?.city === filterCity : false;
       });
+      console.log(`🏙️ After city filter: ${filtered.length} events`);
     }
 
     filtered.sort((a, b) => {
@@ -149,21 +186,19 @@ const HomePage = () => {
       }
     });
 
+    console.log(`📋 Final filtered events count: ${filtered.length}`);
     setFilteredEvents(filtered);
-  }, [state.events, searchQuery, sortBy, filterCity]); // ✅ Removed 'locations' to prevent infinite loop
+  }, [state.events, searchQuery, sortBy, filterCity, locations]);
 
   const loading = isLoading("events");
+  console.log(`⏳ HomePage loading state: ${loading}`);
 
   if (loading) {
+    console.log(`🔄 HomePage showing loading screen`);
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <img
-              src="/Bookify_SVG.svg"
-              alt="Bookify"
-              className="h-12 w-12 object-contain opacity-75"
-            />
             <span className="text-2xl font-bold text-gray-700 opacity-75">
               Bookify
             </span>
@@ -174,6 +209,10 @@ const HomePage = () => {
       </div>
     );
   }
+
+  console.log(
+    `🎯 HomePage rendering main content with ${filteredEvents.length} filtered events`
+  );
 
   return (
     <div className="container mx-auto p-4 space-y-6">

@@ -249,11 +249,6 @@ const MyBookingsPage = () => {
           <div className="bg-white/80 backdrop-blur-sm rounded-xl border shadow-sm p-12 text-center">
             <div className="flex flex-col items-center">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <img
-                  src="/Bookify_SVG.svg"
-                  alt="Bookify"
-                  className="h-12 w-12 object-contain opacity-50"
-                />
                 <span className="text-xl font-bold text-gray-500 opacity-50">
                   Bookify
                 </span>

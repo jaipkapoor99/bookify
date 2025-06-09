@@ -1,6 +1,5 @@
 import React, {
   createContext,
-  useContext,
   useState,
   useCallback,
   ReactNode,
@@ -9,66 +8,23 @@ import React, {
 import { Event } from "@/pages/HomePage";
 import { supabase } from "@/SupabaseClient";
 import { toast } from "sonner";
-
-interface Venue {
-  venue_id: number;
-  venue_name: string;
-  venue_address: string;
-  location_id: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface EventVenue {
-  event_venue_id: number;
-  event_id: number;
-  venue_id: number;
-  no_of_tickets: number;
-  event_venue_date: string;
-  price: number;
-  event?: Event;
-  venue?: Venue;
-}
-
-interface CacheItem<T> {
-  data: T;
-  timestamp: number;
-  ttl: number; // time to live in milliseconds
-}
-
-interface AppState {
-  events: Event[];
-  eventVenues: Record<number, EventVenue>;
-  venues: Venue[];
-  loading: Record<string, boolean>;
-  cache: Record<string, CacheItem<unknown>>;
-}
-
-interface AppStateContextType {
-  state: AppState;
-  fetchEvents: (force?: boolean) => Promise<Event[]>;
-  fetchEventVenue: (eventId: number, force?: boolean) => Promise<EventVenue[]>;
-  fetchVenues: (force?: boolean) => Promise<Venue[]>;
-  clearCache: () => void;
-  isLoading: (key: string) => boolean;
-}
+import {
+  AppStateContextType,
+  AppState,
+  CacheItem,
+  Venue,
+  EventVenue,
+} from "@/contexts/AppStateTypes";
 
 const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
 
-const AppStateContext = createContext<AppStateContextType | undefined>(
+export const AppStateContext = createContext<AppStateContextType | undefined>(
   undefined
 );
 
-// eslint-disable-next-line react-refresh/only-export-components
-export const useAppState = () => {
-  const context = useContext(AppStateContext);
-  if (!context) {
-    throw new Error("useAppState must be used within an AppStateProvider");
-  }
-  return context;
-};
-
-const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [state, setState] = useState<AppState>({
     events: [],
     eventVenues: {},
@@ -77,176 +33,119 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     cache: {},
   });
 
-  // Use ref for cache to avoid circular dependencies in useCallbacks
   const cacheRef = useRef<Record<string, CacheItem<unknown>>>({});
-  // Use ref for loading state to avoid recreating isLoading callback
   const loadingRef = useRef<Record<string, boolean>>({});
 
   const setLoading = useCallback((key: string, isLoading: boolean) => {
-    // Update both ref and state
     if (isLoading) {
       loadingRef.current[key] = true;
     } else {
       delete loadingRef.current[key];
     }
-
     setState((prev) => {
       const newLoading = { ...prev.loading };
       if (isLoading) {
         newLoading[key] = true;
       } else {
-        delete newLoading[key]; // Remove the key entirely when not loading
+        delete newLoading[key];
       }
-      return {
-        ...prev,
-        loading: newLoading,
-      };
+      return { ...prev, loading: newLoading };
     });
   }, []);
 
-  // Use ref to avoid dependency on state.loading
   const isLoading = useCallback((key: string) => {
     return loadingRef.current[key] || false;
   }, []);
 
   const setCache = useCallback(
     <T,>(key: string, data: T, ttl: number = DEFAULT_TTL) => {
-      const cacheItem = {
-        data,
-        timestamp: Date.now(),
-        ttl,
-      };
+      const cacheItem = { data, timestamp: Date.now(), ttl };
       cacheRef.current[key] = cacheItem;
-
-      // Also update state for any components that might need to read cache
       setState((prev) => ({
         ...prev,
-        cache: {
-          ...prev.cache,
-          [key]: cacheItem,
-        },
+        cache: { ...prev.cache, [key]: cacheItem },
       }));
     },
     []
   );
 
+  const getCache = useCallback(<T,>(key: string): T | null => {
+    const item = cacheRef.current[key];
+    if (item && Date.now() - item.timestamp < item.ttl) {
+      return item.data as T;
+    }
+    return null;
+  }, []);
+
   const fetchEvents = useCallback(
     async (force = false): Promise<Event[]> => {
       const cacheKey = "events";
-
       if (!force) {
-        // Check cache using ref to avoid circular dependency
-        const cached = cacheRef.current[cacheKey];
-        if (cached) {
-          const now = Date.now();
-          if (now - cached.timestamp <= cached.ttl) {
-            return cached.data as Event[];
-          }
-        }
+        const cached = getCache<Event[]>(cacheKey);
+        if (cached) return cached;
       }
-
       setLoading(cacheKey, true);
-
       try {
         const { data, error } = await supabase
           .from("events")
           .select(
             `
-          event_id,
-          name,
-          description,
-          start_time,
-          end_time,
-          image_url,
-          image_path,
-          events_venues (
-            venues (
-              venue_name,
-              locations (
-                pincode
+            event_id,
+            name,
+            description,
+            start_time,
+            end_time,
+            image_url,
+            image_path,
+            events_venues (
+              venues (
+                venue_name,
+                locations (
+                  pincode
+                )
               )
             )
-          )
-        `
+          `
           )
           .order("start_time", { ascending: true });
 
-        if (error) {
+        if (error) throw error;
+        const events: Event[] = (data as unknown as Event[]) || [];
+        setCache(cacheKey, events);
+        setState((prev) => ({ ...prev, events }));
+        return events;
+      } catch (error) {
+        if (error instanceof Error) {
           toast.error("Failed to fetch events", {
             description: error.message,
           });
-          throw error;
         }
-
-        if (!data || data.length === 0) {
-          toast.error("No events found", {
-            description:
-              "There may be an issue with data access policies (RLS). Please check your Supabase table permissions.",
-          });
-        }
-
-        // The shape returned by Supabase with joins is complex.
-        // We cast it to 'unknown' first, then to our expected 'Event[]' type.
-        // This tells TypeScript we are confident the shape is correct.
-        const events = data as unknown as Event[];
-
-        setState((prev) => ({
-          ...prev,
-          events,
-        }));
-
-        setCache(cacheKey, events);
-
-        return events;
-      } catch (error) {
-        console.error("Error fetching events:", error);
         return [];
       } finally {
         setLoading(cacheKey, false);
       }
     },
-    [setCache, setLoading]
+    [getCache, setCache, setLoading]
   );
 
   const fetchEventVenue = useCallback(
     async (eventId: number, force = false): Promise<EventVenue[]> => {
-      const cacheKey = `event-venues-${eventId}`;
-
+      const cacheKey = `event_venues_${eventId}`;
       if (!force) {
-        // Check cache using ref to avoid circular dependency
-        const cached = cacheRef.current[cacheKey];
-        if (cached) {
-          const now = Date.now();
-          if (now - cached.timestamp <= cached.ttl) {
-            return cached.data as EventVenue[];
-          }
-        }
+        const cached = getCache<EventVenue[]>(cacheKey);
+        if (cached) return cached;
       }
-
       setLoading(cacheKey, true);
-
       try {
         const { data, error } = await supabase
           .from("events_venues")
-          .select(
-            `
-          *,
-          event:events(*),
-          venue:venues(*)
-        `
-          )
+          .select("*, venues(*, locations(*))")
           .eq("event_id", eventId);
-
-        if (error) {
-          toast.error("Failed to fetch event venues", {
-            description: error.message,
-          });
-          throw error;
-        }
+        if (error) throw error;
 
         const eventVenues = data as EventVenue[];
+        setCache(cacheKey, eventVenues);
 
-        // Store in state indexed by event_venue_id
         const venuesMap = eventVenues.reduce((acc, ev) => {
           acc[ev.event_venue_id] = ev;
           return acc;
@@ -257,84 +156,65 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           eventVenues: { ...prev.eventVenues, ...venuesMap },
         }));
 
-        setCache(cacheKey, eventVenues);
-
         return eventVenues;
       } catch (error) {
-        console.error("Error fetching event venues:", error);
+        if (error instanceof Error)
+          toast.error(`Failed to fetch venues for event ${eventId}`, {
+            description: error.message,
+          });
         return [];
       } finally {
         setLoading(cacheKey, false);
       }
     },
-    [setCache, setLoading]
+    [getCache, setCache, setLoading]
   );
 
   const fetchVenues = useCallback(
     async (force = false): Promise<Venue[]> => {
       const cacheKey = "venues";
-
       if (!force) {
-        // Check cache using ref to avoid circular dependency
-        const cached = cacheRef.current[cacheKey];
-        if (cached) {
-          const now = Date.now();
-          if (now - cached.timestamp <= cached.ttl) {
-            return cached.data as Venue[];
-          }
-        }
+        const cached = getCache<Venue[]>(cacheKey);
+        if (cached) return cached;
       }
-
       setLoading(cacheKey, true);
-
       try {
         const { data, error } = await supabase
           .from("venues")
-          .select("*")
+          .select("*, locations(*)")
           .order("venue_name");
-
-        if (error) {
-          toast.error("Failed to fetch venues", {
-            description: error.message,
-          });
-          throw error;
-        }
+        if (error) throw error;
 
         const venues = data as Venue[];
-
-        setState((prev) => ({
-          ...prev,
-          venues,
-        }));
-
         setCache(cacheKey, venues);
+        setState((prev) => ({ ...prev, venues }));
 
         return venues;
       } catch (error) {
-        console.error("Error fetching venues:", error);
+        if (error instanceof Error)
+          toast.error("Failed to fetch venues", {
+            description: error.message,
+          });
         return [];
       } finally {
         setLoading(cacheKey, false);
       }
     },
-    [setCache, setLoading]
+    [getCache, setCache, setLoading]
   );
 
   const clearCache = useCallback(() => {
     cacheRef.current = {};
-    setState((prev) => ({
-      ...prev,
-      cache: {},
-    }));
+    setState((prev) => ({ ...prev, cache: {} }));
   }, []);
 
   const value: AppStateContextType = {
     state,
+    isLoading,
     fetchEvents,
     fetchEventVenue,
     fetchVenues,
     clearCache,
-    isLoading,
   };
 
   return (
@@ -343,6 +223,3 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     </AppStateContext.Provider>
   );
 };
-
-export { AppStateProvider };
-export default AppStateProvider;

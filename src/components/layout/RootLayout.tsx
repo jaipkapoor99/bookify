@@ -81,11 +81,6 @@ const RootLayout = () => {
         <div className="container mx-auto p-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img
-                src="/Bookify_SVG.svg"
-                alt="Bookify"
-                className="h-6 w-6 object-contain opacity-60"
-              />
               <span className="text-sm text-gray-600">
                 © 2024 Bookify. All rights reserved.
               </span>

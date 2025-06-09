@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
 import { supabase } from "@/SupabaseClient";
-import { AppStateProvider } from "@/contexts/AppStateContext";
+import { AppStateProvider } from "@/contexts/AppStateContext.tsx";
 import React from "react";
 
 // The Supabase client is mocked globally in `src/setupTests.ts`
