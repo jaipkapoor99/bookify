@@ -5,6 +5,7 @@ import "./index.css";
 import { createRoutesFromElements, Route } from "react-router-dom";
 
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AppStateProvider } from "@/contexts/AppStateContext";
 import RootLayout from "@/components/layout/RootLayout";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
@@ -40,8 +41,10 @@ const router = createBrowserRouter(
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
-      <RouterProvider router={router} />
-      <Toaster />
+      <AppStateProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </AppStateProvider>
     </AuthProvider>
   </StrictMode>
 );

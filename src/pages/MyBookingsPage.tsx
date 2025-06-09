@@ -1,15 +1,23 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/SupabaseClient";
 import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, MapPin, Ticket as TicketIcon, CreditCard } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 // Corrected & Simplified Type
 type Ticket = {
   ticket_id: number;
   ticket_price: number;
+  quantity: number;
+  created_at: string;
   events_venues: {
     event_venue_date: string;
     venues: {
       venue_name: string;
+      locations?: {
+        city: string;
+      };
     };
     events: {
       name: string;
@@ -50,10 +58,15 @@ const MyBookingsPage = () => {
           `
           ticket_id,
           ticket_price,
+          quantity,
+          created_at,
           events_venues!inner (
             event_venue_date,
             venues!inner (
-              venue_name
+              venue_name,
+              locations (
+                city
+              )
             ),
             events!inner (
               name,
@@ -63,20 +76,10 @@ const MyBookingsPage = () => {
         `
         );
 
-      // --- START DEBUG LOGS ---
-      console.log("Fetching bookings for user:", user.id);
-      console.log("Query data:", data);
-      console.log("Query error:", fetchError);
-      // --- END DEBUG LOGS ---
-
       if (fetchError) {
         setError(fetchError.message);
       } else if (data) {
-        // The RPC call returns the tickets directly, simplifying the logic.
-        console.log("Tickets found for user:", data); // Log found tickets
         setTickets(data as unknown as Ticket[]);
-      } else {
-        console.log("Data is null or empty array."); // Log if data is empty
       }
 
       setLoading(false);
@@ -84,6 +87,10 @@ const MyBookingsPage = () => {
 
     fetchTickets();
   }, [user]);
+
+  const getTotalAmount = (ticket: Ticket) => {
+    return ticket.ticket_price * (ticket.quantity || 1);
+  };
 
   if (loading) {
     return (
@@ -105,44 +112,93 @@ const MyBookingsPage = () => {
     <div className="container mx-auto p-4">
       <h2 className="text-3xl font-bold mb-6">My Bookings</h2>
       {tickets.length === 0 ? (
-        <p>You have no bookings yet.</p>
+        <Card className="p-8 text-center">
+          <CardContent>
+            <TicketIcon className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-lg text-muted-foreground">You have no bookings yet.</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Browse events and book your tickets to see them here.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="grid gap-6">
           {tickets.map((ticket) => {
             // Simplified data access
             const eventVenue = ticket.events_venues;
             const event = eventVenue?.events;
             const venue = eventVenue?.venues;
+            const quantity = ticket.quantity || 1;
 
             return (
-              <div
+              <Card
                 key={ticket.ticket_id}
-                className="bg-white p-4 rounded-lg shadow-md flex items-center space-x-6"
+                className="overflow-hidden hover:shadow-lg transition-shadow"
               >
-                <img
-                  src={event?.image_url ?? "/placeholder.png"}
-                  alt={event?.name ?? "Event"}
-                  className="w-32 h-32 object-cover rounded-md"
-                />
-                <div>
-                  <h3 className="text-2xl font-bold">
-                    {event?.name ?? "Event Name Not Available"}
-                  </h3>
-                  <p className="text-xl text-gray-700">
-                    {venue?.venue_name ?? "Venue Not Available"}
-                  </p>
-                  <p className="text-lg text-gray-600">
-                    {eventVenue?.event_venue_date
-                      ? new Date(
-                          eventVenue.event_venue_date
-                        ).toLocaleDateString()
-                      : "Date Not Available"}
-                  </p>
-                  <p className="text-lg font-semibold mt-2">
-                    Price: ₹{ticket.ticket_price}
-                  </p>
+                <div className="flex flex-col md:flex-row">
+                  <div className="md:w-48 h-48 md:h-auto">
+                    <img
+                      src={event?.image_url ?? "/placeholder.png"}
+                      alt={event?.name ?? "Event"}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <CardContent className="flex-1 p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-2xl font-bold mb-2">
+                          {event?.name ?? "Event Name Not Available"}
+                        </h3>
+                        <Badge variant="secondary" className="mb-3">
+                          Booking ID: {ticket.ticket_id}
+                        </Badge>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Total Amount</p>
+                        <p className="text-2xl font-bold">₹{getTotalAmount(ticket)}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span>
+                          {venue?.venue_name ?? "Venue Not Available"}
+                          {venue?.locations?.city && `, ${venue.locations.city}`}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          {eventVenue?.event_venue_date
+                            ? new Date(eventVenue.event_venue_date).toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })
+                            : "Date Not Available"}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <TicketIcon className="h-4 w-4" />
+                        <span>
+                          {quantity} ticket{quantity > 1 ? 's' : ''} × ₹{ticket.ticket_price} each
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <CreditCard className="h-4 w-4" />
+                        <span>
+                          Booked on {new Date(ticket.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
                 </div>
-              </div>
+              </Card>
             );
           })}
         </div>

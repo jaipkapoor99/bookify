@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/SupabaseClient";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,11 +11,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Ticket, MapPin, Calendar, CreditCard } from "lucide-react";
+import { toast } from "sonner";
 
 // Corrected Type: This now matches the structure from the error message.
 type RawConfirmationData = {
   price: number;
   event_venue_date: string;
+  no_of_tickets: number;
   events: {
     name: string;
   }; // It's an object now
@@ -35,10 +38,14 @@ type ConfirmationDetails = {
   price: number;
   location: string;
   pincode?: string;
+  availableTickets: number;
 };
 
 const BookingConfirmationPage = () => {
   const { eventVenueId } = useParams<{ eventVenueId: string }>();
+  const [searchParams] = useSearchParams();
+  const quantity = parseInt(searchParams.get('quantity') || '1', 10);
+  
   const [details, setDetails] = useState<ConfirmationDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
@@ -57,6 +64,7 @@ const BookingConfirmationPage = () => {
           `
           price,
           event_venue_date,
+          no_of_tickets,
           events!inner ( name ),
           venues!inner ( venue_name, locations!inner ( pincode ) )
         `
@@ -81,6 +89,7 @@ const BookingConfirmationPage = () => {
             venueName: venueData.venue_name,
             location: "Loading location...", // Default value
             pincode: locationData?.pincode,
+            availableTickets: rawData.no_of_tickets,
           });
         } else {
           setError("Could not retrieve complete event and venue details.");
@@ -119,7 +128,15 @@ const BookingConfirmationPage = () => {
   }, [details]);
 
   const handleConfirmBooking = async () => {
-    if (!eventVenueId) return;
+    if (!eventVenueId || !details) return;
+
+    // Validate quantity
+    if (quantity > details.availableTickets) {
+      toast.error("Not enough tickets available", {
+        description: `Only ${details.availableTickets} tickets remaining.`
+      });
+      return;
+    }
 
     setBooking(true);
     setError(null);
@@ -127,18 +144,32 @@ const BookingConfirmationPage = () => {
     try {
       const { error: rpcError } = await supabase.rpc("book_ticket", {
         p_event_venue_id: parseInt(eventVenueId, 10),
+        p_quantity: quantity,
       });
 
       if (rpcError) throw rpcError;
 
-      alert("Booking successful! Redirecting to your bookings page...");
-      navigate("/my-bookings");
+      toast.success("Booking successful!", {
+        description: `You have booked ${quantity} ticket${quantity > 1 ? 's' : ''}.`
+      });
+      
+      setTimeout(() => {
+        navigate("/my-bookings");
+      }, 1500);
     } catch (bookingError) {
       const e = bookingError as Error;
       setError(`Booking failed: ${e.message}`);
+      toast.error("Booking failed", {
+        description: e.message
+      });
     } finally {
       setBooking(false);
     }
+  };
+
+  const getTotalPrice = () => {
+    if (!details) return 0;
+    return details.price * quantity;
   };
 
   if (loading) {
@@ -163,34 +194,78 @@ const BookingConfirmationPage = () => {
     <div className="container mx-auto p-4 flex justify-center">
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle>Confirm Your Booking</CardTitle>
+          <CardTitle className="text-2xl">Confirm Your Booking</CardTitle>
           <CardDescription>
-            Please review the details below before confirming your ticket.
+            Please review the details below before confirming your ticket{quantity > 1 ? 's' : ''}.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="font-semibold text-lg">Event:</span>
-            <span className="text-lg">{details.eventName}</span>
+        <CardContent className="space-y-6">
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 space-y-4">
+            <h3 className="font-semibold text-lg mb-4">Event Details</h3>
+            
+            <div className="flex items-start gap-3">
+              <Ticket className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium">Event</p>
+                <p className="text-muted-foreground">{details.eventName}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium">Venue</p>
+                <p className="text-muted-foreground">{details.venueName}</p>
+                <p className="text-sm text-muted-foreground">{location}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium">Date</p>
+                <p className="text-muted-foreground">
+                  {new Date(details.eventDate).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="font-semibold text-lg">Venue:</span>
-            <span className="text-lg">{details.venueName}</span>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 space-y-4">
+            <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Payment Summary
+            </h3>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Ticket Price:</span>
+                <span>₹{details.price}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Quantity:</span>
+                <span>{quantity}</span>
+              </div>
+              <div className="flex justify-between items-center pt-3 border-t">
+                <span className="font-bold text-lg">Total Amount:</span>
+                <span className="font-bold text-lg">₹{getTotalPrice()}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="font-semibold text-lg">Location:</span>
-            <span className="text-lg">{location}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="font-semibold text-lg">Date:</span>
-            <span className="text-lg">
-              {new Date(details.eventDate).toLocaleDateString()}
-            </span>
-          </div>
-          <div className="flex justify-between items-center border-t pt-4 mt-4">
-            <span className="font-bold text-xl">Total Price:</span>
-            <span className="font-bold text-xl">₹{details.price}</span>
-          </div>
+
+          {details.availableTickets < 10 && (
+            <Alert>
+              <AlertTitle>Limited Availability</AlertTitle>
+              <AlertDescription>
+                Only {details.availableTickets} tickets remaining for this event.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
         <CardFooter className="flex-col items-stretch">
           {error && (
@@ -201,11 +276,11 @@ const BookingConfirmationPage = () => {
           )}
           <Button
             onClick={handleConfirmBooking}
-            disabled={booking}
+            disabled={booking || quantity > details.availableTickets}
             className="w-full"
             size="lg"
           >
-            {booking ? "Booking..." : "Confirm & Book Ticket"}
+            {booking ? "Processing..." : `Confirm & Book ${quantity} Ticket${quantity > 1 ? 's' : ''}`}
           </Button>
         </CardFooter>
       </Card>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/SupabaseClient";
+import { useAppState } from "@/contexts/AppStateContext";
+import { getImageUrl } from "@/lib/storage";
 import {
   Card,
   CardContent,
@@ -26,7 +27,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Calendar, MapPin, Filter, Search, Loader2, MoreVertical } from "lucide-react";
-import { toast } from "sonner";
 
 export type Event = {
   event_id: number;
@@ -34,6 +34,7 @@ export type Event = {
   start_time: string;
   venue_id: number;
   image_url: string;
+  image_path?: string;
   description?: string;
   venue?: {
     name: string;
@@ -42,61 +43,47 @@ export type Event = {
 };
 
 const HomePage = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const { state, fetchEvents, isLoading } = useAppState();
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [filterCity, setFilterCity] = useState<string>("all");
   const [cities, setCities] = useState<string[]>([]);
+  const [eventImages, setEventImages] = useState<Record<number, string>>({});
 
   useEffect(() => {
-    const abortController = new AbortController();
-    const fetchEvents = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("events")
-          .select(`
-            *,
-            venue:venues(name, city)
-          `)
-          .abortSignal(abortController.signal);
-
-        if (error) {
-          if (!error.message.startsWith("AbortError")) {
-            console.error("Error fetching events:", error);
-            toast.error("Failed to load events", {
-              description: "Please try refreshing the page.",
-            });
-          }
-        } else {
-          const eventsData = data as Event[];
-          setEvents(eventsData);
-          setFilteredEvents(eventsData);
-          
-          // Extract unique cities
-          const uniqueCities = [...new Set(eventsData
-            .map(event => event.venue?.city)
-            .filter(Boolean))] as string[];
-          setCities(uniqueCities);
-        }
-      } catch (error) {
-        console.error("Unexpected error:", error);
-        toast.error("An unexpected error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    // Fetch events using the context
     fetchEvents();
-
-    return () => {
-      abortController.abort();
-    };
-  }, []);
+  }, [fetchEvents]);
 
   useEffect(() => {
-    let filtered = [...events];
+    // Update cities when events change
+    const uniqueCities = [...new Set(state.events
+      .map(event => event.venue?.city)
+      .filter(Boolean))] as string[];
+    setCities(uniqueCities);
+
+    // Load image URLs for events with image_path
+    const loadImageUrls = async () => {
+      const imageMap: Record<number, string> = {};
+      
+      for (const event of state.events) {
+        if (event.image_path) {
+          const url = await getImageUrl(event.image_path);
+          imageMap[event.event_id] = url || event.image_url || '/placeholder.png';
+        } else {
+          imageMap[event.event_id] = event.image_url || '/placeholder.png';
+        }
+      }
+      
+      setEventImages(imageMap);
+    };
+
+    loadImageUrls();
+  }, [state.events]);
+
+  useEffect(() => {
+    let filtered = [...state.events];
 
     // Apply search filter
     if (searchQuery) {
@@ -121,7 +108,9 @@ const HomePage = () => {
     });
 
     setFilteredEvents(filtered);
-  }, [events, searchQuery, sortBy, filterCity]);
+  }, [state.events, searchQuery, sortBy, filterCity]);
+
+  const loading = isLoading('events');
 
   if (loading) {
     return (
@@ -205,7 +194,7 @@ const HomePage = () => {
                   <CardHeader className="p-0">
                     <div className="relative overflow-hidden">
                       <img
-                        src={event.image_url}
+                        src={eventImages[event.event_id] || event.image_url || '/placeholder.png'}
                         alt={event.name}
                         className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
