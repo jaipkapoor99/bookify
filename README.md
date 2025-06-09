@@ -5,6 +5,10 @@ A modern, scalable event booking platform built with React, TypeScript, and Supa
 ## Key Features
 
 - **User Authentication**: Secure sign-up and login functionality powered by Supabase Auth.
+  - Supports email/password and Google (OAuth) sign-in.
+- **Account Management**: A dedicated "Account Settings" page allows users to:
+  - Update their full name.
+  - Add and verify a phone number for their account.
 - **Event Discovery**: Users can browse a list of events on the home page.
 - **Detailed Event Views**: A dedicated page for each event, showcasing multiple dates and venues.
 - **Booking Confirmation**: A dedicated page to review and confirm booking details before purchase.
@@ -104,6 +108,8 @@ classDiagram
         +Role role
         +text address1
         +int location_id (FK)
+        +varchar phone_number
+        +boolean phone_verified
     }
 
     class tickets {

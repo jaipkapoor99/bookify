@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-06-15
+
+### Added
+
+- **Account Management Page**: Created a new `AccountPage` where authenticated users can manage their personal information.
+- **Update User Name**: Implemented functionality for users to add or update their full name. The UI now displays this name in the header.
+- **Update User Phone**: Implemented functionality for users to add and verify their phone number using OTP.
+- **Google OAuth**: Added a "Sign in with Google" option on the login page for a streamlined authentication experience.
+
+### Changed
+
+- **Protected Routes**: Refactored the main router to group all authenticated routes (`/my-bookings`, `/account`, etc.) under a single `ProtectedRoute` component for better security and organization.
+- **UI Display**: The main layout now displays the user's full name in the header if available, falling back to their email address.
+
 ## [1.3.0] - 2025-06-14
 
 ### Added
