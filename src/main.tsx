@@ -13,6 +13,7 @@ import EventDetailPage from "@/pages/EventDetailPage";
 import MyBookingsPage from "@/pages/MyBookingsPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
+import AccountPage from "@/pages/AccountPage";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -22,11 +23,14 @@ const router = createBrowserRouter(
         <Route path="/events/:eventId" element={<EventDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/my-bookings" element={<MyBookingsPage />} />
-        <Route
-          path="/book/confirm/:eventVenueId"
-          element={<BookingConfirmationPage />}
-        />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/my-bookings" element={<MyBookingsPage />} />
+          <Route
+            path="/book/confirm/:eventVenueId"
+            element={<BookingConfirmationPage />}
+          />
+          <Route path="/account" element={<AccountPage />} />
+        </Route>
       </Route>
     </>
   )

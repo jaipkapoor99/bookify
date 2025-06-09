@@ -29,6 +29,12 @@ const RootLayout = () => {
                   >
                     My Bookings
                   </Link>
+                  <Link
+                    to="/account"
+                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    Account
+                  </Link>
                   <span>{user.email}</span>
                   <Button onClick={handleLogout}>Logout</Button>
                 </>
