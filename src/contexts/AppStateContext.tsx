@@ -164,6 +164,13 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
           throw error;
         }
 
+        if (!data || data.length === 0) {
+          toast.error("No events found", {
+            description:
+              "There may be an issue with data access policies (RLS). Please check your Supabase table permissions.",
+          });
+        }
+
         const events = data as Event[];
 
         setState((prev) => ({

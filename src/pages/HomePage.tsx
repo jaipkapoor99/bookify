@@ -109,7 +109,7 @@ const HomePage = () => {
     if (state.events.length > 0) {
       fetchLocations();
     }
-}, [state.events, searchQuery, sortBy, filterCity, locations]);
+  }, [state.events, searchQuery, sortBy, filterCity, locations]);
 
   useEffect(() => {
     if (Object.keys(locations).length > 0) {
@@ -157,12 +157,20 @@ const HomePage = () => {
     const loadImageUrls = async () => {
       const imageMap: Record<number, string> = {};
       for (const event of state.events) {
-        if (event.image_path) {
-          const url = await getImageUrl(event.image_path);
-          imageMap[event.event_id] =
-            url || event.image_url || "/placeholder.png";
-        } else {
-          imageMap[event.event_id] = event.image_url || "/placeholder.png";
+        try {
+          if (event.image_path) {
+            const url = await getImageUrl(event.image_path);
+            imageMap[event.event_id] =
+              url || event.image_url || "/placeholder.svg";
+          } else {
+            imageMap[event.event_id] = event.image_url || "/placeholder.svg";
+          }
+        } catch (error) {
+          console.warn(
+            `Failed to load image for event ${event.event_id}:`,
+            error
+          );
+          imageMap[event.event_id] = "/placeholder.svg";
         }
       }
       setEventImages(imageMap);
@@ -282,10 +290,16 @@ const HomePage = () => {
                           src={
                             eventImages[event.event_id] ||
                             event.image_url ||
-                            "/placeholder.png"
+                            "/placeholder.svg"
                           }
                           alt={event.name}
                           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (target.src !== "/placeholder.svg") {
+                              target.src = "/placeholder.svg";
+                            }
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>

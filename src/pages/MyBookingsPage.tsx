@@ -1,33 +1,8 @@
-import { useEffect, useState } from "react";
-import { Calendar, MapPin, Ticket, Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/SupabaseClient";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
-// Type for the actual query response from Supabase
-type BookingQueryResult = {
-  ticket_id: number;
-  ticket_price: number;
-  created_at: string;
-  quantity?: number;
-  events_venues?: {
-    event_venue_date: string;
-    price: number;
-    venues?: {
-      venue_name: string;
-      locations?: {
-        pincode: string;
-      };
-    };
-    events?: {
-      name: string;
-      image_url?: string;
-      image_path?: string;
-    };
-  };
-};
+import { useAuth } from "@/contexts/AuthContext";
+import { BookingQueryResult } from "@/types/database.types";
 
 const MyBookingsPage = () => {
   const { user } = useAuth();
@@ -41,18 +16,65 @@ const MyBookingsPage = () => {
   useEffect(() => {
     const fetchTickets = async () => {
       if (!user) {
+        console.log("No user found - user is null/undefined");
+        setLoading(false);
+        return;
+      }
+
+      if (!user.id) {
+        console.error("User object exists but user.id is missing:", user);
+        setError(
+          "Authentication error: User ID missing. Please log out and log back in."
+        );
         setLoading(false);
         return;
       }
 
       try {
-        // First, let's try to check if quantity column exists by using a safer approach
-        // We'll query the tickets table using a more flexible select that can handle missing columns
-        const { data, error: fetchError } = await supabase.from("tickets")
-          .select(`
+        console.log("Attempting to find user with Supabase ID:", user.id);
+
+        // Try to get existing user profile - only select fields that actually exist
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("user_id, supabase_id")
+          .eq("supabase_id", user.id)
+          .single();
+
+        console.log(
+          "User lookup result - data:",
+          userData,
+          "error:",
+          userError
+        );
+
+        // Handle other errors or missing data
+        if (userError || !userData) {
+          console.error("User lookup error:", userError);
+          const errorMessage =
+            userError?.code === "PGRST116"
+              ? "Your user profile is not set up. Please sign up again or contact support."
+              : "Unable to fetch user profile. Please try again later.";
+          setError(errorMessage);
+          setLoading(false);
+          return;
+        }
+
+        console.log(
+          "Found user ID:",
+          userData.user_id,
+          "for Supabase ID:",
+          user.id
+        );
+
+        // Now query tickets for this internal user ID
+        const { data, error: fetchError } = await supabase
+          .from("tickets")
+          .select(
+            `
             ticket_id,
             ticket_price,
             created_at,
+            customer_id,
             events_venues!events_venues_id (
               event_venue_date,
               price,
@@ -68,66 +90,29 @@ const MyBookingsPage = () => {
                 image_path
               )
             )
-          `);
+          `
+          )
+          .eq("customer_id", userData.user_id);
 
         if (fetchError) {
           console.error("Fetch error:", fetchError);
-          // If the error is about the quantity column not existing, we'll try without it
-          if (fetchError.message?.includes("quantity")) {
-            toast.error(
-              "Database migration needed: quantity column missing. Contact administrator."
-            );
-            setError(
-              "Database migration needed. Please contact administrator."
-            );
-          } else {
-            setError(`Error fetching bookings: ${fetchError.message}`);
-          }
+          setError(`Error fetching bookings: ${fetchError.message}`);
+          setLoading(false);
           return;
         }
 
-        // Now try to fetch quantity separately to see if the column exists
-        let ticketsWithQuantity: BookingQueryResult[] = [];
+        console.log("Raw ticket data:", data);
+        console.log("Number of tickets found:", data?.length || 0);
 
-        try {
-          const { data: quantityData, error: quantityError } = await supabase
-            .from("tickets")
-            .select("ticket_id, quantity")
-            .in("ticket_id", data?.map((t) => t.ticket_id) || []);
+        // Convert to proper type
+        const ticketsData: BookingQueryResult[] =
+          (data as unknown as BookingQueryResult[]) || [];
+        setTickets(ticketsData);
 
-          if (!quantityError && quantityData) {
-            // Quantity column exists, merge the data
-            const quantityMap = new Map(
-              quantityData.map((q) => [q.ticket_id, q.quantity])
-            );
-            ticketsWithQuantity =
-              (data as unknown as BookingQueryResult[])?.map((ticket) => ({
-                ...ticket,
-                quantity: quantityMap.get(ticket.ticket_id) || 1,
-              })) || [];
-          } else {
-            // Quantity column doesn't exist, use default of 1
-            ticketsWithQuantity =
-              (data as unknown as BookingQueryResult[])?.map((ticket) => ({
-                ...ticket,
-                quantity: 1,
-              })) || [];
-          }
-        } catch {
-          // If there's any error with quantity, just default to 1
-          ticketsWithQuantity =
-            (data as unknown as BookingQueryResult[])?.map((ticket) => ({
-              ...ticket,
-              quantity: 1,
-            })) || [];
-        }
-
-        setTickets(ticketsWithQuantity);
-
-        // Fetch location details for all pincodes since we only have pincode from database
+        // Fetch location details for all pincodes
         const pincodes = [
           ...new Set(
-            ticketsWithQuantity
+            ticketsData
               .map((ticket) => ticket.events_venues?.venues?.locations?.pincode)
               .filter((p): p is string => !!p)
           ),
@@ -206,7 +191,7 @@ const MyBookingsPage = () => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
-    }).format(amount);
+    }).format(amount / 100);
   };
 
   const formatDate = (dateString: string) => {
@@ -221,9 +206,10 @@ const MyBookingsPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading your bookings...</p>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-lg text-gray-600">
+              Loading your bookings...
+            </div>
           </div>
         </div>
       </div>
@@ -234,23 +220,63 @@ const MyBookingsPage = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
         <div className="max-w-4xl mx-auto">
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <div className="text-red-600 text-lg font-semibold mb-2">
-                  Error Loading Bookings
-                </div>
-                <p className="text-red-700">{error}</p>
-                <Button
-                  onClick={() => window.location.reload()}
-                  className="mt-4"
-                  variant="outline"
-                >
-                  Try Again
-                </Button>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 shadow-sm">
+            <div className="text-center">
+              <div className="text-red-600 text-lg font-semibold mb-2">
+                Error Loading Bookings
               </div>
-            </CardContent>
-          </Card>
+              <p className="text-red-700">{error}</p>
+              <Button
+                variant="outline"
+                onClick={() => window.location.reload()}
+                className="mt-4"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (tickets.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              My Bookings
+            </h1>
+            <p className="text-gray-600">Manage and view your event tickets</p>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl border shadow-sm p-12 text-center">
+            <div className="flex flex-col items-center">
+              <svg
+                className="h-16 w-16 text-gray-400 mb-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
+                />
+              </svg>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                You have no bookings yet
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Start exploring events and book your tickets
+              </p>
+              <Button onClick={() => (window.location.href = "/")}>
+                Browse Events
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -264,109 +290,94 @@ const MyBookingsPage = () => {
           <p className="text-gray-600">Manage and view your event tickets</p>
         </div>
 
-        {tickets.length === 0 ? (
-          <Card className="text-center p-12 bg-white/80 backdrop-blur-sm">
-            <div className="flex flex-col items-center">
-              <Ticket className="h-16 w-16 text-gray-400 mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                You have no bookings yet
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Start exploring events and book your tickets
-              </p>
-              <Button onClick={() => (window.location.href = "/")}>
-                Browse Events
-              </Button>
+        <div className="space-y-6">
+          {tickets.map((ticket) => (
+            <div
+              key={ticket.ticket_id}
+              className="bg-white/80 backdrop-blur-sm rounded-xl border shadow-sm overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={
+                            ticket.events_venues?.events?.image_url ||
+                            "/placeholder.svg"
+                          }
+                          alt={ticket.events_venues?.events?.name || "Event"}
+                          className="h-16 w-16 rounded-lg object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/placeholder.svg";
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          {ticket.events_venues?.events?.name ||
+                            "Unknown Event"}
+                        </h3>
+                        <p className="text-gray-600">
+                          {ticket.events_venues?.venues?.venue_name ||
+                            "Unknown Venue"}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {getDisplayLocation(ticket)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-500">Event Date:</span>
+                        <p className="font-medium">
+                          {ticket.events_venues?.event_venue_date
+                            ? formatDate(ticket.events_venues.event_venue_date)
+                            : "Date not available"}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Booking Date:</span>
+                        <p className="font-medium">
+                          {formatDate(ticket.created_at)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Ticket ID:</span>
+                        <p className="font-medium">#{ticket.ticket_id}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right ml-6">
+                    <div className="mb-2">
+                      <span className="text-sm text-gray-500">
+                        Price per ticket:
+                      </span>
+                      <p className="text-lg font-semibold text-gray-900">
+                        {formatCurrency(ticket.ticket_price)}
+                      </p>
+                    </div>
+                    <div className="mb-2">
+                      <span className="text-sm text-gray-500">Quantity:</span>
+                      <p className="text-lg font-semibold text-gray-900">
+                        1 ticket
+                      </p>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Total:</span>
+                      <p className="text-xl font-bold text-green-600">
+                        {formatCurrency(ticket.ticket_price)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </Card>
-        ) : (
-          <div className="grid gap-6">
-            {tickets.map((ticket) => {
-              const event = ticket.events_venues?.events;
-              const eventVenue = ticket.events_venues;
-              const totalPrice = ticket.ticket_price * (ticket.quantity || 1);
-
-              return (
-                <Card
-                  key={ticket.ticket_id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow bg-white/90 backdrop-blur-sm"
-                >
-                  <CardHeader className="pb-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <CardTitle className="text-xl mb-2">
-                          {event?.name ?? "Event Name Not Available"}
-                        </CardTitle>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4" />
-                            <span>{getDisplayLocation(ticket)}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              {eventVenue?.event_venue_date
-                                ? formatDate(eventVenue.event_venue_date)
-                                : "Date TBD"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <Badge variant="default" className="ml-4">
-                        Confirmed
-                      </Badge>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent>
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="text-sm text-gray-600 mb-1">
-                          Ticket Price
-                        </div>
-                        <div className="text-lg font-semibold">
-                          {formatCurrency(ticket.ticket_price)}
-                        </div>
-                      </div>
-
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <div className="text-sm text-gray-600 mb-1">
-                          Quantity
-                        </div>
-                        <div className="text-lg font-semibold flex items-center gap-2">
-                          <Ticket className="h-4 w-4" />
-                          {ticket.quantity || 1}{" "}
-                          {(ticket.quantity || 1) === 1 ? "ticket" : "tickets"}
-                        </div>
-                      </div>
-
-                      <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                        <div className="text-sm text-green-700 mb-1">
-                          Total Amount
-                        </div>
-                        <div className="text-lg font-bold text-green-800">
-                          {formatCurrency(totalPrice)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="flex items-center justify-between text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          <span>Booked on {formatDate(ticket.created_at)}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-mono">#{ticket.ticket_id}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     </div>
   );

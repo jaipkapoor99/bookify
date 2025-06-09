@@ -26,6 +26,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { Mail, Lock, User, Loader2 } from "lucide-react";
+import { supabase } from "@/SupabaseClient";
 
 const signupSchema = z
   .object({
@@ -103,13 +104,26 @@ const SignupPage = () => {
             description: error.message,
           });
         }
-      } else if (authData) {
-        toast.success("Signup successful!", {
-          description: "Please check your email for the confirmation link.",
+      } else if (authData.user) {
+        // User is created in auth.users, now create profile in public.users
+        const { error: profileError } = await supabase.from("users").insert({
+          supabase_id: authData.user.id,
+          name: data.fullName,
+          // email: data.email, // The 'email' column does not exist in your 'users' table
         });
-        setTimeout(() => {
-          navigate("/login");
-        }, 2000);
+
+        if (profileError) {
+          toast.error("Failed to create user profile", {
+            description: profileError.message,
+          });
+        } else {
+          toast.success("Signup successful!", {
+            description: "Please check your email for the confirmation link.",
+          });
+          setTimeout(() => {
+            navigate("/login");
+          }, 2000);
+        }
       }
     } catch {
       toast.error("An unexpected error occurred", {

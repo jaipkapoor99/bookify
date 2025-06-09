@@ -3,11 +3,11 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import MyBookingsPage from "@/pages/MyBookingsPage";
 import { supabase } from "@/SupabaseClient";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 // The Supabase client is mocked globally in `src/setupTests.ts`
 // We only need to mock the useAuth hook here.
-vi.mock("@/hooks/useAuth");
+vi.mock("@/contexts/AuthContext");
 
 describe("MyBookingsPage", () => {
   beforeEach(() => {
@@ -16,9 +16,13 @@ describe("MyBookingsPage", () => {
   });
 
   it("should display a loading message initially", () => {
-    // Mock the from().select() call to never resolve (simulate loading)
+    // Mock the from().select().eq() call chain to never resolve (simulate loading)
     (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockImplementation(() => new Promise(() => {})), // Never resolves
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockImplementation(() => new Promise(() => {})), // Never resolves
+        }),
+      }),
     });
 
     render(
@@ -79,26 +83,54 @@ describe("MyBookingsPage", () => {
       { ticket_id: 2, quantity: 1 },
     ];
 
-    // Mock the first query (main ticket data)
-    let selectCallCount = 0;
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockImplementation(() => {
-        selectCallCount++;
+    // Mock the supabase calls with proper method chaining
+    let fromCallCount = 0;
+    (supabase.from as Mock).mockImplementation((table: string) => {
+      fromCallCount++;
 
-        if (selectCallCount === 1) {
-          // First call - main ticket data without quantity
-          return Promise.resolve({ data: mockBookings, error: null });
-        } else if (selectCallCount === 2) {
-          // Second call - quantity data with .in() filter
+      if (table === "users") {
+        // First call - user lookup
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { user_id: 1 },
+                error: null,
+              }),
+            }),
+          }),
+        };
+      } else if (table === "tickets") {
+        if (fromCallCount === 2) {
+          // Second call - main ticket data
           return {
-            in: vi
-              .fn()
-              .mockResolvedValue({ data: mockQuantityData, error: null }),
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: mockBookings,
+                error: null,
+              }),
+            }),
+          };
+        } else if (fromCallCount === 3) {
+          // Third call - quantity data with .eq().in() filter chain
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                in: vi.fn().mockResolvedValue({
+                  data: mockQuantityData,
+                  error: null,
+                }),
+              }),
+            }),
           };
         }
+      }
 
-        return Promise.resolve({ data: [], error: null });
-      }),
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      };
     });
 
     // Mock the functions.invoke call for location fetching since we only get pincode from DB
@@ -148,20 +180,41 @@ describe("MyBookingsPage", () => {
       ).toBeInTheDocument();
     });
 
-    // Check quantities
-    expect(screen.getByText("2 tickets")).toBeInTheDocument();
-    expect(screen.getByText("1 ticket")).toBeInTheDocument();
+    // Check quantities - now all tickets show "1 ticket" since quantity column doesn't exist
+    expect(screen.getAllByText("1 ticket")).toHaveLength(2);
 
-    // Check formatted prices and totals
-    expect(screen.getByText("₹500.00")).toBeInTheDocument(); // Individual ticket price
-    expect(screen.getByText("₹1,000.00")).toBeInTheDocument(); // Total for 2 tickets
-    expect(screen.getAllByText("₹300.00")).toHaveLength(2); // Individual and total for 1 ticket (both should be same)
+    // Check formatted prices and totals - amounts are divided by 100 in formatCurrency
+    expect(screen.getAllByText("₹5.00")).toHaveLength(2); // Same price and total for first ticket (quantity=1)
+    expect(screen.getAllByText("₹3.00")).toHaveLength(2); // 300/100 = ₹3.00 for second ticket
   });
 
   it("should display 'no bookings' message when the user has no tickets", async () => {
-    // Mock the from().select() calls to return empty data
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+    // Mock the supabase calls to return empty ticket data
+    (supabase.from as Mock).mockImplementation((table: string) => {
+      if (table === "users") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { user_id: 1 },
+                error: null,
+              }),
+            }),
+          }),
+        };
+      } else if (table === "tickets") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+          }),
+        };
+      }
+
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      };
     });
 
     render(
@@ -179,11 +232,26 @@ describe("MyBookingsPage", () => {
   });
 
   it("should display error message when there is a fetch error", async () => {
-    // Mock the from().select() call to return an error
-    (supabase.from as Mock).mockReturnValue({
-      select: vi
-        .fn()
-        .mockResolvedValue({ data: null, error: { message: "Network error" } }),
+    // Mock the supabase calls to return an error on user lookup
+    (supabase.from as Mock).mockImplementation((table: string) => {
+      if (table === "users") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: null,
+                error: { message: "User not found" },
+              }),
+            }),
+          }),
+        };
+      }
+
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      };
     });
 
     render(
@@ -195,7 +263,7 @@ describe("MyBookingsPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Error Loading Bookings")).toBeInTheDocument();
       expect(
-        screen.getByText("Error fetching bookings: Network error")
+        screen.getByText(/Unable to fetch user profile/)
       ).toBeInTheDocument();
     });
   });
@@ -224,26 +292,71 @@ describe("MyBookingsPage", () => {
       },
     ];
 
-    let selectCallCount = 0;
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockImplementation(() => {
-        selectCallCount++;
+    // Mock the supabase calls with method chaining
+    let fromCallCount = 0;
+    (supabase.from as Mock).mockImplementation((table: string) => {
+      fromCallCount++;
 
-        if (selectCallCount === 1) {
-          // First call - main ticket data
-          return Promise.resolve({ data: mockBookings, error: null });
-        } else if (selectCallCount === 2) {
-          // Second call - quantity query fails (column doesn't exist)
+      if (table === "users") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: { user_id: 1 },
+                error: null,
+              }),
+            }),
+          }),
+        };
+      } else if (table === "tickets") {
+        if (fromCallCount === 2) {
+          // Second call - main ticket data
           return {
-            in: vi.fn().mockResolvedValue({
-              data: null,
-              error: { message: "column tickets.quantity does not exist" },
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({
+                data: mockBookings,
+                error: null,
+              }),
+            }),
+          };
+        } else if (fromCallCount === 3) {
+          // Third call - quantity query fails (column doesn't exist)
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                in: vi.fn().mockResolvedValue({
+                  data: null,
+                  error: { message: "column tickets.quantity does not exist" },
+                }),
+              }),
             }),
           };
         }
+      }
 
-        return Promise.resolve({ data: [], error: null });
-      }),
+      return {
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      };
+    });
+
+    // Mock the functions.invoke call for location fetching
+    (supabase.functions.invoke as Mock).mockImplementation((name, params) => {
+      if (name === "get-location-from-pincode") {
+        const pincode = params.body.pincode;
+        if (pincode === "110001") {
+          return Promise.resolve({
+            data: {
+              area: "Connaught Place",
+              city: "New Delhi",
+              state: "Delhi",
+            },
+            error: null,
+          });
+        }
+      }
+      return Promise.resolve({ data: null, error: { message: "Not found" } });
     });
 
     render(

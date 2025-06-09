@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import SignupPage from "@/pages/SignupPage";
-import { createSupabaseSignupClient } from "@/SupabaseClient";
+import { supabase, createSupabaseSignupClient } from "@/SupabaseClient";
 import { Toaster } from "@/components/ui/sonner";
 import React from "react";
 
@@ -12,6 +12,18 @@ vi.mock("react-router-dom", async (importActual) => ({
   ...(await importActual<typeof import("react-router-dom")>()),
   useNavigate: () => vi.fn(),
 }));
+
+vi.mock("@/SupabaseClient", async (importActual) => {
+  const actual = await importActual<typeof import("@/SupabaseClient")>();
+  return {
+    ...actual,
+    supabase: {
+      from: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockResolvedValue({ error: null }),
+    },
+    createSupabaseSignupClient: vi.fn(),
+  };
+});
 
 // The Supabase client is mocked globally in `src/setupTests.ts`
 
@@ -44,8 +56,15 @@ describe("SignupPage", () => {
   it("shows a success message after successful signup", async () => {
     (createSupabaseSignupClient as Mock).mockReturnValue({
       auth: {
-        signUp: vi.fn().mockResolvedValue({ data: { user: {} }, error: null }),
+        signUp: vi
+          .fn()
+          .mockResolvedValue({ data: { user: { id: "123" } }, error: null }),
       },
+    });
+
+    // Also mock the standard client's insert for profile creation
+    (supabase.from as Mock).mockReturnValue({
+      insert: vi.fn().mockResolvedValue({ error: null }),
     });
 
     renderWithToaster(<SignupPage />);

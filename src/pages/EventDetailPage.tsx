@@ -133,7 +133,12 @@ const EventDetailPage = () => {
 
   const handleQuantityChange = (delta: number) => {
     const newQuantity = ticketQuantity + delta;
-    if (newQuantity >= 1 && newQuantity <= 10 && selectedVenue && newQuantity <= selectedVenue.no_of_tickets) {
+    if (
+      newQuantity >= 1 &&
+      newQuantity <= 10 &&
+      selectedVenue &&
+      newQuantity <= selectedVenue.no_of_tickets
+    ) {
       setTicketQuantity(newQuantity);
     }
   };
@@ -150,9 +155,11 @@ const EventDetailPage = () => {
 
   const handleConfirmBooking = () => {
     if (!selectedVenue) return;
-    
+
     // Navigate to booking confirmation with quantity as a query parameter
-    navigate(`/book/confirm/${selectedVenue.event_venue_id}?quantity=${ticketQuantity}`);
+    navigate(
+      `/book/confirm/${selectedVenue.event_venue_id}?quantity=${ticketQuantity}`
+    );
   };
 
   const getTotalPrice = () => {
@@ -174,9 +181,15 @@ const EventDetailPage = () => {
       <Card>
         <CardHeader>
           <img
-            src={eventDetails.image_url}
+            src={eventDetails.image_url || "/placeholder.svg"}
             alt={eventDetails.name}
             className="w-full h-64 object-cover rounded-t-lg"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src !== "/placeholder.svg") {
+                target.src = "/placeholder.svg";
+              }
+            }}
           />
           <CardTitle className="mt-4 text-4xl font-bold">
             {eventDetails.name}
@@ -211,7 +224,9 @@ const EventDetailPage = () => {
                       {venueData ? (
                         <div className="flex items-center justify-between">
                           <div className="space-y-2">
-                            <p className="font-bold text-lg">{venueData.venue_name}</p>
+                            <p className="font-bold text-lg">
+                              {venueData.venue_name}
+                            </p>
                             <div className="flex items-center gap-2 text-muted-foreground">
                               <MapPin className="h-4 w-4" />
                               {locationStr ? (
@@ -225,18 +240,24 @@ const EventDetailPage = () => {
                               <span>
                                 {new Date(
                                   eventVenue.event_venue_date
-                                ).toLocaleDateString('en-US', {
-                                  weekday: 'long',
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
+                                ).toLocaleDateString("en-US", {
+                                  weekday: "long",
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
                                 })}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Ticket className="h-4 w-4 text-muted-foreground" />
-                              <span className={eventVenue.no_of_tickets > 0 ? "text-green-600" : "text-red-600"}>
-                                {eventVenue.no_of_tickets > 0 
+                              <span
+                                className={
+                                  eventVenue.no_of_tickets > 0
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                                }
+                              >
+                                {eventVenue.no_of_tickets > 0
                                   ? `${eventVenue.no_of_tickets} tickets available`
                                   : "Sold out"}
                               </span>
@@ -246,12 +267,16 @@ const EventDetailPage = () => {
                             <p className="text-2xl font-bold">
                               ₹{eventVenue.price}
                             </p>
-                            <p className="text-sm text-muted-foreground">per ticket</p>
-                            <Button 
+                            <p className="text-sm text-muted-foreground">
+                              per ticket
+                            </p>
+                            <Button
                               onClick={() => handleSelectVenue(eventVenue)}
                               disabled={eventVenue.no_of_tickets === 0}
                             >
-                              {eventVenue.no_of_tickets > 0 ? "Book Tickets" : "Sold Out"}
+                              {eventVenue.no_of_tickets > 0
+                                ? "Book Tickets"
+                                : "Sold Out"}
                             </Button>
                           </div>
                         </div>
@@ -274,10 +299,11 @@ const EventDetailPage = () => {
           <DialogHeader>
             <DialogTitle>Select Ticket Quantity</DialogTitle>
             <DialogDescription>
-              Choose how many tickets you want to purchase for {selectedVenue?.venues.venue_name}
+              Choose how many tickets you want to purchase for{" "}
+              {selectedVenue?.venues.venue_name}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
               <Label>Number of Tickets</Label>
@@ -290,35 +316,51 @@ const EventDetailPage = () => {
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                
+
                 <Input
                   type="number"
                   value={ticketQuantity}
                   onChange={(e) => {
                     const value = parseInt(e.target.value) || 1;
-                    if (value >= 1 && value <= 10 && selectedVenue && value <= selectedVenue.no_of_tickets) {
+                    if (
+                      value >= 1 &&
+                      value <= 10 &&
+                      selectedVenue &&
+                      value <= selectedVenue.no_of_tickets
+                    ) {
                       setTicketQuantity(value);
                     }
                   }}
                   className="w-20 text-center"
                   min={1}
-                  max={selectedVenue ? Math.min(10, selectedVenue.no_of_tickets) : 10}
+                  max={
+                    selectedVenue
+                      ? Math.min(10, selectedVenue.no_of_tickets)
+                      : 10
+                  }
                 />
-                
+
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => handleQuantityChange(1)}
-                  disabled={ticketQuantity >= 10 || (selectedVenue ? ticketQuantity >= selectedVenue.no_of_tickets : false)}
+                  disabled={
+                    ticketQuantity >= 10 ||
+                    (selectedVenue
+                      ? ticketQuantity >= selectedVenue.no_of_tickets
+                      : false)
+                  }
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground text-center">
-                Maximum {selectedVenue ? Math.min(10, selectedVenue.no_of_tickets) : 10} tickets per booking
+                Maximum{" "}
+                {selectedVenue ? Math.min(10, selectedVenue.no_of_tickets) : 10}{" "}
+                tickets per booking
               </p>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Price per ticket:</span>
@@ -330,14 +372,15 @@ const EventDetailPage = () => {
               </div>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBookingDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowBookingDialog(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={handleConfirmBooking}>
-              Continue to Booking
-            </Button>
+            <Button onClick={handleConfirmBooking}>Continue to Booking</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
