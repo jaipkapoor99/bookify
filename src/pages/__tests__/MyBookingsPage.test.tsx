@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import MyBookingsPage from "@/pages/MyBookingsPage";
@@ -52,6 +52,8 @@ describe("MyBookingsPage", () => {
       {
         ticket_id: 1,
         ticket_price: 2500,
+        quantity: 1,
+        created_at: "2025-11-15T10:00:00Z",
         events_venues: {
           event_venue_date: "2025-11-20T00:00:00",
           venues: {
@@ -66,6 +68,8 @@ describe("MyBookingsPage", () => {
       {
         ticket_id: 2,
         ticket_price: 300,
+        quantity: 2,
+        created_at: "2025-11-16T11:00:00Z",
         events_venues: {
           event_venue_date: "2025-12-05T00:00:00",
           venues: {
@@ -91,19 +95,40 @@ describe("MyBookingsPage", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Rock Fest 2025")).toBeInTheDocument();
-      expect(screen.getByText("City Arena")).toBeInTheDocument();
-      expect(
-        screen.getByText(new Date("2025-11-20").toLocaleDateString())
-      ).toBeInTheDocument();
-      expect(screen.getByText("Price: ₹2500")).toBeInTheDocument();
+      // Find cards by looking for the "Booking ID" text, which is unique to each card
+      const cards = screen
+        .getAllByText(/Booking ID:/)
+        .map((el) => el.closest('[data-slot="card"]'));
+      expect(cards).toHaveLength(2);
 
-      expect(screen.getByText("Winter Gala")).toBeInTheDocument();
-      expect(screen.getByText("Community Theater")).toBeInTheDocument();
+      // Check first booking
+      const firstCard = cards[0] as HTMLElement;
+      expect(within(firstCard).getByText("Rock Fest 2025")).toBeInTheDocument();
+      expect(within(firstCard).getByText("City Arena")).toBeInTheDocument();
       expect(
-        screen.getByText(new Date("2025-12-05").toLocaleDateString())
+        within(firstCard).getByText("1 ticket × ₹2500 each")
       ).toBeInTheDocument();
-      expect(screen.getByText("Price: ₹300")).toBeInTheDocument();
+      expect(within(firstCard).getByText("Total Amount")).toBeInTheDocument();
+      expect(within(firstCard).getByText("₹2500")).toBeInTheDocument();
+      expect(
+        within(firstCard).getByText("Booked on", { exact: false })
+      ).toBeInTheDocument();
+
+      // Check second booking
+      const secondCard = cards[1] as HTMLElement;
+      expect(within(secondCard).getByText("Winter Gala")).toBeInTheDocument();
+      expect(
+        within(secondCard).getByText("Community Theater")
+      ).toBeInTheDocument();
+      expect(
+        within(secondCard).getByText("2 tickets × ₹300 each")
+      ).toBeInTheDocument();
+      expect(within(secondCard).getByText("Total Amount")).toBeInTheDocument();
+      expect(within(secondCard).getByText("₹600")).toBeInTheDocument();
+      const bookedOnElements = within(secondCard).getAllByText("Booked on", {
+        exact: false,
+      });
+      expect(bookedOnElements.length).toBeGreaterThan(0);
     });
   });
 

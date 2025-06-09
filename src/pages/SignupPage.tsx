@@ -3,7 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { createSupabaseSignupClient } from "@/SupabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -20,35 +27,37 @@ import * as z from "zod";
 import { toast } from "sonner";
 import { Mail, Lock, User, Loader2 } from "lucide-react";
 
-const signupSchema = z.object({
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z
-    .string()
-    .min(8, {
-      message: "Password must be at least 8 characters long.",
-    })
-    .regex(/[A-Z]/, {
-      message: "Password must contain at least one uppercase letter.",
-    })
-    .regex(/[a-z]/, {
-      message: "Password must contain at least one lowercase letter.",
-    })
-    .regex(/[0-9]/, {
-      message: "Password must contain at least one number.",
+const signupSchema = z
+  .object({
+    email: z.string().email({
+      message: "Please enter a valid email address.",
     }),
-  confirmPassword: z.string(),
-  fullName: z.string().min(2, {
-    message: "Full name must be at least 2 characters.",
-  }),
-  agreeToTerms: z.boolean().refine((val) => val === true, {
-    message: "You must agree to the terms and conditions.",
-  }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+    password: z
+      .string()
+      .min(8, {
+        message: "Password must be at least 8 characters long.",
+      })
+      .regex(/[A-Z]/, {
+        message: "Password must contain at least one uppercase letter.",
+      })
+      .regex(/[a-z]/, {
+        message: "Password must contain at least one lowercase letter.",
+      })
+      .regex(/[0-9]/, {
+        message: "Password must contain at least one number.",
+      }),
+    confirmPassword: z.string(),
+    fullName: z.string().min(2, {
+      message: "Full name must be at least 2 characters.",
+    }),
+    agreeToTerms: z.boolean().refine((val) => val === true, {
+      message: "You must agree to the terms and conditions.",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -102,7 +111,7 @@ const SignupPage = () => {
           navigate("/login");
         }, 2000);
       }
-    } catch (error) {
+    } catch {
       toast.error("An unexpected error occurred", {
         description: "Please try again later.",
       });
@@ -115,7 +124,9 @@ const SignupPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">
+            Create an account
+          </CardTitle>
           <CardDescription className="text-center">
             Enter your details below to create your account
           </CardDescription>
@@ -187,7 +198,8 @@ const SignupPage = () => {
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Must be at least 8 characters with uppercase, lowercase, and number.
+                      Must be at least 8 characters with uppercase, lowercase,
+                      and number.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -230,7 +242,10 @@ const SignupPage = () => {
                     <div className="space-y-1 leading-none">
                       <FormLabel>
                         I agree to the{" "}
-                        <a href="#" className="text-primary underline hover:no-underline">
+                        <a
+                          href="#"
+                          className="text-primary underline hover:no-underline"
+                        >
                           terms and conditions
                         </a>
                       </FormLabel>
@@ -256,7 +271,10 @@ const SignupPage = () => {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <a href="/login" className="text-primary underline hover:no-underline">
+            <a
+              href="/login"
+              className="text-primary underline hover:no-underline"
+            >
               Sign in
             </a>
           </p>
