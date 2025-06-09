@@ -5,10 +5,10 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
 import { supabase } from "@/SupabaseClient";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
-vi.mock("@/hooks/useAuth");
+vi.mock("@/contexts/AuthContext");
 
 // Mock window.alert
 global.alert = vi.fn();

@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { Minus, Plus, Calendar, MapPin, Ticket } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import StorageImage from "@/components/ui/StorageImage";

@@ -16,6 +16,7 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
 import AccountPage from "@/pages/AccountPage";
 import AdminEventPage from "@/pages/AdminEventPage";
+import AuthCallback from "@/pages/AuthCallback";
 import { Toaster } from "@/components/ui/sonner";
 
 const router = createBrowserRouter(
@@ -26,6 +27,7 @@ const router = createBrowserRouter(
         <Route path="/events/:eventId" element={<EventDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/my-bookings" element={<MyBookingsPage />} />
           <Route

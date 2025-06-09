@@ -4,21 +4,20 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import EventDetailPage from "@/pages/EventDetailPage";
 import { supabase } from "@/SupabaseClient";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
-// Mock react-router-dom before importing components
+// Create a mock navigate function
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
-  return {
-    ...actual,
-    useParams: () => ({ eventId: "1" }),
-    useNavigate: () => mockNavigate,
-  };
-});
 
-// Mock the hooks
-vi.mock("@/hooks/useAuth");
+// Mock necessary components and hooks
+vi.mock("react-router-dom", async (importActual) => ({
+  ...(await importActual<typeof import("react-router-dom")>()),
+  useParams: () => ({ eventId: "1" }),
+  useNavigate: () => mockNavigate,
+}));
+
+vi.mock("@/SupabaseClient");
+vi.mock("@/contexts/AuthContext");
 
 const mockEvent = {
   event_id: 1,

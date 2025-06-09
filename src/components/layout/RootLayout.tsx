@@ -1,15 +1,27 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/SupabaseClient";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const RootLayout = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      const { error } = await logout();
+      if (error) {
+        toast.error("Logout failed", {
+          description: error.message,
+        });
+      } else {
+        toast.success("Logged out successfully");
+        navigate("/");
+      }
+    } catch (err) {
+      toast.error("An unexpected error occurred during logout");
+      console.error("Logout error:", err);
+    }
   };
 
   return (

@@ -1,6 +1,6 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode, useCallback } from "react";
 import { supabase } from "../SupabaseClient";
-import { AuthContext } from "./AuthContext.context";
+import { AuthContext, type UserProfile } from "./AuthContext.context";
 import type {
   User,
   Session as AuthSession,
@@ -11,6 +11,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<AuthSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(false);
+
+  const fetchProfile = useCallback(async (user: User | null) => {
+    if (!user) {
+      setProfile(null);
+      return;
+    }
+
+    setLoadingProfile(true);
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("supabase_id", user.id)
+        .single();
+
+      if (error) {
+        console.warn("Could not fetch user profile:", error.message);
+        setProfile(null);
+      } else if (data) {
+        setProfile(data);
+      }
+    } catch (e) {
+      console.error("An unexpected error occurred fetching profile", e);
+      setProfile(null);
+    } finally {
+      setLoadingProfile(false);
+    }
+  }, []);
 
   useEffect(() => {
     const getSession = async () => {
@@ -20,6 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
+        await fetchProfile(session?.user ?? null);
       } catch (error) {
         console.error("Error getting session:", error);
       } finally {
@@ -33,6 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        await fetchProfile(session?.user ?? null);
         setLoading(false);
       }
     );
@@ -40,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchProfile]);
 
   const login = async (
     email: string,
@@ -58,12 +90,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error };
   };
 
+  const loginWithGoogle = async (): Promise<{ error: AuthError | null }> => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    return { error };
+  };
+
   const value = {
     user,
     session,
     loading,
+    profile,
+    loadingProfile,
     login,
     logout,
+    loginWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
