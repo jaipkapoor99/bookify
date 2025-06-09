@@ -269,3 +269,22 @@ This project follows a strict **Test-Driven Development (TDD)** approach. Every 
 - **Path Aliases**: Use the `@/` alias for imports from the `src` directory (e.g., `import MyComponent from '@/components/MyComponent'`).
 - **Linting**: The project uses ESLint for code quality. Please ensure your code follows the linting rules (`npm run lint`) before submitting a contribution.
 - **Component Library**: We use `shadcn/ui` for UI components. Please familiarize yourself with its usage.
+
+## Testing
+
+Run the test suite:
+```bash
+npm test
+```
+
+## TypeScript Configuration
+
+The project uses TypeScript with strict type checking and enhanced module resolution:
+
+- **Module Resolution**: Configured with `moduleResolution: "bundler"` for optimal compatibility with Vite
+- **Type Roots**: TypeScript looks for type declarations in `node_modules/@types` and `src/types`
+- **Path Aliases**: `@/*` is configured to resolve to `src/*` for cleaner imports
+- **Built-in Types**: Radix UI and Lucide React packages include their own TypeScript definitions, so no separate @types packages are needed
+- **Strict Mode**: Full strict type checking is enabled for better type safety
+
+## Troubleshooting
