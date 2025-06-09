@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/SupabaseClient";
 import { Button } from "@/components/ui/button";
-import { Image } from "@/components/ui/image";
 import {
   Card,
   CardContent,
@@ -182,7 +181,7 @@ const BookingConfirmationPage = () => {
         <div className="flex items-center justify-center min-h-[40vh]">
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 mb-6">
-              <Image
+              <img
                 src="/Bookify Icon.png"
                 alt="Bookify"
                 className="h-12 w-12 object-contain opacity-75"

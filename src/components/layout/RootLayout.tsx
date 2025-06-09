@@ -1,7 +1,6 @@
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Image } from "@/components/ui/image";
 import { toast } from "sonner";
 
 const RootLayout = () => {
@@ -30,7 +29,7 @@ const RootLayout = () => {
       <header className="p-4 bg-gray-100 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
           <Link to="/" className="flex items-center gap-3">
-            <Image
+            <img
               src="/Bookify Icon.png"
               alt="Bookify"
               className="h-8 w-8 object-contain"
@@ -82,7 +81,7 @@ const RootLayout = () => {
         <div className="container mx-auto p-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Image
+              <img
                 src="/Bookify Icon.png"
                 alt="Bookify"
                 className="h-6 w-6 object-contain opacity-60"

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Image } from "@/components/ui/image";
 import { useAppState } from "@/contexts/AppStateContext";
 import {
   Card,
@@ -160,7 +159,7 @@ const HomePage = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <Image
+            <img
               src="/Bookify Icon.png"
               alt="Bookify"
               className="h-12 w-12 object-contain opacity-75"

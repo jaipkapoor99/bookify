@@ -205,7 +205,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [isCacheValid, setCache, setLoading]
+    [setCache, setLoading]
   );
 
   const fetchEventVenue = useCallback(
@@ -263,7 +263,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [isCacheValid, setCache, setLoading]
+    [setCache, setLoading]
   );
 
   const fetchVenues = useCallback(
@@ -309,7 +309,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [isCacheValid, setCache, setLoading]
+    [setCache, setLoading]
   );
 
   const clearCache = useCallback(() => {
