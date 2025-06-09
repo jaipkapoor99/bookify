@@ -1,7 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { supabase } from "../SupabaseClient";
 import { AuthContext } from "./AuthContext.context";
-import type { User, Session as AuthSession, AuthError } from "@supabase/supabase-js";
+import type {
+  User,
+  Session as AuthSession,
+  AuthError,
+} from "@supabase/supabase-js";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -38,7 +42,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const login = async (email: string, password: string): Promise<{ error: AuthError | null }> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ error: AuthError | null }> => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -62,4 +69,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+export default AuthProvider;
+// eslint-disable-next-line react-refresh/only-export-components
 export { useAuth } from "./AuthContext.context";

@@ -58,6 +58,7 @@ const AppStateContext = createContext<AppStateContextType | undefined>(
   undefined
 );
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppState = () => {
   const context = useContext(AppStateContext);
   if (!context) {
@@ -66,9 +67,7 @@ export const useAppState = () => {
   return context;
 };
 
-export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, setState] = useState<AppState>({
     events: [],
     eventVenues: {},
@@ -77,101 +76,120 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
     cache: {},
   });
 
-  const setLoading = (key: string, isLoading: boolean) => {
+  const setLoading = useCallback((key: string, isLoading: boolean) => {
     setState((prev) => ({
       ...prev,
       loading: { ...prev.loading, [key]: isLoading },
     }));
-  };
+  }, []);
 
-  const isLoading = (key: string) => state.loading[key] || false;
+  const isLoading = useCallback(
+    (key: string) => {
+      return state.loading[key] || false;
+    },
+    [state.loading]
+  );
 
-  const isCacheValid = <T,>(key: string): { valid: boolean; data?: T } => {
-    const cached = state.cache[key];
-    if (!cached) return { valid: false };
+  const isCacheValid = useCallback(
+    <T,>(
+      key: string,
+      cache: Record<string, CacheItem<unknown>>
+    ): { valid: boolean; data?: T } => {
+      const cached = cache[key];
+      if (!cached) return { valid: false };
 
-    const now = Date.now();
-    if (now - cached.timestamp > cached.ttl) {
-      // Cache expired
-      return { valid: false };
-    }
-
-    return { valid: true, data: cached.data as T };
-  };
-
-  const setCache = <T,>(key: string, data: T, ttl: number = DEFAULT_TTL) => {
-    setState((prev) => ({
-      ...prev,
-      cache: {
-        ...prev.cache,
-        [key]: {
-          data,
-          timestamp: Date.now(),
-          ttl,
-        },
-      },
-    }));
-  };
-
-  const fetchEvents = useCallback(async (force = false): Promise<Event[]> => {
-    const cacheKey = "events";
-
-    if (!force) {
-      const cached = isCacheValid<Event[]>(cacheKey);
-      if (cached.valid && cached.data) {
-        return cached.data;
+      const now = Date.now();
+      if (now - cached.timestamp > cached.ttl) {
+        // Cache expired
+        return { valid: false };
       }
-    }
 
-    setLoading(cacheKey, true);
+      return { valid: true, data: cached.data as T };
+    },
+    []
+  );
 
-    try {
-      const { data, error } = await supabase
-        .from("events")
-        .select(
-          `
+  const setCache = useCallback(
+    <T,>(key: string, data: T, ttl: number = DEFAULT_TTL) => {
+      setState((prev) => ({
+        ...prev,
+        cache: {
+          ...prev.cache,
+          [key]: {
+            data,
+            timestamp: Date.now(),
+            ttl,
+          },
+        },
+      }));
+    },
+    []
+  );
+
+  const fetchEvents = useCallback(
+    async (force = false): Promise<Event[]> => {
+      const cacheKey = "events";
+
+      if (!force) {
+        const cached = isCacheValid<Event[]>(cacheKey, state.cache);
+        if (cached.valid && cached.data) {
+          return cached.data;
+        }
+      }
+
+      setLoading(cacheKey, true);
+
+      try {
+        const { data, error } = await supabase
+          .from("events")
+          .select(
+            `
           *,
           events_venues (
             venues (
-              name,
-              city
+              venue_name,
+              locations (
+                pincode
+              )
             )
           )
         `
-        )
-        .order("start_time", { ascending: true });
+          )
+          .order("start_time", { ascending: true });
 
-      if (error) {
-        toast.error("Failed to fetch events", {
-          description: error.message,
-        });
-        throw error;
+        if (error) {
+          toast.error("Failed to fetch events", {
+            description: error.message,
+          });
+          throw error;
+        }
+
+        const events = data as Event[];
+
+        setState((prev) => ({
+          ...prev,
+          events,
+        }));
+
+        setCache(cacheKey, events);
+
+        return events;
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        return [];
+      } finally {
+        setLoading(cacheKey, false);
       }
-
-      const events = data as Event[];
-
-      setState((prev) => ({
-        ...prev,
-        events,
-      }));
-
-      setCache(cacheKey, events);
-
-      return events;
-    } catch (error) {
-      console.error("Error fetching events:", error);
-      return [];
-    } finally {
-      setLoading(cacheKey, false);
-    }
-  }, []);
+    },
+    [isCacheValid, setCache, setLoading, state.cache]
+  );
 
   const fetchEventVenue = useCallback(
     async (eventId: number, force = false): Promise<EventVenue[]> => {
       const cacheKey = `event-venues-${eventId}`;
 
       if (!force) {
-        const cached = isCacheValid<EventVenue[]>(cacheKey);
+        const cached = isCacheValid<EventVenue[]>(cacheKey, state.cache);
         if (cached.valid && cached.data) {
           return cached.data;
         }
@@ -221,51 +239,54 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         setLoading(cacheKey, false);
       }
     },
-    []
+    [isCacheValid, setCache, setLoading, state.cache]
   );
 
-  const fetchVenues = useCallback(async (force = false): Promise<Venue[]> => {
-    const cacheKey = "venues";
+  const fetchVenues = useCallback(
+    async (force = false): Promise<Venue[]> => {
+      const cacheKey = "venues";
 
-    if (!force) {
-      const cached = isCacheValid<Venue[]>(cacheKey);
-      if (cached.valid && cached.data) {
-        return cached.data;
-      }
-    }
-
-    setLoading(cacheKey, true);
-
-    try {
-      const { data, error } = await supabase
-        .from("venues")
-        .select("*")
-        .order("venue_name");
-
-      if (error) {
-        toast.error("Failed to fetch venues", {
-          description: error.message,
-        });
-        throw error;
+      if (!force) {
+        const cached = isCacheValid<Venue[]>(cacheKey, state.cache);
+        if (cached.valid && cached.data) {
+          return cached.data;
+        }
       }
 
-      const venues = data as Venue[];
+      setLoading(cacheKey, true);
 
-      setState((prev) => ({
-        ...prev,
-        venues,
-      }));
+      try {
+        const { data, error } = await supabase
+          .from("venues")
+          .select("*")
+          .order("venue_name");
 
-      setCache(cacheKey, venues);
+        if (error) {
+          toast.error("Failed to fetch venues", {
+            description: error.message,
+          });
+          throw error;
+        }
 
-      return venues;
-    } catch (error) {
-      console.error("Error fetching venues:", error);
-      return [];
-    } finally {
-      setLoading(cacheKey, false);
-    }
-  }, []);
+        const venues = data as Venue[];
+
+        setState((prev) => ({
+          ...prev,
+          venues,
+        }));
+
+        setCache(cacheKey, venues);
+
+        return venues;
+      } catch (error) {
+        console.error("Error fetching venues:", error);
+        return [];
+      } finally {
+        setLoading(cacheKey, false);
+      }
+    },
+    [isCacheValid, setCache, setLoading, state.cache]
+  );
 
   const clearCache = useCallback(() => {
     setState((prev) => ({
@@ -289,3 +310,6 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
     </AppStateContext.Provider>
   );
 };
+
+export { AppStateProvider };
+export default AppStateProvider;
