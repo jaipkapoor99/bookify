@@ -79,8 +79,17 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   // Use ref for cache to avoid circular dependencies in useCallbacks
   const cacheRef = useRef<Record<string, CacheItem<unknown>>>({});
+  // Use ref for loading state to avoid recreating isLoading callback
+  const loadingRef = useRef<Record<string, boolean>>({});
 
   const setLoading = useCallback((key: string, isLoading: boolean) => {
+    // Update both ref and state
+    if (isLoading) {
+      loadingRef.current[key] = true;
+    } else {
+      delete loadingRef.current[key];
+    }
+
     setState((prev) => {
       const newLoading = { ...prev.loading };
       if (isLoading) {
@@ -95,12 +104,10 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     });
   }, []);
 
-  const isLoading = useCallback(
-    (key: string) => {
-      return state.loading[key] || false;
-    },
-    [state.loading]
-  );
+  // Use ref to avoid dependency on state.loading
+  const isLoading = useCallback((key: string) => {
+    return loadingRef.current[key] || false;
+  }, []);
 
   const setCache = useCallback(
     <T,>(key: string, data: T, ttl: number = DEFAULT_TTL) => {
@@ -198,7 +205,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [setCache, setLoading, state.cache]
+    [setCache, setLoading]
   );
 
   const fetchEventVenue = useCallback(
@@ -260,7 +267,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [setCache, setLoading, state.cache]
+    [setCache, setLoading]
   );
 
   const fetchVenues = useCallback(
@@ -310,7 +317,7 @@ const AppStateProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setLoading(cacheKey, false);
       }
     },
-    [setCache, setLoading, state.cache]
+    [setCache, setLoading]
   );
 
   const clearCache = useCallback(() => {
