@@ -1,6 +1,6 @@
 # Architecture Overview
 
-This document provides a comprehensive overview of the Event Booking Platform's architecture, design decisions, and system components.
+This document provides a comprehensive overview of Bookify's architecture, design decisions, and system components.
 
 ## 🏗️ System Architecture
 
@@ -734,4 +734,4 @@ getLCP(sendToAnalytics);
 getTTFB(sendToAnalytics);
 ```
 
-This architecture provides a robust, scalable, and maintainable foundation for the Event Booking Platform, with clear separation of concerns, comprehensive security measures, and optimized performance characteristics.
+This architecture provides a robust, scalable, and maintainable foundation for Bookify, with clear separation of concerns, comprehensive security measures, and optimized performance characteristics.

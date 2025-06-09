@@ -178,7 +178,18 @@ const BookingConfirmationPage = () => {
   if (loading) {
     return (
       <div className="container mx-auto p-4 text-center">
-        Loading confirmation details...
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <div className="text-center">
+            <img
+              src="/Bookify_Transparent.png"
+              alt="Bookify"
+              className="h-16 w-auto mx-auto mb-4 opacity-75"
+            />
+            <div className="text-muted-foreground">
+              Loading confirmation details...
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

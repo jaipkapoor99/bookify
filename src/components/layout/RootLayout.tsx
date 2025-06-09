@@ -28,8 +28,13 @@ const RootLayout = () => {
     <div>
       <header className="p-4 bg-gray-100 shadow-md">
         <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold">
-            Booking Platform
+          <Link to="/" className="flex items-center gap-3">
+            <img
+              src="/Bookify_Transparent.png"
+              alt="Bookify"
+              className="h-8 w-auto"
+            />
+            <span className="text-2xl font-bold text-gray-900">Bookify</span>
           </Link>
           <div className="flex items-center gap-4">
             {!loading &&
@@ -72,6 +77,25 @@ const RootLayout = () => {
       <main className="container mx-auto p-4">
         <Outlet />
       </main>
+      <footer className="bg-gray-50 border-t mt-16">
+        <div className="container mx-auto p-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <img
+                src="/Bookify_Transparent.png"
+                alt="Bookify"
+                className="h-6 w-auto opacity-60"
+              />
+              <span className="text-sm text-gray-600">
+                © 2024 Bookify. All rights reserved.
+              </span>
+            </div>
+            <div className="text-sm text-gray-500">
+              Discover amazing events, book with confidence
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

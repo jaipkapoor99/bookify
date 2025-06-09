@@ -1,7 +1,8 @@
 {
-  "name": "booking-platform",
+  "name": "bookify",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.5.0",
+  "description": "Bookify - Modern event booking platform built with React, TypeScript, and Supabase",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,6 +1,6 @@
-# Event Booking Platform
+# Bookify
 
-A modern, full-stack event booking platform built with React, TypeScript, and Supabase. This application provides a complete event management and ticket booking system with authentication, real-time availability, and admin capabilities.
+A modern, full-stack event booking platform built with React, TypeScript, and Supabase. Bookify provides a complete event management and ticket booking system with authentication, real-time availability, and admin capabilities.
 
 ## 🚀 Features
 

@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-01-16
+
+### Added
+
+- **Brand Identity**: Established "Bookify" as the official product name and brand
+- **Comprehensive Documentation**: Complete documentation overhaul with enterprise-grade guides
+  - New API Documentation with database schema and query patterns
+  - Production Deployment Guide for multiple platforms
+  - System Architecture Documentation with design decisions
+  - Enhanced README with modern structure and visual design
+
+### Changed
+
+- **Project Name**: Rebranded from "Event Booking Platform" to "Bookify"
+- **HTML Title**: Updated to "Bookify - Book Tickets for Amazing Events"
+- **Package Information**: Updated package.json with new name, version, and description
+- **Documentation**: Updated all documentation files to reflect Bookify branding
+- **Version**: Bumped to v1.5.0 to reflect the maturity and documentation completeness
+
 ## [1.4.0] - 2025-06-15
 
 ### Added

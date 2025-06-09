@@ -111,6 +111,13 @@ const LoginPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
+          <div className="flex justify-center mb-6">
+            <img
+              src="/Bookify_Transparent.png"
+              alt="Bookify"
+              className="h-16 w-auto"
+            />
+          </div>
           <CardTitle className="text-2xl font-bold text-center">
             Welcome back
           </CardTitle>

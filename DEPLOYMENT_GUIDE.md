@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide covers deploying the Event Booking Platform to production environments, including setup for various hosting platforms and best practices.
+This guide covers deploying Bookify to production environments, including setup for various hosting platforms and best practices.
 
 ## 🚀 Quick Deployment Options
 
@@ -576,4 +576,4 @@ vercel build --debug
 - **Code**: Version control with Git
 - **Configuration**: Document all environment variables
 
-This deployment guide provides comprehensive instructions for deploying the Event Booking Platform to production. Choose the deployment option that best fits your needs and follow the security best practices to ensure a robust production environment.
+This deployment guide provides comprehensive instructions for deploying Bookify to production. Choose the deployment option that best fits your needs and follow the security best practices to ensure a robust production environment.

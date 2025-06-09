@@ -1,6 +1,6 @@
 # API Documentation
 
-This document provides comprehensive documentation for the Event Booking Platform's backend API, database functions, and data structures.
+This document provides comprehensive documentation for Bookify's backend API, database functions, and data structures.
 
 ## 🌐 Overview
 
