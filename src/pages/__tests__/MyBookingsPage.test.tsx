@@ -5,14 +5,8 @@ import MyBookingsPage from "@/pages/MyBookingsPage";
 import { supabase } from "@/SupabaseClient";
 import { useAuth } from "@/hooks/useAuth";
 
-// Mock the entire Supabase client
-vi.mock("@/SupabaseClient", () => ({
-  supabase: {
-    rpc: vi.fn(),
-  },
-}));
-
-// Mock the useAuth hook
+// The Supabase client is mocked globally in `src/setupTests.ts`
+// We only need to mock the useAuth hook here.
 vi.mock("@/hooks/useAuth");
 
 describe("MyBookingsPage", () => {
@@ -22,7 +16,10 @@ describe("MyBookingsPage", () => {
   });
 
   it("should display a loading message initially", () => {
-    (supabase.rpc as Mock).mockResolvedValue({ data: [], error: null });
+    // Mock the RPC call to return a promise
+    (supabase.rpc as Mock).mockReturnValue({
+      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+    });
 
     render(
       <MemoryRouter>
@@ -34,7 +31,10 @@ describe("MyBookingsPage", () => {
   });
 
   it('should display "You have no bookings yet" when no tickets are fetched', async () => {
-    (supabase.rpc as Mock).mockResolvedValue({ data: [], error: null });
+    // Mock the RPC call to return empty data
+    (supabase.rpc as Mock).mockReturnValue({
+      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+    });
 
     render(
       <MemoryRouter>
@@ -54,7 +54,9 @@ describe("MyBookingsPage", () => {
         ticket_price: 2500,
         events_venues: {
           event_venue_date: "2025-11-20T00:00:00",
-          venues: { venue_name: "City Arena" },
+          venues: {
+            venue_name: "City Arena",
+          },
           events: {
             name: "Rock Fest 2025",
             image_url: "/rock-fest.png",
@@ -66,7 +68,9 @@ describe("MyBookingsPage", () => {
         ticket_price: 300,
         events_venues: {
           event_venue_date: "2025-12-05T00:00:00",
-          venues: { venue_name: "Community Theater" },
+          venues: {
+            venue_name: "Community Theater",
+          },
           events: {
             name: "Winter Gala",
             image_url: "/winter-gala.png",
@@ -75,9 +79,9 @@ describe("MyBookingsPage", () => {
       },
     ];
 
-    (supabase.rpc as Mock).mockResolvedValue({
-      data: mockBookings,
-      error: null,
+    // Mock the RPC call to return the mock bookings
+    (supabase.rpc as Mock).mockReturnValue({
+      select: vi.fn().mockResolvedValue({ data: mockBookings, error: null }),
     });
 
     render(
@@ -89,21 +93,29 @@ describe("MyBookingsPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Rock Fest 2025")).toBeInTheDocument();
       expect(screen.getByText("City Arena")).toBeInTheDocument();
-      expect(screen.getByText("11/20/2025")).toBeInTheDocument();
+      expect(
+        screen.getByText(new Date("2025-11-20").toLocaleDateString())
+      ).toBeInTheDocument();
       expect(screen.getByText("Price: ₹2500")).toBeInTheDocument();
 
       expect(screen.getByText("Winter Gala")).toBeInTheDocument();
       expect(screen.getByText("Community Theater")).toBeInTheDocument();
-      expect(screen.getByText("12/5/2025")).toBeInTheDocument();
+      expect(
+        screen.getByText(new Date("2025-12-05").toLocaleDateString())
+      ).toBeInTheDocument();
       expect(screen.getByText("Price: ₹300")).toBeInTheDocument();
     });
   });
 
   it("should display an error message if fetching bookings fails", async () => {
     const errorMessage = "Failed to fetch bookings";
-    (supabase.rpc as Mock).mockResolvedValue({
-      data: null,
-      error: { message: errorMessage },
+
+    // Mock the RPC call to return an error
+    (supabase.rpc as Mock).mockReturnValue({
+      select: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: errorMessage },
+      }),
     });
 
     render(

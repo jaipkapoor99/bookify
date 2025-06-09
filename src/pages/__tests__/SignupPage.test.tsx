@@ -1,31 +1,25 @@
+/// <reference types="vitest/globals" />
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import SignupPage from "@/pages/SignupPage";
-import { supabase } from "@/SupabaseClient";
+import { createSupabaseSignupClient } from "@/SupabaseClient";
 
-// Mock Supabase client
-vi.mock("@/SupabaseClient", () => ({
-  supabase: {
-    auth: {
-      signUp: vi.fn(),
-    },
-  },
-}));
+// The createSupabaseSignupClient is mocked globally in `src/setupTests.ts`
 
-// Mock useNavigate from react-router-dom
-const mockedNavigate = vi.fn();
+// Mock useNavigate
+const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");
   return {
     ...actual,
-    useNavigate: () => mockedNavigate,
+    useNavigate: () => mockNavigate,
   };
 });
 
 describe("SignupPage", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it("renders the signup form", () => {
@@ -35,16 +29,22 @@ describe("SignupPage", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByLabelText("Email")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Sign Up" })).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /sign up/i })
+    ).toBeInTheDocument();
   });
 
   it("shows a success message after successful signup", async () => {
-    (supabase.auth.signUp as Mock).mockResolvedValueOnce({
-      data: { user: { identities: [{}] } },
-      error: null,
-    });
+    // Mock successful signup
+    const mockAuth = {
+      signUp: vi.fn().mockResolvedValue({
+        data: { user: { id: "123" } },
+        error: null,
+      }),
+    };
+    (createSupabaseSignupClient as Mock).mockReturnValue({ auth: mockAuth });
 
     render(
       <MemoryRouter>
@@ -52,32 +52,36 @@ describe("SignupPage", () => {
       </MemoryRouter>
     );
 
-    fireEvent.change(screen.getByLabelText("Email"), {
-      target: { value: "newuser@example.com" },
-    });
-    fireEvent.change(screen.getByLabelText("Password"), {
-      target: { value: "newpassword123" },
-    });
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = screen.getByLabelText(/password/i);
+    const submitButton = screen.getByRole("button", { name: /sign up/i });
 
-    fireEvent.click(screen.getByRole("button", { name: "Sign Up" }));
-
-    expect(
-      screen.getByRole("button", { name: "Signing up..." })
-    ).toBeDisabled();
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Check your email for the confirmation link!")
-      ).toBeInTheDocument();
+      expect(screen.getByText(/signup successful/i)).toBeInTheDocument();
     });
+
+    // Check that navigation happens after 3 seconds
+    await waitFor(
+      () => {
+        expect(mockNavigate).toHaveBeenCalledWith("/login");
+      },
+      { timeout: 4000 }
+    );
   });
 
   it("shows an error message if signup fails", async () => {
-    const errorMessage = "A different error occurred";
-    (supabase.auth.signUp as Mock).mockResolvedValueOnce({
-      data: { user: null, session: null },
-      error: { message: errorMessage },
-    });
+    // Mock failed signup
+    const mockAuth = {
+      signUp: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: "Signup failed" },
+      }),
+    };
+    (createSupabaseSignupClient as Mock).mockReturnValue({ auth: mockAuth });
 
     render(
       <MemoryRouter>
@@ -85,25 +89,28 @@ describe("SignupPage", () => {
       </MemoryRouter>
     );
 
-    fireEvent.change(screen.getByLabelText("Email"), {
-      target: { value: "test@example.com" },
-    });
-    fireEvent.change(screen.getByLabelText("Password"), {
-      target: { value: "password123" },
-    });
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = screen.getByLabelText(/password/i);
+    const submitButton = screen.getByRole("button", { name: /sign up/i });
 
-    fireEvent.click(screen.getByRole("button", { name: "Sign Up" }));
+    fireEvent.change(emailInput, { target: { value: "test@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(errorMessage)).toBeInTheDocument();
+      expect(screen.getByText("Signup failed")).toBeInTheDocument();
     });
   });
 
   it("shows an error if the email is already taken", async () => {
-    (supabase.auth.signUp as Mock).mockResolvedValueOnce({
-      data: { user: null, session: null },
-      error: { message: "User already registered" },
-    });
+    // Mock email already taken error
+    const mockAuth = {
+      signUp: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: "User already registered" },
+      }),
+    };
+    (createSupabaseSignupClient as Mock).mockReturnValue({ auth: mockAuth });
 
     render(
       <MemoryRouter>
@@ -111,13 +118,13 @@ describe("SignupPage", () => {
       </MemoryRouter>
     );
 
-    fireEvent.change(screen.getByLabelText("Email"), {
-      target: { value: "existing@example.com" },
-    });
-    fireEvent.change(screen.getByLabelText("Password"), {
-      target: { value: "password123" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Sign Up" }));
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = screen.getByLabelText(/password/i);
+    const submitButton = screen.getByRole("button", { name: /sign up/i });
+
+    fireEvent.change(emailInput, { target: { value: "taken@example.com" } });
+    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(

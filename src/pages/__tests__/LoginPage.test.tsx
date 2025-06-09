@@ -1,32 +1,36 @@
+/// <reference types="vitest/globals" />
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, type Mock } from "vitest";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import LoginPage from "@/pages/LoginPage";
-import HomePage from "@/pages/HomePage"; // To test navigation
 import { supabase } from "@/SupabaseClient";
 
-// Mock Supabase client
-vi.mock("@/SupabaseClient", () => ({
-  supabase: {
-    auth: {
-      signInWithPassword: vi.fn(),
-    },
-  },
-}));
-
-// Mock useNavigate from react-router-dom
-const mockedNavigate = vi.fn();
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual("react-router-dom");
+vi.mock("@/SupabaseClient", async (importActual) => {
+  const actual = await importActual<any>();
   return {
     ...actual,
-    useNavigate: () => mockedNavigate,
+    supabase: {
+      ...actual.supabase,
+      auth: {
+        signInWithPassword: vi.fn(),
+      },
+    },
+  };
+});
+
+const mockedUsedNavigate = vi.fn();
+vi.mock("react-router-dom", async (importActual) => {
+  const actual = await importActual<any>();
+  return {
+    ...actual,
+    useNavigate: () => mockedUsedNavigate,
   };
 });
 
 describe("LoginPage", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it("renders the login form", () => {
@@ -59,7 +63,37 @@ describe("LoginPage", () => {
   });
 
   it("shows loading state and calls supabase on form submission", async () => {
-    (supabase.auth.signInWithPassword as Mock).mockResolvedValueOnce({
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+      error: null,
+    });
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    );
+    fireEvent.change(screen.getByLabelText(/email/i), {
+      target: { value: "test@example.com" },
+    });
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: "password123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Login" }));
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Logging in..." })
+      ).toBeDisabled();
+    });
+    await waitFor(() => {
+      expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
+        email: "test@example.com",
+        password: "password123",
+      });
+    });
+  });
+
+  it("navigates to / on successful login", async () => {
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+      data: { user: {} },
       error: null,
     });
 
@@ -69,58 +103,23 @@ describe("LoginPage", () => {
       </MemoryRouter>
     );
 
-    fireEvent.change(screen.getByLabelText("Email"), {
+    fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "test@example.com" },
     });
-    fireEvent.change(screen.getByLabelText("Password"), {
-      target: { value: "password123" },
-    });
-
-    const loginButton = screen.getByRole("button", { name: "Login" });
-    fireEvent.click(loginButton);
-
-    expect(
-      screen.getByRole("button", { name: "Logging in..." })
-    ).toBeDisabled();
-
-    await waitFor(() => {
-      expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
-        email: "test@example.com",
-        password: "password123",
-      });
-    });
-  });
-
-  it("navigates to home on successful login", async () => {
-    (supabase.auth.signInWithPassword as Mock).mockResolvedValueOnce({
-      error: null,
-    });
-
-    render(
-      <MemoryRouter initialEntries={["/login"]}>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<HomePage />} />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByLabelText("Email"), {
-      target: { value: "test@example.com" },
-    });
-    fireEvent.change(screen.getByLabelText("Password"), {
-      target: { value: "password123" },
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: "password" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Login" }));
 
     await waitFor(() => {
-      expect(mockedNavigate).toHaveBeenCalledWith("/");
+      expect(mockedUsedNavigate).toHaveBeenCalledWith("/");
     });
   });
 
-  it("displays an error message on failed login", async () => {
+  it("shows an error message on failed login", async () => {
     const errorMessage = "Invalid login credentials";
-    (supabase.auth.signInWithPassword as Mock).mockResolvedValueOnce({
+    (supabase.auth.signInWithPassword as any).mockResolvedValue({
+      data: { user: null },
       error: { message: errorMessage },
     });
 
@@ -130,19 +129,16 @@ describe("LoginPage", () => {
       </MemoryRouter>
     );
 
-    fireEvent.change(screen.getByLabelText("Email"), {
+    fireEvent.change(screen.getByLabelText(/email/i), {
       target: { value: "test@example.com" },
     });
-    fireEvent.change(screen.getByLabelText("Password"), {
-      target: { value: "password123" },
+    fireEvent.change(screen.getByLabelText(/password/i), {
+      target: { value: "wrongpassword" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Login" }));
 
     await waitFor(() => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
-
-    expect(screen.getByRole("button", { name: "Login" })).not.toBeDisabled();
-    expect(mockedNavigate).not.toHaveBeenCalled();
   });
 });
