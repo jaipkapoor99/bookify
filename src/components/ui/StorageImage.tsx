@@ -17,9 +17,18 @@ const StorageImage: React.FC<StorageImageProps> = ({
     const fetchImageUrl = async () => {
       if (imagePath) {
         try {
-          const url = await getImageUrl(imagePath);
-          if (url) {
-            setImageUrl(url);
+          // Check if the imagePath is already a full URL (starts with http/https)
+          if (
+            imagePath.startsWith("http://") ||
+            imagePath.startsWith("https://")
+          ) {
+            setImageUrl(imagePath);
+          } else {
+            // It's a Supabase storage path, get the public URL
+            const url = await getImageUrl(imagePath);
+            if (url) {
+              setImageUrl(url);
+            }
           }
         } catch {
           // Keep placeholder on error
