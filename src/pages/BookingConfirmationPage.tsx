@@ -16,6 +16,7 @@ import { Ticket, MapPin, Calendar, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import debug from "@/lib/debug";
+import { useAuth } from "@/contexts/AuthContext";
 
 // TODO: This type may be needed for future complex data handling
 // type RawConfirmationData = {
@@ -55,6 +56,7 @@ const BookingConfirmationPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<string>("Loading location...");
   const navigate = useNavigate();
+  const { refreshBookings } = useAuth();
 
   useEffect(() => {
     const fetchConfirmationDetails = async () => {
@@ -76,12 +78,15 @@ const BookingConfirmationPage = () => {
         // TODO: Implement proper joins - for now use mock data for testing
         setDetails({
           price: (data as { price?: number }).price || 1500, // 1500 paise = ₹15.00
-          eventDate: (data as { event_venue_date?: string }).event_venue_date || new Date().toISOString(),
+          eventDate:
+            (data as { event_venue_date?: string }).event_venue_date ||
+            new Date().toISOString(),
           eventName: "Tech Conference 2025", // Mock data
           venueName: "Grand Convention Hall", // Mock data
           location: "Loading location...",
           pincode: "110001", // Mock pincode
-          availableTickets: (data as { no_of_tickets?: number }).no_of_tickets || 10,
+          availableTickets:
+            (data as { no_of_tickets?: number }).no_of_tickets || 10,
         });
       }
       setLoading(false);
@@ -164,6 +169,12 @@ const BookingConfirmationPage = () => {
           quantity > 1 ? "s" : ""
         }.`,
       });
+
+      // Refresh bookings data so the new booking appears immediately
+      if (refreshBookings) {
+        debug.info("Refreshing bookings after successful booking");
+        await refreshBookings();
+      }
 
       setTimeout(() => {
         navigate("/my-bookings");
