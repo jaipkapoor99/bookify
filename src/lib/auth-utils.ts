@@ -56,7 +56,8 @@ export const ensureValidSession = async (): Promise<Session | null> => {
       if (error) throw error;
       return data.session;
     } catch {
-      // If refresh fails, try to get current session
+      // If refresh fails, return current session without forcing logout
+      // This prevents unexpected logouts during refresh attempts
       const { data } = await supabase.auth.getSession();
       return data.session;
     }
@@ -107,7 +108,14 @@ export const createSessionManager = () => {
       if (!isRefreshing) {
         isRefreshing = true;
         try {
-          await ensureValidSession();
+          // Only refresh if session exists and is close to expiry
+          const currentSession = (await supabase.auth.getSession()).data
+            .session;
+          if (currentSession) {
+            await ensureValidSession();
+          }
+        } catch {
+          // Ignore refresh errors to prevent unexpected logouts
         } finally {
           isRefreshing = false;
           scheduleRefresh(); // Schedule next refresh

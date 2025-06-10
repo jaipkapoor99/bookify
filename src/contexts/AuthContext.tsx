@@ -75,13 +75,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       refreshAttemptsRef.current = 0;
       return data.session;
     } catch {
-      // If max attempts reached, sign out user
-      if (refreshAttemptsRef.current >= maxRefreshAttempts) {
-        await supabase.auth.signOut();
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-      }
+      // TEMPORARILY DISABLED: Don't auto-logout on refresh failures
+      // Let user continue with existing session to prevent unexpected logouts
+      // if (refreshAttemptsRef.current >= maxRefreshAttempts) {
+      //   await supabase.auth.signOut();
+      //   setSession(null);
+      //   setUser(null);
+      //   setProfile(null);
+      // }
       return null;
     }
   }, []);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/SupabaseClient";
+import { supabase, createDatabaseClient } from "@/SupabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { BookingQueryResult } from "@/types/database.types";
 import { formatCurrency } from "@/lib/utils";
@@ -31,7 +31,9 @@ const MyBookingsPage = () => {
 
       try {
         // Try to get existing user profile - only select fields that actually exist
-        const { data: userData, error: userError } = await supabase
+        // Use database client to avoid auth conflicts
+        const dbClient = createDatabaseClient();
+        const { data: userData, error: userError } = await dbClient
           .from("users")
           .select("user_id, supabase_id")
           .eq("supabase_id", user.id)
@@ -49,7 +51,7 @@ const MyBookingsPage = () => {
         }
 
         // Now query tickets for this internal user ID
-        const { data, error: fetchError } = await supabase
+        const { data, error: fetchError } = await dbClient
           .from("tickets")
           .select(
             `
