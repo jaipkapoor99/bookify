@@ -31,9 +31,8 @@ const MyBookingsPage = () => {
 
       try {
         // Try to get existing user profile - only select fields that actually exist
-        // Use database client to avoid auth conflicts
-        const dbClient = createDatabaseClient();
-        const { data: userData, error: userError } = await dbClient
+        // Use main client for user lookup since it needs auth context
+        const { data: userData, error: userError } = await supabase
           .from("users")
           .select("user_id, supabase_id")
           .eq("supabase_id", user.id)
@@ -51,6 +50,8 @@ const MyBookingsPage = () => {
         }
 
         // Now query tickets for this internal user ID
+        // Use database client for tickets query to avoid auth conflicts
+        const dbClient = createDatabaseClient();
         const { data, error: fetchError } = await dbClient
           .from("tickets")
           .select(

@@ -7,7 +7,7 @@ import {
 } from "react";
 import { supabase } from "../SupabaseClient";
 import { AuthContext, type UserProfile } from "./AuthContext.context";
-import { createSessionManager, cleanupAuthStorage } from "@/lib/auth-utils";
+import { cleanupAuthStorage } from "@/lib/auth-utils";
 import type {
   User,
   Session as AuthSession,
@@ -151,15 +151,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Clean up any expired auth storage on startup
     cleanupAuthStorage();
 
-    // Set up optimized session management
-    const sessionManager = createSessionManager();
+    // TEMPORARILY DISABLED: Session manager might be causing logout issues
+    // const sessionManager = createSessionManager();
 
     return () => {
       // Capture the current timeout ID to avoid ref staleness warning
       const currentTimeoutId = refreshTimeoutRef.current;
 
       authListener?.subscription.unsubscribe();
-      sessionManager.cleanup();
+      // sessionManager.cleanup(); // Disabled with session manager
       if (currentTimeoutId) {
         clearTimeout(currentTimeoutId);
       }
