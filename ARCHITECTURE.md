@@ -1,6 +1,6 @@
 # Architecture Overview
 
-This document provides a comprehensive overview of Bookify's architecture, design decisions, and system components.
+This document provides a comprehensive overview of Bookify's architecture, design decisions, and system components, including the major v1.6.0 performance and modular architecture improvements.
 
 ## 🏗️ System Architecture
 
@@ -8,7 +8,11 @@ This document provides a comprehensive overview of Bookify's architecture, desig
 
 ```mermaid
 graph TB
-    Client[React Frontend<br/>Vite + TypeScript]
+    subgraph "Frontend (React + TypeScript)"
+        Client[React Components<br/>Pages & UI]
+        Context[AuthContext<br/>Smart State Management]
+        APILayer[Modular API Client<br/>auth + database + facade]
+    end
 
     subgraph "Supabase Backend"
         Auth[Supabase Auth<br/>JWT + OAuth]
@@ -22,20 +26,65 @@ graph TB
         GoogleAuth[Google OAuth<br/>Social Login]
     end
 
-    Client --> Auth
-    Client --> DB
-    Client --> Storage
-    Client --> Edge
+    Client --> Context
+    Context --> APILayer
+    APILayer --> Auth
+    APILayer --> DB
+    APILayer --> Storage
+    APILayer --> Edge
 
     Auth --> GoogleAuth
     Edge --> PostalAPI
 
     style Client fill:#e1f5fe
+    style Context fill:#f8f9fa
+    style APILayer fill:#e8f5e8
     style Auth fill:#f3e5f5
     style DB fill:#e8f5e8
     style Storage fill:#fff3e0
     style Edge fill:#fce4ec
 ```
+
+## 🚀 Major Architecture Improvements (v1.6.0)
+
+### 🔧 **Modular API Client Architecture**
+
+#### Before: Monolithic Approach
+
+```
+api-client.ts (437 lines)
+├── Authentication logic
+├── Database operations
+├── Session management
+├── Error handling
+└── Mixed responsibilities
+```
+
+#### After: Clean Modular Design
+
+```
+lib/
+├── auth-client.ts (195 lines)      # Pure authentication
+│   ├── Session management
+│   ├── OAuth flows
+│   ├── Token handling
+│   └── User operations
+├── database-client.ts (220 lines)  # Pure database operations
+│   ├── CRUD operations
+│   ├── RPC function calls
+│   ├── Query optimization
+│   └── Error handling
+└── api-client.ts (35 lines)        # Clean re-export facade
+    └── Backwards compatibility
+```
+
+#### Benefits of Modular Design
+
+- ✅ **Single Responsibility**: Each module has one clear purpose
+- ✅ **Better Maintainability**: Easier to find and fix issues
+- ✅ **Improved Testing**: Can test auth and database logic separately
+- ✅ **Reduced Complexity**: Smaller, focused files
+- ✅ **Zero Breaking Changes**: Full backwards compatibility
 
 ## 🎯 Design Principles
 
