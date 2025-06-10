@@ -155,10 +155,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const sessionManager = createSessionManager();
 
     return () => {
+      // Capture the current timeout ID to avoid ref staleness warning
+      const currentTimeoutId = refreshTimeoutRef.current;
+
       authListener?.subscription.unsubscribe();
       sessionManager.cleanup();
-      if (refreshTimeoutRef.current) {
-        clearTimeout(refreshTimeoutRef.current);
+      if (currentTimeoutId) {
+        clearTimeout(currentTimeoutId);
       }
     };
   }, [fetchProfile, refreshSession]);
@@ -175,9 +178,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async (): Promise<{ error: AuthError | null }> => {
-    // Clear any pending refresh timeouts
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
+    // Clear any pending refresh timeouts - capture ref value to avoid staleness warning
+    const currentTimeoutId = refreshTimeoutRef.current;
+    if (currentTimeoutId) {
+      clearTimeout(currentTimeoutId);
+      refreshTimeoutRef.current = null;
     }
     refreshAttemptsRef.current = 0;
 
