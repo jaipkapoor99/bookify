@@ -47,6 +47,21 @@ const AuthCallback = () => {
             user: {
               id: hashParams.get("sub") || hashParams.get("user_id") || "",
               email: hashParams.get("email") || undefined,
+              user_metadata: {
+                full_name:
+                  hashParams.get("full_name") ||
+                  hashParams.get("name") ||
+                  undefined,
+                avatar_url:
+                  hashParams.get("avatar_url") ||
+                  hashParams.get("picture") ||
+                  undefined,
+                provider: "google",
+              },
+              app_metadata: {
+                provider: "google",
+                providers: ["google"],
+              },
             },
           };
 
