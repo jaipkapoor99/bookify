@@ -1,9 +1,5 @@
 import { createContext, useContext } from "react";
-import type {
-  User,
-  Session as AuthSession,
-  AuthError,
-} from "@supabase/supabase-js";
+import type { User, Session } from "@/lib/api-client";
 
 export type UserProfile = {
   user_id: number;
@@ -19,16 +15,13 @@ export type UserProfile = {
 
 export type AuthContextType = {
   user: User | null;
-  session: AuthSession | null;
+  session: Session | null;
   loading: boolean;
   profile: UserProfile | null;
   loadingProfile: boolean;
-  login: (
-    email: string,
-    password: string
-  ) => Promise<{ error: AuthError | null }>;
-  logout: () => Promise<{ error: AuthError | null }>;
-  loginWithGoogle: () => Promise<{ error: AuthError | null }>;
+  login: (email: string, password: string) => Promise<{ error: string | null }>;
+  logout: () => Promise<{ error: string | null }>;
+  loginWithGoogle: () => Promise<{ error: string | null }>;
 };
 
 export const AuthContext = createContext<AuthContextType>({

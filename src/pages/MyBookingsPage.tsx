@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { supabase, createDatabaseClient } from "@/SupabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { BookingQueryResult } from "@/types/database.types";
 import { formatCurrency } from "@/lib/utils";
+import { dbApi } from "@/lib/api-client";
+import axios from "axios";
 
 const MyBookingsPage = () => {
   const { user } = useAuth();
@@ -30,65 +31,59 @@ const MyBookingsPage = () => {
       }
 
       try {
-        // Try to get existing user profile - only select fields that actually exist
-        // Use main client for user lookup since it needs auth context
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("user_id, supabase_id")
-          .eq("supabase_id", user.id)
-          .single();
+        // Try to get existing user profile
+        const { data: userData, error: userError } = await dbApi.select(
+          "users",
+          "user_id, supabase_id",
+          { supabase_id: user.id },
+          { single: true }
+        );
 
-        // Handle other errors or missing data
+        // Handle errors or missing data
         if (userError || !userData) {
-          const errorMessage =
-            userError?.code === "PGRST116"
-              ? "Your user profile is not set up. Please sign up again or contact support."
-              : "Unable to fetch user profile. Please try again later.";
+          const errorMessage = userError?.includes("PGRST116")
+            ? "Your user profile is not set up. Please sign up again or contact support."
+            : "Unable to fetch user profile. Please try again later.";
           setError(errorMessage);
           setLoading(false);
           return;
         }
 
-        // Now query tickets for this internal user ID
-        // Use database client for tickets query to avoid auth conflicts
-        const dbClient = createDatabaseClient();
-        const { data, error: fetchError } = await dbClient
-          .from("tickets")
-          .select(
-            `
-            ticket_id,
-            ticket_price,
-            created_at,
-            customer_id,
-            quantity,
-            events_venues!events_venues_id (
-              event_venue_date,
-              price,
-              venues!venue_id (
-                venue_name,
-                locations!location_id (
-                  pincode
-                )
-              ),
-              events!event_id (
-                name,
-                image_url,
-                image_path
+        // Query tickets for this internal user ID
+        const ticketColumns = `
+          ticket_id,
+          ticket_price,
+          created_at,
+          customer_id,
+          quantity,
+          events_venues!events_venues_id (
+            event_venue_date,
+            price,
+            venues!venue_id (
+              venue_name,
+              locations!location_id (
+                pincode
               )
+            ),
+            events!event_id (
+              name,
+              image_url,
+              image_path
             )
-          `
           )
-          .eq("customer_id", userData.user_id);
+        `;
+
+        const { data, error: fetchError } = await dbApi.select<
+          BookingQueryResult[]
+        >("tickets", ticketColumns, { customer_id: userData.user_id });
 
         if (fetchError) {
-          setError(`Error fetching bookings: ${fetchError.message}`);
+          setError(`Error fetching bookings: ${fetchError}`);
           setLoading(false);
           return;
         }
 
-        // Convert to proper type
-        const ticketsData: BookingQueryResult[] =
-          (data as unknown as BookingQueryResult[]) || [];
+        const ticketsData: BookingQueryResult[] = data || [];
         setTickets(ticketsData);
 
         // Fetch location details for all pincodes
@@ -101,19 +96,29 @@ const MyBookingsPage = () => {
         ];
 
         if (pincodes.length > 0) {
+          const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+          const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
           const locationPromises = pincodes.map(async (pincode) => {
             try {
-              const { data: locationData, error: locationError } =
-                await supabase.functions.invoke("get-location-from-pincode", {
-                  body: { pincode },
-                });
+              const response = await axios.post(
+                `${SUPABASE_URL}/functions/v1/get-location-from-pincode`,
+                { pincode },
+                {
+                  headers: {
+                    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  timeout: 10000,
+                }
+              );
 
-              if (locationError || !locationData) {
-                return { pincode, data: null };
-              }
-
-              return { pincode, data: locationData };
+              return { pincode, data: response.data };
             } catch (err) {
+              console.warn(
+                `Failed to fetch location for pincode ${pincode}:`,
+                err
+              );
               return { pincode, data: null };
             }
           });

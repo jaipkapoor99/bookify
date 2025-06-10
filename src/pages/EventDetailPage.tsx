@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/SupabaseClient";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -109,11 +109,27 @@ const EventDetailPage = () => {
       ];
 
       const locationPromises = pincodes.map(async (pincode) => {
-        const { data, error } = await supabase.functions.invoke(
-          "get-location-from-pincode",
-          { body: { pincode } }
-        );
-        return { pincode, data, error };
+        try {
+          const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+          const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+          const response = await axios.post(
+            `${SUPABASE_URL}/functions/v1/get-location-from-pincode`,
+            { pincode },
+            {
+              headers: {
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                "Content-Type": "application/json",
+              },
+              timeout: 10000,
+            }
+          );
+
+          return { pincode, data: response.data, error: null };
+        } catch (err) {
+          console.warn(`Failed to fetch location for pincode ${pincode}:`, err);
+          return { pincode, data: null, error: "Failed to fetch location" };
+        }
       });
 
       const results = await Promise.all(locationPromises);
