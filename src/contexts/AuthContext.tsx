@@ -30,13 +30,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error) {
-        console.warn("Could not fetch user profile:", error.message);
         setProfile(null);
       } else if (data) {
         setProfile(data);
       }
     } catch (e) {
-      console.error("An unexpected error occurred fetching profile", e);
       setProfile(null);
     } finally {
       setLoadingProfile(false);
@@ -53,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(session?.user ?? null);
         await fetchProfile(session?.user ?? null);
       } catch (error) {
-        console.error("Error getting session:", error);
+        // Silently handle session errors
       } finally {
         setLoading(false);
       }

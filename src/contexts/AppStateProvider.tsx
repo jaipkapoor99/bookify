@@ -94,32 +94,24 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
 
   const fetchEvents = useCallback(
     async (force = false): Promise<Event[]> => {
-      console.log("🔥 fetchEvents called with force:", force);
       const cacheKey = "events";
       if (!force) {
         const cached = getCache<Event[]>(cacheKey);
         if (cached) {
-          console.log("✅ Found cached events:", cached.length);
           return cached;
         }
       }
 
       setLoading(cacheKey, true);
       try {
-        console.log("🚀 Using reliable direct fetch for events query...");
         const query = `event_id,name,description,start_time,end_time,image_url,image_path,events_venues(venues(venue_name,locations(pincode)))`;
         const filters = `&order=start_time.asc`;
         const data = await fetchFromSupabase("events", query, filters);
         const events: Event[] = (data as unknown as Event[]) || [];
-        console.log(
-          "✅ Successfully got events via direct fetch:",
-          events.length
-        );
         setCache(cacheKey, events);
         setState((prev) => ({ ...prev, events }));
         return events;
       } catch (error) {
-        console.error("❌ Error in fetchEvents:", error);
         if (error instanceof Error) {
           toast.error("Failed to fetch events", {
             description: error.message,

@@ -22,7 +22,6 @@ const StorageImage: React.FC<StorageImageProps> = ({
             setImageUrl(url);
           }
         } catch (error) {
-          console.warn(`Failed to load image from path: ${imagePath}`, error);
           // Keep placeholder on error
         }
       }

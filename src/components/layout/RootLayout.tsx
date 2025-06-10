@@ -20,7 +20,6 @@ const RootLayout = () => {
       }
     } catch (err) {
       toast.error("An unexpected error occurred during logout");
-      console.error("Logout error:", err);
     }
   };
 

@@ -101,7 +101,6 @@ const AdminEventPage = () => {
       setEvents(data || []);
     } catch (error) {
       toast.error("Failed to fetch events");
-      console.error("Error fetching events:", error);
     } finally {
       setLoading(false);
     }

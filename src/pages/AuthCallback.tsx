@@ -10,14 +10,12 @@ const AuthCallback = () => {
       try {
         const { error } = await supabase.auth.getSession();
         if (error) {
-          console.error("Error during auth callback:", error);
           navigate("/login?error=oauth_failed");
         } else {
           // Successful authentication - redirect to home
           navigate("/");
         }
       } catch (err) {
-        console.error("Unexpected error during auth callback:", err);
         navigate("/login?error=unexpected");
       }
     };

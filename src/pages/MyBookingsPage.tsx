@@ -17,13 +17,11 @@ const MyBookingsPage = () => {
   useEffect(() => {
     const fetchTickets = async () => {
       if (!user) {
-        console.log("No user found - user is null/undefined");
         setLoading(false);
         return;
       }
 
       if (!user.id) {
-        console.error("User object exists but user.id is missing:", user);
         setError(
           "Authentication error: User ID missing. Please log out and log back in."
         );
@@ -32,8 +30,6 @@ const MyBookingsPage = () => {
       }
 
       try {
-        console.log("Attempting to find user with Supabase ID:", user.id);
-
         // Try to get existing user profile - only select fields that actually exist
         const { data: userData, error: userError } = await supabase
           .from("users")
@@ -41,16 +37,8 @@ const MyBookingsPage = () => {
           .eq("supabase_id", user.id)
           .single();
 
-        console.log(
-          "User lookup result - data:",
-          userData,
-          "error:",
-          userError
-        );
-
         // Handle other errors or missing data
         if (userError || !userData) {
-          console.error("User lookup error:", userError);
           const errorMessage =
             userError?.code === "PGRST116"
               ? "Your user profile is not set up. Please sign up again or contact support."
@@ -59,13 +47,6 @@ const MyBookingsPage = () => {
           setLoading(false);
           return;
         }
-
-        console.log(
-          "Found user ID:",
-          userData.user_id,
-          "for Supabase ID:",
-          user.id
-        );
 
         // Now query tickets for this internal user ID
         const { data, error: fetchError } = await supabase
@@ -97,14 +78,10 @@ const MyBookingsPage = () => {
           .eq("customer_id", userData.user_id);
 
         if (fetchError) {
-          console.error("Fetch error:", fetchError);
           setError(`Error fetching bookings: ${fetchError.message}`);
           setLoading(false);
           return;
         }
-
-        console.log("Raw ticket data:", data);
-        console.log("Number of tickets found:", data?.length || 0);
 
         // Convert to proper type
         const ticketsData: BookingQueryResult[] =
@@ -134,10 +111,6 @@ const MyBookingsPage = () => {
 
               return { pincode, data: locationData };
             } catch (err) {
-              console.error(
-                `Error fetching location for pincode ${pincode}:`,
-                err
-              );
               return { pincode, data: null };
             }
           });
@@ -161,7 +134,6 @@ const MyBookingsPage = () => {
           setLocationDetails(newLocationDetails);
         }
       } catch (err) {
-        console.error("Error fetching bookings:", err);
         setError(
           `Error fetching bookings: ${
             err instanceof Error ? err.message : "Unknown error"

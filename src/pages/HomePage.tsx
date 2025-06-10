@@ -36,8 +36,6 @@ import {
 
 import StorageImage from "@/components/ui/StorageImage";
 
-console.log(`🔥 HomePage module loading`);
-
 export type Event = {
   event_id: number;
   name: string;
@@ -62,16 +60,8 @@ type LocationInfo = {
 };
 
 const HomePage = () => {
-  console.log(`�� HomePage component instantiated`);
-  console.log(`🏠 HomePage component rendering`);
   const { state, fetchEvents, isLoading } =
     useAppState() as import("@/contexts/AppStateTypes").AppStateContextType;
-  console.log(`📊 HomePage - Current state:`, {
-    eventsCount: state.events.length,
-    eventVenuesCount: Object.keys(state.eventVenues).length,
-    venuesCount: state.venues.length,
-    loading: state.loading,
-  });
 
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,10 +75,6 @@ const HomePage = () => {
   }, []); // Only run once on mount
 
   useEffect(() => {
-    console.log(
-      `🔧 HomePage useEffect[fetchLocations] - state.events length:`,
-      state.events.length
-    );
     const fetchLocations = async () => {
       const pincodes = [
         ...new Set(
@@ -100,14 +86,12 @@ const HomePage = () => {
             .filter((p): p is string => typeof p === "string")
         ),
       ];
-      console.log(`📍 Found pincodes to fetch:`, pincodes);
 
       const newLocations: Record<string, LocationInfo> = {};
       const locationPromises = pincodes.map(async (pincode: string) => {
         // Use a ref to get current locations to avoid dependency loop
         const currentLocations = locations;
         if (!currentLocations[pincode]) {
-          console.log(`📍 Fetching location for pincode: ${pincode}`);
           try {
             // Fetch location via direct HTTP request to avoid client issues
             const response = await fetch(
@@ -128,16 +112,10 @@ const HomePage = () => {
 
             if (response.ok) {
               const data = await response.json();
-              console.log(`✅ Location data for ${pincode}:`, data);
               newLocations[pincode] = data as LocationInfo;
-            } else {
-              console.error(
-                `❌ Error fetching location for ${pincode}:`,
-                response.statusText
-              );
             }
           } catch (error) {
-            console.error(`❌ Network error for ${pincode}:`, error);
+            // Silently handle errors
           }
         }
       });
@@ -145,7 +123,6 @@ const HomePage = () => {
       await Promise.all(locationPromises);
 
       if (Object.keys(newLocations).length > 0) {
-        console.log(`🔄 Updating locations state with:`, newLocations);
         setLocations((prev) => ({ ...prev, ...newLocations }));
       }
     };
@@ -157,25 +134,16 @@ const HomePage = () => {
   }, [state.events]); // Removed 'locations' to prevent infinite loop
 
   useEffect(() => {
-    console.log(
-      `🔧 HomePage useEffect[cities] - locations count:`,
-      Object.keys(locations).length
-    );
     if (Object.keys(locations).length > 0) {
       const uniqueCities = [
         ...new Set(Object.values(locations).map((l) => l.city)),
       ].sort();
-      console.log(`🏙️ Setting cities:`, uniqueCities);
       setCities(uniqueCities);
     }
   }, [locations]);
 
   useEffect(() => {
-    console.log(
-      `🔧 HomePage useEffect[filtering] - Filtering events with searchQuery: "${searchQuery}", filterCity: "${filterCity}", sortBy: "${sortBy}"`
-    );
     let filtered = [...state.events];
-    console.log(`📋 Starting with ${filtered.length} events`);
 
     if (searchQuery) {
       filtered = filtered.filter(
@@ -185,7 +153,6 @@ const HomePage = () => {
             .toLowerCase()
             .includes(searchQuery.toLowerCase())
       );
-      console.log(`🔍 After search filter: ${filtered.length} events`);
     }
 
     if (filterCity !== "all") {
@@ -193,7 +160,6 @@ const HomePage = () => {
         const pincode = event.events_venues?.[0]?.venues?.locations?.pincode;
         return pincode ? locations[pincode]?.city === filterCity : false;
       });
-      console.log(`🏙️ After city filter: ${filtered.length} events`);
     }
 
     filtered.sort((a, b) => {
@@ -206,19 +172,12 @@ const HomePage = () => {
       }
     });
 
-    console.log(`📋 Final filtered events count: ${filtered.length}`);
     setFilteredEvents(filtered);
   }, [state.events, searchQuery, sortBy, filterCity, locations]);
 
   const loading = isLoading("events");
-  console.log(`⏳ HomePage loading state: ${loading}`, {
-    eventsLength: state.events.length,
-    loadingState: state.loading,
-    fetchEventsFunction: typeof fetchEvents,
-  });
 
   if (loading) {
-    console.log(`🔄 HomePage showing loading screen`);
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
@@ -233,10 +192,6 @@ const HomePage = () => {
       </div>
     );
   }
-
-  console.log(
-    `🎯 HomePage rendering main content with ${filteredEvents.length} filtered events`
-  );
 
   return (
     <div className="container mx-auto p-4 space-y-6">
