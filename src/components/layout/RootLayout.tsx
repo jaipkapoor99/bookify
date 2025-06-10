@@ -36,40 +36,43 @@ const RootLayout = () => {
             <span className="text-2xl font-bold text-gray-900">Bookify</span>
           </Link>
           <div className="flex items-center gap-4">
-            {!loading &&
-              (user ? (
-                <>
-                  <Link
-                    to="/my-bookings"
-                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
-                  >
-                    My Bookings
-                  </Link>
-                  <Link
-                    to="/account"
-                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
-                  >
-                    Account
-                  </Link>
-                  <Link
-                    to="/admin/events"
-                    className="text-sm font-medium text-gray-700 hover:text-gray-900"
-                  >
-                    Admin
-                  </Link>
-                  <span>{user.user_metadata.full_name || user.email}</span>
-                  <Button onClick={handleLogout}>Logout</Button>
-                </>
-              ) : (
-                <>
-                  <Button asChild>
-                    <Link to="/login">Login</Link>
-                  </Button>
-                  <Button asChild variant="secondary">
-                    <Link to="/signup">Sign Up</Link>
-                  </Button>
-                </>
-              ))}
+            {loading ? (
+              <span className="text-sm text-gray-500">Loading...</span>
+            ) : user ? (
+              <>
+                <Link
+                  to="/my-bookings"
+                  className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                >
+                  My Bookings
+                </Link>
+                <Link
+                  to="/account"
+                  className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                >
+                  Account
+                </Link>
+                <Link
+                  to="/admin/events"
+                  className="text-sm font-medium text-gray-700 hover:text-gray-900"
+                >
+                  Admin
+                </Link>
+                <span className="text-sm text-gray-700">
+                  {user.user_metadata.full_name || user.email}
+                </span>
+                <Button onClick={handleLogout}>Logout</Button>
+              </>
+            ) : (
+              <>
+                <Button asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button asChild variant="secondary">
+                  <Link to="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
