@@ -82,7 +82,7 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, [fetchEvents]);
+  }, []); // Only run once on mount
 
   useEffect(() => {
     console.log(
@@ -191,7 +191,11 @@ const HomePage = () => {
   }, [state.events, searchQuery, sortBy, filterCity, locations]);
 
   const loading = isLoading("events");
-  console.log(`⏳ HomePage loading state: ${loading}`);
+  console.log(`⏳ HomePage loading state: ${loading}`, {
+    eventsLength: state.events.length,
+    loadingState: state.loading,
+    fetchEventsFunction: typeof fetchEvents,
+  });
 
   if (loading) {
     console.log(`🔄 HomePage showing loading screen`);

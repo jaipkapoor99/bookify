@@ -5,7 +5,7 @@ import "./index.css";
 import { createRoutesFromElements, Route } from "react-router-dom";
 
 import { AuthProvider } from "@/contexts/AuthContext";
-import { AppStateProvider } from "@/contexts/AppStateContext";
+import { AppStateProvider } from "@/contexts/AppStateProvider";
 import RootLayout from "@/components/layout/RootLayout";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
