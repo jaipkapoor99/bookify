@@ -53,9 +53,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (session) {
+          console.log("AuthContext: Initializing with session", {
+            hasToken: !!session.access_token,
+            userId: session.user?.id,
+          });
           setSession(session);
           setUser(session.user);
           await fetchProfile(session.user);
+        } else {
+          console.log("AuthContext: No session found");
         }
       } catch (error) {
         console.warn("Session initialization exception:", error);

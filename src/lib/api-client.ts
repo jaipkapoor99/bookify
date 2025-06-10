@@ -96,12 +96,22 @@ const storeSession = (session: Session | null) => {
 const initializeAuth = () => {
   const session = getStoredSession();
   if (session) {
+    console.log("Initializing auth with stored session:", {
+      hasToken: !!session.access_token,
+      userId: session.user?.id,
+    });
     setAuthToken(session.access_token);
   }
 };
 
 // Initialize on module load
 initializeAuth();
+
+// Get current user from stored session
+export const getCurrentUser = (): User | null => {
+  const session = getStoredSession();
+  return session?.user || null;
+};
 
 // Auth API functions
 export const authApi = {
@@ -221,12 +231,14 @@ export const authApi = {
   signInWithGoogle: async (): Promise<ApiResponse<{ url: string }>> => {
     try {
       const redirectUrl = `${window.location.origin}/auth/callback`;
-      const response: AxiosResponse = await authClient.post("/authorize", {
-        provider: "google",
-        redirect_to: redirectUrl,
-      });
 
-      return { data: { url: response.data.url }, error: null };
+      // For OAuth, we need to construct the URL and redirect directly
+      // Supabase Auth API doesn't return a redirect URL, it expects direct navigation
+      const oauthUrl = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(
+        redirectUrl
+      )}`;
+
+      return { data: { url: oauthUrl }, error: null };
     } catch (error: any) {
       return {
         data: null,
