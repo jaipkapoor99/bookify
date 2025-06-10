@@ -1,6 +1,5 @@
 import React, { useState, useCallback, ReactNode, useRef } from "react";
 import { Event } from "@/pages/HomePage";
-import { supabase } from "@/SupabaseClient";
 import { toast } from "sonner";
 import {
   AppStateContextType,
@@ -12,6 +11,31 @@ import {
 import { AppStateContext } from "@/contexts/AppStateContext";
 
 const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Optimized direct fetch utility to bypass hanging Supabase client
+const fetchFromSupabase = async (
+  table: string,
+  query: string,
+  filters: string = ""
+) => {
+  const url = `${
+    import.meta.env.VITE_SUPABASE_URL
+  }/rest/v1/${table}?select=${encodeURIComponent(query)}${filters}`;
+
+  const response = await fetch(url, {
+    headers: {
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY!,
+      Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY!}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+};
 
 export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -79,50 +103,21 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
           return cached;
         }
       }
-      console.log("📡 Starting database query using direct fetch...");
+      console.log("📡 Starting database query using optimized direct fetch...");
       setLoading(cacheKey, true);
       try {
-        // Since direct fetch works, let's use that approach
-        console.log(
-          "✅ Direct fetch worked, using direct fetch for full query..."
-        );
+        const query = `event_id,name,description,start_time,end_time,image_url,image_path,events_venues(venues(venue_name,locations(pincode)))`;
+        const filters = `&order=start_time.asc`;
 
-        const fullQuery = `event_id,name,description,start_time,end_time,image_url,image_path,events_venues(venues(venue_name,locations(pincode)))`;
-        const fullUrl = `${
-          import.meta.env.VITE_SUPABASE_URL
-        }/rest/v1/events?select=${encodeURIComponent(
-          fullQuery
-        )}&order=start_time.asc`;
-
-        console.log("🔧 Full query URL:", fullUrl);
-
-        const response = await fetch(fullUrl, {
-          headers: {
-            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY!,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY!}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        console.log(
-          "📡 Full fetch response:",
-          response.status,
-          response.statusText
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const error = null; // No error if we got here
-
-        console.log("📡 Database response:", {
-          data,
-          error,
+        console.log("🔧 Fetching events with optimized query...");
+        const data = await fetchFromSupabase("events", query, filters);
+        console.log("📡 Optimized fetch response:", {
           dataLength: data?.length,
         });
-        if (error) throw error;
+
+        console.log("📡 Database response:", {
+          dataLength: data?.length,
+        });
         const events: Event[] = (data as unknown as Event[]) || [];
         console.log("✅ Successfully processed events:", events.length);
         setCache(cacheKey, events);
@@ -153,12 +148,9 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
       }
       setLoading(cacheKey, true);
       try {
-        const { data, error } = await supabase
-          .from("events_venues")
-          .select("*, venues(*, locations(*))")
-          .eq("event_id", eventId);
-        if (error) throw error;
-
+        const query = `*,venues(*,locations(*))`;
+        const filters = `&event_id=eq.${eventId}`;
+        const data = await fetchFromSupabase("events_venues", query, filters);
         const eventVenues = data as EventVenue[];
         setCache(cacheKey, eventVenues);
 
@@ -195,12 +187,9 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
       }
       setLoading(cacheKey, true);
       try {
-        const { data, error } = await supabase
-          .from("venues")
-          .select("*, locations(*)")
-          .order("venue_name");
-        if (error) throw error;
-
+        const query = `*,locations(*)`;
+        const filters = `&order=venue_name.asc`;
+        const data = await fetchFromSupabase("venues", query, filters);
         const venues = data as Venue[];
         setCache(cacheKey, venues);
         setState((prev) => ({ ...prev, venues }));
