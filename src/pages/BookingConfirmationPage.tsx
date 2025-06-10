@@ -3,6 +3,8 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { dbApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -12,7 +14,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Ticket, MapPin, Calendar, CreditCard } from "lucide-react";
+import {
+  Ticket,
+  MapPin,
+  Calendar,
+  CreditCard,
+  Plus,
+  Minus,
+} from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import debug from "@/lib/debug";
@@ -48,15 +57,42 @@ type ConfirmationDetails = {
 const BookingConfirmationPage = () => {
   const { eventVenueId } = useParams<{ eventVenueId: string }>();
   const [searchParams] = useSearchParams();
-  const quantity = parseInt(searchParams.get("quantity") || "1", 10);
+  const initialQuantity = parseInt(searchParams.get("quantity") || "1", 10);
 
   const [details, setDetails] = useState<ConfirmationDetails | null>(null);
+  const [quantity, setQuantity] = useState(initialQuantity);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<string>("Loading location...");
   const navigate = useNavigate();
   const { refreshBookings } = useAuth();
+
+  // Handle quantity changes
+  const handleQuantityChange = (delta: number) => {
+    if (!details) return;
+
+    const newQuantity = quantity + delta;
+    if (
+      newQuantity >= 1 &&
+      newQuantity <= Math.min(10, details.availableTickets)
+    ) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const handleQuantityInputChange = (value: string) => {
+    if (!details) return;
+
+    const newQuantity = parseInt(value);
+    if (
+      !isNaN(newQuantity) &&
+      newQuantity >= 1 &&
+      newQuantity <= Math.min(10, details.availableTickets)
+    ) {
+      setQuantity(newQuantity);
+    }
+  };
 
   useEffect(() => {
     const fetchConfirmationDetails = async () => {
@@ -223,8 +259,21 @@ const BookingConfirmationPage = () => {
     <div className="container mx-auto p-4 flex justify-center">
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle className="text-2xl">Confirm Your Booking</CardTitle>
-          <CardDescription>
+          {/* Bookify Logo for Trust & Branding */}
+          <div className="flex items-center justify-center mb-4">
+            <div className="flex items-center gap-3">
+              <img
+                src="/Bookify_SVG.svg"
+                alt="Bookify"
+                className="h-8 w-8 object-contain"
+              />
+              <span className="text-xl font-bold gradient-text">Bookify</span>
+            </div>
+          </div>
+          <CardTitle className="text-2xl text-center">
+            Confirm Your Booking
+          </CardTitle>
+          <CardDescription className="text-center">
             Please review the details below before confirming your ticket
             {quantity > 1 ? "s" : ""}.
           </CardDescription>
@@ -272,15 +321,52 @@ const BookingConfirmationPage = () => {
               Payment Summary
             </h3>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Ticket Price:</span>
                 <span>{formatCurrency(details.price)}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Quantity:</span>
-                <span>{quantity}</span>
+
+              {/* Interactive Quantity Selector */}
+              <div className="space-y-2">
+                <Label htmlFor="quantity" className="text-sm font-medium">
+                  Number of Tickets
+                </Label>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => handleQuantityInputChange(e.target.value)}
+                    min={1}
+                    max={Math.min(10, details.availableTickets)}
+                    className="text-center w-20"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleQuantityChange(1)}
+                    disabled={
+                      quantity >= Math.min(10, details.availableTickets)
+                    }
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Maximum 10 tickets per booking • {details.availableTickets}{" "}
+                  available
+                </p>
               </div>
+
               <div className="flex justify-between items-center pt-3 border-t">
                 <span className="font-bold text-lg">Total Amount:</span>
                 <span className="font-bold text-lg">

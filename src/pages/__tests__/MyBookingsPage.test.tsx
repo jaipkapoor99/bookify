@@ -293,8 +293,8 @@ describe("MyBookingsPage", () => {
       ).toBeInTheDocument();
       // Check for quantity display
       expect(screen.getByText("2")).toBeInTheDocument(); // quantity
-      // Check for formatted price - should be ₹2500.00 (250000 cents)
-      expect(screen.getByText("₹2,500.00")).toBeInTheDocument();
+      // Check for formatted total price - should be ₹5,000.00 (250000 × 2 = 500000 paise)
+      expect(screen.getByText("₹5,000.00")).toBeInTheDocument();
     });
   });
 

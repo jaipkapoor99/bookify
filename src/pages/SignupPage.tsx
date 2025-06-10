@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   createSupabaseSignupClient,
@@ -29,7 +29,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Mail, Lock, User, Loader2 } from "lucide-react";
+import {
+  Mail,
+  Lock,
+  User,
+  Loader2,
+  EyeOff,
+  Eye,
+  ArrowRight,
+  UserPlus,
+} from "lucide-react";
 // Removed direct supabase import to avoid multiple client instances
 
 const signupSchema = z
@@ -68,6 +77,8 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 const SignupPage = () => {
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const form = useForm<SignupFormValues>({
@@ -140,165 +151,284 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
-      <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">
-            Create an account
-          </CardTitle>
-          <CardDescription className="text-center">
-            Enter your details below to create your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          placeholder="John Doe"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+    <div className="min-h-screen flex">
+      {/* Left Side - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 gradient-bg relative overflow-hidden">
+        <div className="flex flex-col justify-center px-12 py-16 relative z-10">
+          <div className="max-w-md">
+            <div className="flex items-center gap-3 mb-8">
+              <img
+                src="/Bookify_SVG.svg"
+                alt="Bookify"
+                className="h-10 w-10 object-contain"
               />
+              <span className="text-3xl font-bold gradient-text">Bookify</span>
+            </div>
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          type="email"
-                          placeholder="m@example.com"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormDescription>
-                      We'll send you a confirmation email.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <h1 className="text-4xl font-bold mb-4 text-foreground">
+              Join thousands of event enthusiasts
+            </h1>
+
+            <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+              Create your account and start discovering amazing events, booking
+              tickets, and creating unforgettable memories.
+            </p>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span>Instant booking confirmations</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span>Exclusive member benefits</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span>Personalized event recommendations</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute top-20 right-20 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-32 w-24 h-24 bg-primary/20 rounded-full blur-2xl"></div>
+      </div>
+
+      {/* Right Side - Signup Form */}
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-md space-y-8">
+          {/* Mobile Logo */}
+          <div className="lg:hidden text-center">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <img
+                src="/Bookify_SVG.svg"
+                alt="Bookify"
+                className="h-8 w-8 object-contain"
               />
+              <span className="text-2xl font-bold gradient-text">Bookify</span>
+            </div>
+          </div>
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormDescription>
-                      Must be at least 8 characters with uppercase, lowercase,
-                      and number.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <Card className="border-0 lg:border lg:shadow-lg">
+            <CardHeader className="space-y-2 text-center lg:text-left">
+              <CardTitle className="text-3xl font-bold">
+                Create account
+              </CardTitle>
+              <CardDescription className="text-base">
+                Enter your details below to create your account
+              </CardDescription>
+            </CardHeader>
 
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          className="pl-10"
-                          {...field}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <CardContent className="space-y-6">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-5"
+                >
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Full Name
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              placeholder="Enter your full name"
+                              className="pl-10 h-12 text-base"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="agreeToTerms"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        I agree to the{" "}
-                        <a
-                          href="#"
-                          className="text-primary underline hover:no-underline"
-                        >
-                          terms and conditions
-                        </a>
-                      </FormLabel>
-                      <FormMessage />
-                    </div>
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Email address
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              type="email"
+                              placeholder="Enter your email"
+                              className="pl-10 h-12 text-base"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormDescription className="text-xs">
+                          We'll send you a confirmation email
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
-                  </>
-                ) : (
-                  "Create account"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <a
-              href="/login"
-              className="text-primary underline hover:no-underline"
-            >
-              Sign in
-            </a>
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Password
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Create a strong password"
+                              className="pl-10 pr-12 h-12 text-base"
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormDescription className="text-xs">
+                          Must be 8+ characters with uppercase, lowercase, and
+                          number
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Confirm Password
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              type={showConfirmPassword ? "text" : "password"}
+                              placeholder="Confirm your password"
+                              className="pl-10 pr-12 h-12 text-base"
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setShowConfirmPassword(!showConfirmPassword)
+                              }
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="agreeToTerms"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-sm font-normal">
+                            I agree to the{" "}
+                            <Button
+                              variant="link"
+                              className="p-0 h-auto text-sm"
+                            >
+                              Terms of Service
+                            </Button>{" "}
+                            and{" "}
+                            <Button
+                              variant="link"
+                              className="p-0 h-auto text-sm"
+                            >
+                              Privacy Policy
+                            </Button>
+                          </FormLabel>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 text-base button-press"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating account...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Create account
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+
+            <CardFooter className="text-center">
+              <p className="text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link
+                  to="/login"
+                  className="font-medium text-primary hover:underline"
+                >
+                  Sign in here
+                </Link>
+              </p>
+            </CardFooter>
+          </Card>
+
+          {/* Additional Info */}
+          <p className="text-xs text-center text-muted-foreground max-w-sm mx-auto leading-relaxed">
+            By creating an account, you're joining a community of event
+            enthusiasts and gaining access to exclusive experiences.
           </p>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

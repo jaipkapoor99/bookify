@@ -133,9 +133,28 @@ const AuthCallback = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Completing sign in...</p>
+      <div className="text-center space-y-6">
+        {/* Bookify Logo */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <img
+            src="/Bookify_SVG.svg"
+            alt="Bookify"
+            className="h-12 w-12 object-contain"
+          />
+          <span className="text-3xl font-bold gradient-text">Bookify</span>
+        </div>
+
+        <div className="space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div>
+            <p className="text-lg font-medium text-gray-800">
+              Completing sign in...
+            </p>
+            <p className="text-sm text-gray-600 mt-1">
+              Please wait while we authenticate your account
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

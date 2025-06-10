@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.2] - 2025-01-17
+
+### 🎯 UX Improvements & Bug Fixes
+
+#### Fixed
+
+- **💰 Total Price Calculation**: Fixed critical bug in My Bookings page where total amount displayed only the per-ticket price instead of the correct total (ticket_price × quantity)
+  - Total calculation now correctly multiplies ticket price by quantity
+  - Example: 2 tickets × ₹2,500 now correctly shows ₹5,000 instead of ₹2,500
+  - Updated test suite to validate the correct calculation
+
+#### Added
+
+- **🖱️ Pointer Cursor Styling**: Enhanced user interface with appropriate cursor feedback for interactive elements
+  - Added `cursor-pointer` to all clickable cards (events, venues, bookings)
+  - Added `cursor-pointer` to hoverable images with transform effects
+  - Added `cursor-not-allowed` for disabled/sold-out venues
+  - Improved user experience with consistent visual feedback across the application
+
+#### Technical Improvements
+
+- **🧪 Test Suite Updates**: Maintained comprehensive test coverage
+  - Updated MyBookingsPage tests to expect correct total amount calculations
+  - All 67 tests passing with zero failures
+  - Clean TypeScript compilation with no linting errors
+
+### 🎯 Impact Summary
+
+- **User Experience**: Clear visual feedback for all interactive elements
+- **Data Accuracy**: Correct total price calculations in booking summaries
+- **Code Quality**: Maintained perfect test coverage and clean codebase
+
 ## [1.6.1] - 2025-01-17
 
 ### 🔧 Session Persistence Fix

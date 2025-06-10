@@ -125,7 +125,7 @@ const MyBookingsPage = () => {
           {bookings.map((ticket) => (
             <Card
               key={ticket.ticket_id}
-              className="overflow-hidden hover:shadow-lg transition-all duration-300"
+              className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
             >
               <CardContent className="p-0">
                 <div className="flex flex-col lg:flex-row">
@@ -193,7 +193,9 @@ const MyBookingsPage = () => {
                           {/* Ticket Price */}
                           <div className="text-center">
                             <p className="text-2xl font-bold text-green-600">
-                              {formatCurrency(ticket.ticket_price)}
+                              {formatCurrency(
+                                ticket.ticket_price * ticket.quantity
+                              )}
                             </p>
                             <p className="text-xs text-gray-500">
                               Total Amount

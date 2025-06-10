@@ -2,7 +2,15 @@
 
 A modern, full-stack event booking platform built with React, TypeScript, and Supabase. Bookify provides a complete event management and ticket booking system with instant performance, advanced caching, and enterprise-grade architecture.
 
-## ✨ Recent Major Updates (v1.6.0)
+## ✨ Recent Major Updates (v1.6.2)
+
+### 🎯 **Latest Improvements (v1.6.2)**
+
+- **💰 Fixed Total Price Calculation**: My Bookings page now correctly displays total amount (ticket_price × quantity)
+- **🖱️ Enhanced Cursor Styling**: Added pointer cursors for all interactive elements with professional polish
+- **✅ Updated Test Suite**: All 67 tests passing with validated price calculations
+
+### 🚀 **Performance Revolution (v1.6.0)**
 
 ### 🚀 **Performance Revolution**
 

@@ -64,15 +64,15 @@ describe("Integration Tests", () => {
       // Should see login form
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText("m@example.com")
+          screen.getByPlaceholderText("Enter your email")
         ).toBeInTheDocument();
       });
 
       // Fill login form
-      fireEvent.change(screen.getByPlaceholderText("m@example.com"), {
+      fireEvent.change(screen.getByPlaceholderText("Enter your email"), {
         target: { value: "test@example.com" },
       });
-      fireEvent.change(screen.getByPlaceholderText("••••••••"), {
+      fireEvent.change(screen.getByPlaceholderText("Enter your password"), {
         target: { value: "password123" },
       });
 
@@ -111,14 +111,14 @@ describe("Integration Tests", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText("m@example.com")
+          screen.getByPlaceholderText("Enter your email")
         ).toBeInTheDocument();
       });
 
-      fireEvent.change(screen.getByPlaceholderText("m@example.com"), {
+      fireEvent.change(screen.getByPlaceholderText("Enter your email"), {
         target: { value: "test@example.com" },
       });
-      fireEvent.change(screen.getByPlaceholderText("••••••••"), {
+      fireEvent.change(screen.getByPlaceholderText("Enter your password"), {
         target: { value: "wrongpassword" },
       });
 
@@ -156,11 +156,13 @@ describe("Integration Tests", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByRole("button", { name: "Google" })
+          screen.getByRole("button", { name: "Continue with Google" })
         ).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole("button", { name: "Google" }));
+      fireEvent.click(
+        screen.getByRole("button", { name: "Continue with Google" })
+      );
 
       await waitFor(() => {
         expect(mockedAuthApi.signInWithGoogle).toHaveBeenCalled();
@@ -264,9 +266,9 @@ describe("Integration Tests", () => {
 
       render(<App />);
 
-      // Should still show user with fallback to email
+      // Should still show user with fallback to username part of email
       await waitFor(() => {
-        expect(screen.getByText("test@example.com")).toBeInTheDocument();
+        expect(screen.getByText("test")).toBeInTheDocument();
       });
     });
   });
@@ -283,7 +285,7 @@ describe("Integration Tests", () => {
       // Should redirect to login page
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText("m@example.com")
+          screen.getByPlaceholderText("Enter your email")
         ).toBeInTheDocument();
       });
     });

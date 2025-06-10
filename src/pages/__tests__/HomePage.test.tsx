@@ -114,7 +114,7 @@ describe("HomePage", () => {
     });
   });
 
-  it("should display a message if fetching events fails", async () => {
+  it("should display a message if no events are available", async () => {
     mockedUseAppState.mockReturnValue({
       state: createMockAppState({ events: [] }),
       fetchEvents: vi.fn(),
@@ -127,9 +127,10 @@ describe("HomePage", () => {
     renderWithProviders(<HomePage />);
 
     await waitFor(() => {
-      // The app state context will catch the error and toast it.
-      // The page itself will show "0 Events Found".
-      expect(screen.getByText("0 Events Found")).toBeInTheDocument();
+      // There are multiple "No events found" texts, so use getAllByText and check the heading one
+      const noEventsTexts = screen.getAllByText("No events found");
+      expect(noEventsTexts.length).toBeGreaterThan(0);
+      expect(noEventsTexts[0]).toBeInTheDocument();
     });
   });
 });

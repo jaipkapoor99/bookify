@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [bookings, setBookings] = useState<BookingQueryResult[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [bookingsError, setBookingsError] = useState<string | null>(null);
+  // Location details fetched from external API based on pincode
   const [locationDetails, setLocationDetails] = useState<
     Record<string, { city: string; area: string; state: string }>
   >({});

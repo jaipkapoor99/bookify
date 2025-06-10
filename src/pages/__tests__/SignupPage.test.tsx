@@ -62,10 +62,16 @@ describe("SignupPage", () => {
   it("renders the signup form", () => {
     renderWithToaster(<SignupPage />);
 
-    expect(screen.getByPlaceholderText("m@example.com")).toBeInTheDocument();
-    // Use getAllBy since there are two password fields
-    const passwordInputs = screen.getAllByPlaceholderText("••••••••");
-    expect(passwordInputs).toHaveLength(2);
+    expect(screen.getByPlaceholderText("Enter your email")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Enter your full name")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Create a strong password")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Confirm your password")
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /create account/i })
     ).toBeInTheDocument();
@@ -84,9 +90,14 @@ describe("SignupPage", () => {
 
     renderWithToaster(<SignupPage />);
 
-    const emailInput = screen.getByPlaceholderText("m@example.com");
-    const passwordInputs = screen.getAllByPlaceholderText("••••••••");
-    const fullNameInput = screen.getByPlaceholderText("John Doe");
+    const emailInput = screen.getByPlaceholderText("Enter your email");
+    const passwordInput = screen.getByPlaceholderText(
+      "Create a strong password"
+    );
+    const confirmPasswordInput = screen.getByPlaceholderText(
+      "Confirm your password"
+    );
+    const fullNameInput = screen.getByPlaceholderText("Enter your full name");
     const termsCheckbox = screen.getByRole("checkbox");
     const submitButton = screen.getByRole("button", {
       name: /create account/i,
@@ -94,8 +105,10 @@ describe("SignupPage", () => {
 
     fireEvent.change(fullNameInput, { target: { value: "Test User" } });
     fireEvent.change(emailInput, { target: { value: "test@example.com" } });
-    fireEvent.change(passwordInputs[0], { target: { value: "Password123" } });
-    fireEvent.change(passwordInputs[1], { target: { value: "Password123" } });
+    fireEvent.change(passwordInput, { target: { value: "Password123" } });
+    fireEvent.change(confirmPasswordInput, {
+      target: { value: "Password123" },
+    });
     fireEvent.click(termsCheckbox);
     fireEvent.click(submitButton);
 
@@ -118,9 +131,14 @@ describe("SignupPage", () => {
 
     renderWithToaster(<SignupPage />);
 
-    const emailInput = screen.getByPlaceholderText("m@example.com");
-    const passwordInputs = screen.getAllByPlaceholderText("••••••••");
-    const fullNameInput = screen.getByPlaceholderText("John Doe");
+    const emailInput = screen.getByPlaceholderText("Enter your email");
+    const passwordInput = screen.getByPlaceholderText(
+      "Create a strong password"
+    );
+    const confirmPasswordInput = screen.getByPlaceholderText(
+      "Confirm your password"
+    );
+    const fullNameInput = screen.getByPlaceholderText("Enter your full name");
     const termsCheckbox = screen.getByRole("checkbox");
     const submitButton = screen.getByRole("button", {
       name: /create account/i,
@@ -128,8 +146,10 @@ describe("SignupPage", () => {
 
     fireEvent.change(fullNameInput, { target: { value: "Test User" } });
     fireEvent.change(emailInput, { target: { value: "fail@example.com" } });
-    fireEvent.change(passwordInputs[0], { target: { value: "Password123" } });
-    fireEvent.change(passwordInputs[1], { target: { value: "Password123" } });
+    fireEvent.change(passwordInput, { target: { value: "Password123" } });
+    fireEvent.change(confirmPasswordInput, {
+      target: { value: "Password123" },
+    });
     fireEvent.click(termsCheckbox);
     fireEvent.click(submitButton);
 
@@ -152,9 +172,14 @@ describe("SignupPage", () => {
 
     renderWithToaster(<SignupPage />);
 
-    const emailInput = screen.getByPlaceholderText("m@example.com");
-    const passwordInputs = screen.getAllByPlaceholderText("••••••••");
-    const fullNameInput = screen.getByPlaceholderText("John Doe");
+    const emailInput = screen.getByPlaceholderText("Enter your email");
+    const passwordInput = screen.getByPlaceholderText(
+      "Create a strong password"
+    );
+    const confirmPasswordInput = screen.getByPlaceholderText(
+      "Confirm your password"
+    );
+    const fullNameInput = screen.getByPlaceholderText("Enter your full name");
     const termsCheckbox = screen.getByRole("checkbox");
     const submitButton = screen.getByRole("button", {
       name: /create account/i,
@@ -162,8 +187,10 @@ describe("SignupPage", () => {
 
     fireEvent.change(fullNameInput, { target: { value: "Test User" } });
     fireEvent.change(emailInput, { target: { value: "taken@example.com" } });
-    fireEvent.change(passwordInputs[0], { target: { value: "Password123" } });
-    fireEvent.change(passwordInputs[1], { target: { value: "Password123" } });
+    fireEvent.change(passwordInput, { target: { value: "Password123" } });
+    fireEvent.change(confirmPasswordInput, {
+      target: { value: "Password123" },
+    });
     fireEvent.click(termsCheckbox);
     fireEvent.click(submitButton);
 

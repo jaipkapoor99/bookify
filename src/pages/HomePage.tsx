@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -18,20 +19,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Calendar,
   MapPin,
-  Filter,
   Search,
   Loader2,
-  MoreVertical,
+  Clock,
+  Ticket,
+  TrendingUp,
+  Sparkles,
+  Filter,
+  SortAsc,
 } from "lucide-react";
 
 import StorageImage from "@/components/ui/StorageImage";
@@ -179,53 +176,125 @@ const HomePage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <span className="text-2xl font-bold text-gray-700 opacity-75">
-              Bookify
-            </span>
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <div className="text-center space-y-8">
+          {/* Bookify Logo */}
+          <div className="flex items-center justify-center gap-3">
+            <img
+              src="/Bookify_SVG.svg"
+              alt="Bookify"
+              className="h-12 w-12 object-contain"
+            />
+            <span className="text-3xl font-bold gradient-text">Bookify</span>
           </div>
-          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading events...</p>
+
+          <div className="relative">
+            <Loader2 className="h-16 w-16 animate-spin mx-auto text-primary" />
+            <Sparkles className="h-6 w-6 absolute -top-2 -right-2 text-primary/60 animate-pulse" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-semibold mb-2">
+              Loading amazing events...
+            </h2>
+            <p className="text-muted-foreground">
+              Discovering the best experiences for you
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="container mx-auto p-4 space-y-6">
-      {/* Header Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg p-8">
-        <h1 className="text-4xl font-bold mb-2 text-gray-900">
-          Discover Amazing Events
-        </h1>
-        <p className="text-lg text-gray-600">
-          Find and book your next experience
-        </p>
-      </div>
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
-      {/* Filters Section */}
-      <Card className="p-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const getLocationDisplay = (event: Event) => {
+    const pincode = event.events_venues?.[0]?.venues?.locations?.pincode;
+    if (!pincode) return "Location TBA";
+
+    const location = locations[pincode];
+    return location
+      ? `${location.city}, ${location.state}`
+      : `Pincode: ${pincode}`;
+  };
+
+  return (
+    <div className="space-y-12">
+      {/* Enhanced Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 gradient-bg -skew-y-1 transform origin-top-left"></div>
+        <div className="relative px-4 py-20 md:py-32">
+          <div className="text-center space-y-8 max-w-4xl mx-auto">
+            <div className="space-y-4">
+              <Badge variant="secondary" className="mb-4">
+                <TrendingUp className="w-3 h-3 mr-1" />
+                Discover Amazing Events
+              </Badge>
+              <h1 className="text-5xl md:text-7xl font-bold gradient-text">
+                Your Next Great
+                <br />
+                Experience Awaits
+              </h1>
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                From intimate concerts to grand festivals, find and book tickets
+                for events that create lasting memories.
+              </p>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="flex justify-center gap-8 pt-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {state.events.length}+
+                </div>
+                <div className="text-sm text-muted-foreground">Live Events</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {cities.length}+
+                </div>
+                <div className="text-sm text-muted-foreground">Cities</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">100%</div>
+                <div className="text-sm text-muted-foreground">Secure</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Search and Filter Section */}
+      <section className="space-y-8">
+        <div className="flex flex-col md:flex-row gap-4 p-6 bg-card rounded-2xl border shadow-sm">
+          {/* Search */}
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search events or venues..."
+              placeholder="Search events, venues, or artists..."
+              className="pl-10 h-12 text-base"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
             />
           </div>
 
-          <Select
-            value={filterCity}
-            onValueChange={setFilterCity}
-            disabled={cities.length === 0}
-          >
-            <SelectTrigger className="w-full md:w-[180px]">
-              <MapPin className="h-4 w-4 mr-2" />
+          {/* City Filter */}
+          <Select value={filterCity} onValueChange={setFilterCity}>
+            <SelectTrigger className="w-full md:w-48 h-12">
+              <Filter className="w-4 h-4 mr-2" />
               <SelectValue placeholder="All Cities" />
             </SelectTrigger>
             <SelectContent>
@@ -238,135 +307,139 @@ const HomePage = () => {
             </SelectContent>
           </Select>
 
+          {/* Sort */}
           <Select
             value={sortBy}
             onValueChange={(value: "date" | "name") => setSortBy(value)}
           >
-            <SelectTrigger className="w-full md:w-[180px]">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Sort by" />
+            <SelectTrigger className="w-full md:w-40 h-12">
+              <SortAsc className="w-4 h-4 mr-2" />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="date">Date</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="date">By Date</SelectItem>
+              <SelectItem value="name">By Name</SelectItem>
             </SelectContent>
           </Select>
         </div>
-      </Card>
 
-      {/* Results Summary */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">
-          {filteredEvents.length}{" "}
-          {filteredEvents.length === 1 ? "Event" : "Events"} Found
-        </h2>
-      </div>
-
-      {/* Events Grid */}
-      {filteredEvents.length === 0 ? (
-        <Card className="p-12 text-center">
+        {/* Results Summary */}
+        <div className="flex items-center justify-between">
           <p className="text-muted-foreground">
-            No events found matching your criteria.
+            {filteredEvents.length === 0
+              ? "No events found"
+              : `${filteredEvents.length} event${
+                  filteredEvents.length !== 1 ? "s" : ""
+                } found`}
+            {searchQuery && (
+              <span className="ml-1">
+                for "
+                <span className="font-medium text-foreground">
+                  {searchQuery}
+                </span>
+                "
+              </span>
+            )}
           </p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.map((event) => {
-            const pincode =
-              event.events_venues?.[0]?.venues?.locations?.pincode;
-            const location = pincode ? locations[pincode] : null;
 
-            return (
+          {(searchQuery || filterCity !== "all") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchQuery("");
+                setFilterCity("all");
+              }}
+            >
+              Clear filters
+            </Button>
+          )}
+        </div>
+      </section>
+
+      {/* Enhanced Events Grid */}
+      <section>
+        {filteredEvents.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="space-y-4">
+              <div className="h-24 w-24 mx-auto rounded-full bg-muted/50 flex items-center justify-center">
+                <Calendar className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <h3 className="text-2xl font-semibold">No events found</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                {searchQuery || filterCity !== "all"
+                  ? "Try adjusting your search or filters to find more events."
+                  : "Check back soon for new events and experiences."}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredEvents.map((event) => (
               <Card
                 key={event.event_id}
-                className="overflow-hidden h-full hover:shadow-xl transition-all duration-300 group"
+                className="card-hover group overflow-hidden cursor-pointer"
               >
-                <div className="relative">
-                  <Link to={`/events/${event.event_id}`}>
-                    <CardHeader className="p-0">
-                      <div className="relative overflow-hidden">
-                        <StorageImage
-                          imagePath={event.image_path}
-                          alt={event.name}
-                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                    </CardHeader>
-                  </Link>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute top-2 right-2 h-8 w-8 bg-white/80 hover:bg-white"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Link
-                          to={`/events/${event.event_id}`}
-                          className="flex items-center w-full"
-                        >
-                          View Details
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>Share Event</DropdownMenuItem>
-                      <DropdownMenuItem>Save for Later</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <div className="relative overflow-hidden">
+                  <StorageImage
+                    imagePath={event.image_path || event.image_url}
+                    alt={event.name}
+                    className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                  />
+                  <div className="absolute top-4 right-4">
+                    <Badge className="bg-black/70 text-white border-0">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {formatDate(event.start_time)}
+                    </Badge>
+                  </div>
                 </div>
 
-                <Link to={`/events/${event.event_id}`}>
-                  <CardContent className="p-4">
-                    <CardTitle className="line-clamp-2 mb-2">
-                      {event.name}
-                    </CardTitle>
-                    {event.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {event.description}
-                      </p>
-                    )}
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4 mr-2" />
-                        {new Date(event.start_time).toLocaleDateString(
-                          "en-US",
-                          {
-                            weekday: "short",
-                            month: "short",
-                            day: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          }
-                        )}
-                      </div>
-                      {event.events_venues?.[0]?.venues && location && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          {event.events_venues[0].venues.venue_name},{" "}
-                          {location.city}
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Link>
+                <CardHeader className="space-y-3">
+                  <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2">
+                    {event.name}
+                  </CardTitle>
 
-                <CardFooter className="p-4 bg-gray-50 dark:bg-gray-800">
-                  <Button asChild className="w-full">
-                    <Link to={`/events/${event.event_id}`}>View Details</Link>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      <span>{formatTime(event.start_time)}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      <span className="truncate">
+                        {event.events_venues?.[0]?.venues?.venue_name ||
+                          "Venue TBA"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Ticket className="w-4 h-4" />
+                      <span>{getLocationDisplay(event)}</span>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                {event.description && (
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {event.description}
+                    </p>
+                  </CardContent>
+                )}
+
+                <CardFooter className="pt-0">
+                  <Button asChild className="w-full button-press">
+                    <Link to={`/events/${event.event_id}`}>
+                      View Details & Book
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

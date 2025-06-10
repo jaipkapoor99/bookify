@@ -102,8 +102,8 @@ describe("EventDetailPage", () => {
       ).toBeInTheDocument();
     });
 
-    // Check if the list of venues and dates is rendered
-    expect(screen.getByText("Dates and Venues")).toBeInTheDocument();
+    // Check if the section title is rendered correctly
+    expect(screen.getByText("Select Venue & Book Tickets")).toBeInTheDocument();
 
     // Check venue name (from real database)
     expect(screen.getByText("Garden City Arena")).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe("EventDetailPage", () => {
     expect(screen.getByText("₹2,500.00")).toBeInTheDocument();
   });
 
-  it("should open the booking dialog when an authenticated user clicks 'Book Tickets'", async () => {
+  it("should open the booking dialog when an authenticated user clicks 'Book Now'", async () => {
     const mockUser = { id: "user-123", email: "test@example.com" } as User;
 
     renderComponent(mockUser);
@@ -121,28 +121,28 @@ describe("EventDetailPage", () => {
       expect(screen.getByText("Summer Music Fest 2025")).toBeInTheDocument();
     });
 
-    const bookButtons = screen.getAllByText("Book Tickets");
-    fireEvent.click(bookButtons[0]); // Click the first "Book Tickets" button
+    const bookButtons = screen.getAllByText("Book Now");
+    fireEvent.click(bookButtons[0]); // Click the first "Book Now" button
 
     // Check if the booking dialog appears
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
-      expect(screen.getByText("Select Ticket Quantity")).toBeInTheDocument();
+      expect(screen.getByText("Book Tickets")).toBeInTheDocument(); // Dialog title
     });
 
     // Check that navigation has NOT been called yet
     expect(mockNavigate).not.toHaveBeenCalled();
 
-    // Check that clicking "Continue to Booking" navigates
+    // Check that clicking "Continue to Payment" navigates (updated button text)
     const continueButton = screen.getByRole("button", {
-      name: /Continue to Booking/i,
+      name: /Continue to Payment/i,
     });
     fireEvent.click(continueButton);
 
     expect(mockNavigate).toHaveBeenCalledWith(`/book/confirm/1?quantity=1`);
   });
 
-  it("should redirect to login when 'Book Tickets' is clicked by an unauthenticated user", async () => {
+  it("should redirect to login when 'Login to Book' is clicked by an unauthenticated user", async () => {
     renderComponent(null); // No user is logged in
 
     await waitFor(() => {
@@ -150,7 +150,7 @@ describe("EventDetailPage", () => {
     });
 
     const bookButtons = screen.getAllByRole("button", {
-      name: /Book Tickets/i,
+      name: /Login to Book/i,
     });
     fireEvent.click(bookButtons[0]);
 
@@ -176,7 +176,10 @@ describe("EventDetailPage", () => {
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText(/Event not found/i)).toBeInTheDocument();
+      // There are multiple "Event not found" texts, so use getAllByText and check for the heading one
+      const eventNotFoundTexts = screen.getAllByText(/Event not found/i);
+      expect(eventNotFoundTexts.length).toBeGreaterThan(0);
+      expect(eventNotFoundTexts[0]).toBeInTheDocument();
     });
   });
 });
