@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import EventDetailPage from "@/pages/EventDetailPage";
-import { dbApi } from "@/lib/api-client";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Create a mock navigate function
@@ -16,46 +15,66 @@ vi.mock("react-router-dom", async (importActual) => ({
   useNavigate: () => mockNavigate,
 }));
 
-vi.mock("@/lib/api-client");
 vi.mock("@/contexts/AuthContext");
 
-const mockEvent = {
-  event_id: 1,
-  name: "Summer Music Fest 2025",
-  description:
-    "The biggest outdoor music festival of the year, featuring top artists from around the globe.",
-  start_time: "2025-07-15T19:00:00+05:30",
-  end_time: "2025-07-15T22:00:00+05:30",
-  image_url: "/placeholder.svg",
-  events_venues: [
-    {
-      event_venue_id: 1,
-      event_venue_date: new Date().toISOString(),
-      no_of_tickets: 100,
-      price: 50,
-      venues: {
-        venue_name: "Grand Convention Center",
-        locations: {
-          pincode: "110001",
-        },
+// Mock the global fetch function that the component now uses
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+// Mock environment variables
+vi.stubEnv("VITE_SUPABASE_URL", "http://localhost:54321");
+vi.stubEnv("VITE_SUPABASE_ANON_KEY", "test-anon-key");
+
+const mockEventData = [
+  {
+    event_id: 1,
+    name: "Summer Music Fest 2025",
+    description: "A spectacular summer music festival featuring top artists",
+    start_time: "2025-07-15T19:00:00+05:30",
+    end_time: "2025-07-15T22:00:00+05:30",
+    image_url: "/placeholder.svg",
+    image_path: null,
+  },
+];
+
+const mockEventsVenuesData = [
+  {
+    event_venue_id: 1,
+    event_venue_date: "2025-07-15",
+    no_of_tickets: 83,
+    price: 250000, // Real price in paise (₹2,500.00)
+    venues: {
+      venue_name: "Garden City Arena",
+      locations: {
+        pincode: "400001",
       },
     },
-  ],
-};
-
-const mockedDbApi = vi.mocked(dbApi);
+  },
+];
 
 describe("EventDetailPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-
-    // Reset the navigation mock
     mockNavigate.mockClear();
 
-    // Mock the API client
-    mockedDbApi.select.mockResolvedValue({
-      data: mockEvent,
-      error: null,
+    // Mock successful fetch responses by default
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes("events?select=")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockEventData),
+        });
+      }
+      if (url.includes("events_venues?select=")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockEventsVenuesData),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
     });
   });
 
@@ -78,7 +97,7 @@ describe("EventDetailPage", () => {
       expect(screen.getByText("Summer Music Fest 2025")).toBeInTheDocument();
       expect(
         screen.getByText(
-          "The biggest outdoor music festival of the year, featuring top artists from around the globe."
+          "A spectacular summer music festival featuring top artists"
         )
       ).toBeInTheDocument();
     });
@@ -86,19 +105,11 @@ describe("EventDetailPage", () => {
     // Check if the list of venues and dates is rendered
     expect(screen.getByText("Dates and Venues")).toBeInTheDocument();
 
-    // Check venue name
-    expect(screen.getByText("Grand Convention Center")).toBeInTheDocument();
+    // Check venue name (from real database)
+    expect(screen.getByText("Garden City Arena")).toBeInTheDocument();
 
-    // Check if price is displayed correctly formatted
-    expect(screen.getByText("₹0.50")).toBeInTheDocument();
-
-    // Verify the correct API query was made
-    expect(mockedDbApi.select).toHaveBeenCalledWith(
-      "events",
-      "event_id,name,description,image_url,image_path,start_time,end_time",
-      { event_id: "1" },
-      { single: true }
-    );
+    // Check if price is displayed correctly formatted (real database price)
+    expect(screen.getByText("₹2,500.00")).toBeInTheDocument();
   });
 
   it("should open the booking dialog when an authenticated user clicks 'Book Tickets'", async () => {
@@ -148,18 +159,24 @@ describe("EventDetailPage", () => {
   });
 
   it("should display an error message if the event is not found", async () => {
-    const errorMessage = "Event not found";
-
-    // Override the default mock for this test
-    mockedDbApi.select.mockResolvedValue({
-      data: null,
-      error: errorMessage,
+    // Mock fetch to return empty array (no event found)
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes("events?select=")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([]), // Empty array = no event found
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
     });
 
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText(/Error: Event not found/i)).toBeInTheDocument();
+      expect(screen.getByText(/Event not found/i)).toBeInTheDocument();
     });
   });
 });

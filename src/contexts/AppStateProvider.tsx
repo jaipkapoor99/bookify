@@ -1,6 +1,5 @@
 import React, { useState, useCallback, ReactNode, useRef } from "react";
 import { Event } from "@/pages/HomePage";
-import { toast } from "sonner";
 import {
   AppStateContextType,
   AppState,
@@ -113,9 +112,7 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         return events;
       } catch (error) {
         if (error instanceof Error) {
-          toast.error("Failed to fetch events", {
-            description: error.message,
-          });
+          console.error("Failed to fetch events:", error.message);
         }
         return [];
       } finally {
@@ -153,9 +150,10 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         return eventVenues;
       } catch (error) {
         if (error instanceof Error)
-          toast.error(`Failed to fetch venues for event ${eventId}`, {
-            description: error.message,
-          });
+          console.error(
+            `Failed to fetch venues for event ${eventId}:`,
+            error.message
+          );
         return [];
       } finally {
         setLoading(cacheKey, false);
@@ -183,9 +181,7 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         return venues;
       } catch (error) {
         if (error instanceof Error)
-          toast.error("Failed to fetch venues", {
-            description: error.message,
-          });
+          console.error("Failed to fetch venues:", error.message);
         return [];
       } finally {
         setLoading(cacheKey, false);
