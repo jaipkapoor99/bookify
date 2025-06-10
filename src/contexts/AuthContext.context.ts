@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import type { User, Session } from "@/lib/api-client";
+import type { BookingQueryResult } from "@/types/database.types";
 
 export type UserProfile = {
   user_id: number;
@@ -19,9 +20,19 @@ export type AuthContextType = {
   loading: boolean;
   profile: UserProfile | null;
   loadingProfile: boolean;
+  // Bookings data
+  bookings: BookingQueryResult[];
+  loadingBookings: boolean;
+  bookingsError: string | null;
+  locationDetails: Record<
+    string,
+    { city: string; area: string; state: string }
+  >;
+  // Methods
   login: (email: string, password: string) => Promise<{ error: string | null }>;
   logout: () => Promise<{ error: string | null }>;
   loginWithGoogle: () => Promise<{ error: string | null }>;
+  refreshBookings: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -30,9 +41,14 @@ export const AuthContext = createContext<AuthContextType>({
   loading: true,
   profile: null,
   loadingProfile: false,
+  bookings: [],
+  loadingBookings: false,
+  bookingsError: null,
+  locationDetails: {},
   login: async () => ({ error: null }),
   logout: async () => ({ error: null }),
   loginWithGoogle: async () => ({ error: null }),
+  refreshBookings: async () => {},
 });
 
 export const useAuth = () => {
