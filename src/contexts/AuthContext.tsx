@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode, useCallback } from "react";
 import { AuthContext, type UserProfile } from "./AuthContext.context";
 import { authApi, dbApi, type User, type Session } from "@/lib/api-client";
+import { STORAGE_KEYS, DEFAULTS } from "@/lib/constants";
+import debug from "@/lib/debug";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -15,21 +17,70 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    if (!user.id) {
+      console.error("User ID is missing:", user);
+      setProfile(null);
+      return;
+    }
+
     setLoadingProfile(true);
 
     try {
-      const { data, error } = await dbApi.select<UserProfile>(
-        "users",
-        "*",
-        { supabase_id: user.id },
-        { single: true }
-      );
+      // First, try to get existing profile (without single: true to avoid 406 errors)
+      const { data, error } = await dbApi.select<UserProfile>("users", "*", {
+        supabase_id: user.id,
+      });
 
-      if (error) {
+      if (data && Array.isArray(data) && data.length > 0) {
+        // Profile exists, use the first one
+        setProfile(data[0]);
+      } else if (
+        !data ||
+        (Array.isArray(data) && data.length === 0) ||
+        error?.includes("PGRST116") ||
+        error?.includes("no rows")
+      ) {
+        // Profile doesn't exist, create it for OAuth users
+        debug.auth("Creating new user profile for OAuth user", {
+          userId: user.id,
+        });
+
+        const newProfile = {
+          supabase_id: user.id,
+          name:
+            user.user_metadata?.full_name ||
+            user.email?.split("@")[0] ||
+            DEFAULTS.USER_NAME,
+          created_at: new Date().toISOString(),
+        };
+
+        const createResult = await dbApi.insert("users", newProfile);
+        const createError = createResult?.error;
+
+        if (createError) {
+          console.warn("Failed to create user profile:", createError);
+          setProfile(null);
+        } else {
+          debug.success("Successfully created user profile");
+          // Fetch the created profile
+          const { data: fetchedProfile } = await dbApi.select<UserProfile>(
+            "users",
+            "*",
+            { supabase_id: user.id }
+          );
+          if (
+            fetchedProfile &&
+            Array.isArray(fetchedProfile) &&
+            fetchedProfile.length > 0
+          ) {
+            setProfile(fetchedProfile[0]);
+          } else {
+            setProfile(null);
+          }
+        }
+      } else {
         console.warn("Profile fetch error:", error);
         setProfile(null);
-      } else if (data) {
-        setProfile(data);
       }
     } catch (error) {
       console.warn("Profile fetch exception:", error);
@@ -45,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const { data: session, error } = await authApi.getSession();
 
         if (error) {
-          console.warn("Session initialization error:", error);
+          debug.error("Session initialization error", error);
           setSession(null);
           setUser(null);
           setProfile(null);
@@ -53,10 +104,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (session) {
-          console.log("AuthContext: Initializing with session", {
+          debug.auth("Initializing with session", {
             hasToken: !!session.access_token,
             userId: session.user?.id,
+            fullUser: session.user,
           });
+
+          // Validate that user has required fields
+          if (!session.user?.id) {
+            debug.error("Session user missing ID, clearing corrupted session");
+            // Clear corrupted session
+            localStorage.removeItem(STORAGE_KEYS.SESSION);
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            return;
+          }
+
+          // Ensure auth token is set before making database calls
+          const { setAuthToken } = await import("@/lib/api-client");
+          setAuthToken(session.access_token);
+
           setSession(session);
           setUser(session.user);
           await fetchProfile(session.user);

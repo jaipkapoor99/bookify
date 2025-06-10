@@ -38,6 +38,42 @@ const AuthCallback = () => {
           const now = Math.floor(Date.now() / 1000);
           const expiresAt = now + parseInt(expiresIn || "3600", 10);
 
+          // Decode JWT to extract user info
+          let userInfo = {
+            id: "",
+            email: undefined as string | undefined,
+            full_name: undefined as string | undefined,
+            avatar_url: undefined as string | undefined,
+          };
+
+          try {
+            // Decode the access token (JWT) to get user info
+            const payload = JSON.parse(atob(accessToken.split(".")[1]));
+            console.log("JWT payload:", payload);
+
+            userInfo = {
+              id: payload.sub || payload.user_id || "",
+              email: payload.email,
+              full_name: payload.name || payload.full_name,
+              avatar_url: payload.picture || payload.avatar_url,
+            };
+          } catch (err) {
+            console.warn("Failed to decode JWT:", err);
+            // Fallback to URL parameters (though less likely to work)
+            userInfo = {
+              id: hashParams.get("sub") || hashParams.get("user_id") || "",
+              email: hashParams.get("email") || undefined,
+              full_name:
+                hashParams.get("full_name") ||
+                hashParams.get("name") ||
+                undefined,
+              avatar_url:
+                hashParams.get("avatar_url") ||
+                hashParams.get("picture") ||
+                undefined,
+            };
+          }
+
           // Store the session manually for OAuth flow
           const session = {
             access_token: accessToken,
@@ -45,17 +81,11 @@ const AuthCallback = () => {
             expires_in: expiresAt,
             token_type: hashParams.get("token_type") || "bearer",
             user: {
-              id: hashParams.get("sub") || hashParams.get("user_id") || "",
-              email: hashParams.get("email") || undefined,
+              id: userInfo.id,
+              email: userInfo.email,
               user_metadata: {
-                full_name:
-                  hashParams.get("full_name") ||
-                  hashParams.get("name") ||
-                  undefined,
-                avatar_url:
-                  hashParams.get("avatar_url") ||
-                  hashParams.get("picture") ||
-                  undefined,
+                full_name: userInfo.full_name,
+                avatar_url: userInfo.avatar_url,
                 provider: "google",
               },
               app_metadata: {

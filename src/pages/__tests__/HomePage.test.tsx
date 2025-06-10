@@ -1,20 +1,18 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
-import { supabase } from "@/SupabaseClient";
-import { AppStateProvider } from "@/contexts/AppStateProvider";
+import { useAppState } from "@/hooks/useAppState";
 import React from "react";
 
-// The Supabase client is mocked globally in `src/setupTests.ts`
+// Mock the useAppState hook
+vi.mock("@/hooks/useAppState");
 
 const renderWithProviders = (ui: React.ReactElement) => {
-  return render(
-    <MemoryRouter>
-      <AppStateProvider>{ui}</AppStateProvider>
-    </MemoryRouter>
-  );
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
 };
+
+const mockedUseAppState = vi.mocked(useAppState);
 
 describe("HomePage", () => {
   beforeEach(() => {
@@ -27,21 +25,36 @@ describe("HomePage", () => {
         event_id: 1,
         name: "Rock Concert",
         start_time: "2025-06-21T18:00:00",
-        venue_id: 1,
         image_url: "/rock-concert.jpg",
+        events_venues: [
+          {
+            venues: {
+              venue_name: "Rock Arena",
+              locations: { pincode: "110001" },
+            },
+          },
+        ],
       },
       {
         event_id: 2,
         name: "Jazz Night",
         start_time: "2025-06-25T20:00:00",
-        venue_id: 2,
         image_url: "/jazz-night.jpg",
+        events_venues: [
+          {
+            venues: {
+              venue_name: "Jazz Club",
+              locations: { pincode: "110002" },
+            },
+          },
+        ],
       },
     ];
 
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: mockEvents, error: null }),
+    mockedUseAppState.mockReturnValue({
+      state: { events: mockEvents },
+      fetchEvents: vi.fn(),
+      isLoading: vi.fn().mockReturnValue(false),
     });
 
     renderWithProviders(<HomePage />);
@@ -58,14 +71,22 @@ describe("HomePage", () => {
         event_id: 1,
         name: "Rock Concert",
         start_time: "2025-06-21T18:00:00",
-        venue_id: 1,
         image_url: "/rock-concert.jpg",
+        events_venues: [
+          {
+            venues: {
+              venue_name: "Rock Arena",
+              locations: { pincode: "110001" },
+            },
+          },
+        ],
       },
     ];
 
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: mockEvents, error: null }),
+    mockedUseAppState.mockReturnValue({
+      state: { events: mockEvents },
+      fetchEvents: vi.fn(),
+      isLoading: vi.fn().mockReturnValue(false),
     });
 
     renderWithProviders(<HomePage />);
@@ -77,11 +98,10 @@ describe("HomePage", () => {
   });
 
   it("should display a message if fetching events fails", async () => {
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      order: vi
-        .fn()
-        .mockResolvedValue({ data: null, error: { message: "Network error" } }),
+    mockedUseAppState.mockReturnValue({
+      state: { events: [] },
+      fetchEvents: vi.fn(),
+      isLoading: vi.fn().mockReturnValue(false),
     });
 
     renderWithProviders(<HomePage />);

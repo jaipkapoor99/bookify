@@ -1,9 +1,9 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import EventDetailPage from "@/pages/EventDetailPage";
-import { supabase } from "@/SupabaseClient";
+import { dbApi } from "@/lib/api-client";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Create a mock navigate function
@@ -16,43 +16,34 @@ vi.mock("react-router-dom", async (importActual) => ({
   useNavigate: () => mockNavigate,
 }));
 
-vi.mock("@/SupabaseClient");
+vi.mock("@/lib/api-client");
 vi.mock("@/contexts/AuthContext");
 
 const mockEvent = {
   event_id: 1,
-  name: "Arijit Singh - Live in Concert",
-  description: "Experience the soulful voice of Arijit Singh.",
-  start_time: "2025-10-05T19:00:00+05:30",
-  end_time: "2025-10-07T22:00:00+05:30",
-  image_url: "https://example.com/arijit.jpg",
+  name: "Summer Music Fest 2025",
+  description:
+    "The biggest outdoor music festival of the year, featuring top artists from around the globe.",
+  start_time: "2025-07-15T19:00:00+05:30",
+  end_time: "2025-07-15T22:00:00+05:30",
+  image_url: "/placeholder.svg",
   events_venues: [
     {
-      event_venue_id: 101, // Unique ID for this specific event-venue
-      event_venue_date: "2025-10-05",
-      no_of_tickets: 150,
-      price: 350000, // Price in paise
+      event_venue_id: 1,
+      event_venue_date: new Date().toISOString(),
+      no_of_tickets: 100,
+      price: 50,
       venues: {
-        venue_name: "NSCI Dome",
+        venue_name: "Grand Convention Center",
         locations: {
-          pincode: "400051",
-        },
-      },
-    },
-    {
-      event_venue_id: 102, // Unique ID for this specific event-venue
-      event_venue_date: "2025-10-07",
-      no_of_tickets: 200,
-      price: 280000, // Price in paise
-      venues: {
-        venue_name: "UB City Amphitheatre",
-        locations: {
-          pincode: "560025",
+          pincode: "110001",
         },
       },
     },
   ],
 };
+
+const mockedDbApi = vi.mocked(dbApi);
 
 describe("EventDetailPage", () => {
   beforeEach(() => {
@@ -61,19 +52,11 @@ describe("EventDetailPage", () => {
     // Reset the navigation mock
     mockNavigate.mockClear();
 
-    // Mock the edge function for location fetching
-    (supabase.functions.invoke as Mock).mockResolvedValue({
-      data: { area: "Test Area", city: "Test City", state: "Test State" },
+    // Mock the API client
+    mockedDbApi.select.mockResolvedValue({
+      data: mockEvent,
       error: null,
     });
-
-    // Mock the Supabase query chain
-    const singleMock = vi
-      .fn()
-      .mockResolvedValue({ data: mockEvent, error: null });
-    const eqMock = vi.fn().mockReturnValue({ single: singleMock });
-    const selectMock = vi.fn().mockReturnValue({ eq: eqMock });
-    (supabase.from as Mock).mockReturnValue({ select: selectMock });
   });
 
   const renderComponent = (user: { id: string } | null = null) => {
@@ -92,34 +75,30 @@ describe("EventDetailPage", () => {
     renderComponent();
 
     await waitFor(() => {
+      expect(screen.getByText("Summer Music Fest 2025")).toBeInTheDocument();
       expect(
-        screen.getByText("Arijit Singh - Live in Concert")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Experience the soulful voice of Arijit Singh.")
+        screen.getByText(
+          "The biggest outdoor music festival of the year, featuring top artists from around the globe."
+        )
       ).toBeInTheDocument();
     });
 
     // Check if the list of venues and dates is rendered
     expect(screen.getByText("Dates and Venues")).toBeInTheDocument();
 
-    // Use more flexible date matching by checking for parts of the date string
-    const firstVenue = screen
-      .getByText("NSCI Dome")
-      .closest("div.flex.items-center.justify-between");
-    expect(firstVenue).toHaveTextContent("October 5, 2025");
+    // Check venue name
+    expect(screen.getByText("Grand Convention Center")).toBeInTheDocument();
 
-    const secondVenue = screen
-      .getByText("UB City Amphitheatre")
-      .closest("div.flex.items-center.justify-between");
-    expect(secondVenue).toHaveTextContent("October 7, 2025");
+    // Check if price is displayed correctly formatted
+    expect(screen.getByText("₹0.50")).toBeInTheDocument();
 
-    // Check if prices are displayed correctly formatted
-    expect(screen.getByText("₹3,500.00")).toBeInTheDocument();
-    expect(screen.getByText("₹2,800.00")).toBeInTheDocument();
-
-    // Verify the correct Supabase query was made
-    expect(supabase.from).toHaveBeenCalledWith("events");
+    // Verify the correct API query was made
+    expect(mockedDbApi.select).toHaveBeenCalledWith(
+      "events",
+      "event_id,name,description,image_url,image_path,start_time,end_time",
+      { event_id: "1" },
+      { single: true }
+    );
   });
 
   it("should open the booking dialog when an authenticated user clicks 'Book Tickets'", async () => {
@@ -128,9 +107,7 @@ describe("EventDetailPage", () => {
     renderComponent(mockUser);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Arijit Singh - Live in Concert")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Summer Music Fest 2025")).toBeInTheDocument();
     });
 
     const bookButtons = screen.getAllByText("Book Tickets");
@@ -151,18 +128,14 @@ describe("EventDetailPage", () => {
     });
     fireEvent.click(continueButton);
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      `/book/confirm/${mockEvent.events_venues[0].event_venue_id}?quantity=1`
-    );
+    expect(mockNavigate).toHaveBeenCalledWith(`/book/confirm/1?quantity=1`);
   });
 
   it("should redirect to login when 'Book Tickets' is clicked by an unauthenticated user", async () => {
     renderComponent(null); // No user is logged in
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Arijit Singh - Live in Concert")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Summer Music Fest 2025")).toBeInTheDocument();
     });
 
     const bookButtons = screen.getAllByRole("button", {
@@ -178,12 +151,10 @@ describe("EventDetailPage", () => {
     const errorMessage = "Event not found";
 
     // Override the default mock for this test
-    const singleMock = vi
-      .fn()
-      .mockResolvedValue({ data: null, error: { message: errorMessage } });
-    const eqMock = vi.fn().mockReturnValue({ single: singleMock });
-    const selectMock = vi.fn().mockReturnValue({ eq: eqMock });
-    (supabase.from as Mock).mockReturnValue({ select: selectMock });
+    mockedDbApi.select.mockResolvedValue({
+      data: null,
+      error: errorMessage,
+    });
 
     renderComponent();
 

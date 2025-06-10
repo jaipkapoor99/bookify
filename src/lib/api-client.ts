@@ -1,7 +1,15 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
+import {
+  STORAGE_KEYS,
+  API_ENDPOINTS,
+  ENV_VARS,
+  DEFAULTS,
+  OAUTH_PROVIDERS,
+} from "./constants";
+import debug from "./debug";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_URL = import.meta.env[ENV_VARS.SUPABASE_URL];
+const SUPABASE_ANON_KEY = import.meta.env[ENV_VARS.SUPABASE_ANON_KEY];
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   if (import.meta.env.MODE !== "test") {
@@ -74,7 +82,7 @@ const setAuthToken = (token: string | null) => {
 // Get auth token from localStorage
 const getStoredSession = (): Session | null => {
   try {
-    const stored = localStorage.getItem("booking-platform-session");
+    const stored = localStorage.getItem(STORAGE_KEYS.SESSION);
     return stored ? JSON.parse(stored) : null;
   } catch {
     return null;
@@ -84,10 +92,10 @@ const getStoredSession = (): Session | null => {
 // Store session in localStorage
 const storeSession = (session: Session | null) => {
   if (session) {
-    localStorage.setItem("booking-platform-session", JSON.stringify(session));
+    localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
     setAuthToken(session.access_token);
   } else {
-    localStorage.removeItem("booking-platform-session");
+    localStorage.removeItem(STORAGE_KEYS.SESSION);
     setAuthToken(null);
   }
 };
@@ -205,12 +213,10 @@ export const authApi = {
     refreshToken: string
   ): Promise<ApiResponse<Session>> => {
     try {
-      const response: AxiosResponse = await authClient.post(
-        "/token?grant_type=refresh_token",
-        {
-          refresh_token: refreshToken,
-        }
-      );
+      const response: AxiosResponse = await authClient.post("/token", {
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      });
 
       const session: Session = response.data;
       storeSession(session);
@@ -362,14 +368,46 @@ export const dbApi = {
     params: Record<string, any>
   ): Promise<ApiResponse<T>> => {
     try {
+      debug.api(`Calling RPC function: ${functionName}`, {
+        functionName,
+        params,
+        url: `/rpc/${functionName}`,
+      });
+
       const response: AxiosResponse = await apiClient.post(
         `/rpc/${functionName}`,
         params
       );
+
+      debug.api(`RPC function ${functionName} completed successfully`, {
+        status: response.status,
+        data: response.data,
+      });
+
       return { data: response.data, error: null };
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || error.message || "RPC call failed";
+
+      debug.error(`RPC function ${functionName} failed`, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: errorMessage,
+        params,
+        fullError: error.response || error,
+      });
+
+      // Also log to console.error to ensure it appears in terminal
+      console.error(
+        `🚨 API ERROR: RPC ${functionName} failed with status ${error.response?.status}`,
+        {
+          params,
+          response: error.response?.data,
+          fullError: error.response || error,
+        }
+      );
+
       return { data: null, error: errorMessage };
     }
   },

@@ -66,7 +66,7 @@ export interface Ticket {
   created_at: string;
   updated_at: string;
   ticket_price: number;
-  events_venues_id?: number;
+  event_venue_id?: number;
 }
 
 // Query result types for complex joins

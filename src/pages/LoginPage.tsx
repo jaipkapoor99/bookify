@@ -100,8 +100,14 @@ const LoginPage = () => {
         });
       }
       // On success, Supabase handles the redirect, so no navigation is needed here.
-    } catch {
-      toast.error("An unexpected error occurred with Google login.");
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred with Google login.";
+      toast.error("Google login failed", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }

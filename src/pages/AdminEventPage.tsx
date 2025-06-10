@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/SupabaseClient";
+import { dbApi } from "@/lib/api-client";
 import { uploadImage, getImageUrl, deleteImage } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -92,12 +92,9 @@ const AdminEventPage = () => {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data, error } = await dbApi.select("events", "*");
 
-      if (error) throw error;
+      if (error) throw new Error(error);
       setEvents(data || []);
     } catch (error) {
       toast.error("Failed to fetch events");
@@ -162,18 +159,17 @@ const AdminEventPage = () => {
 
       if (editingEvent) {
         // Update existing event
-        const { error } = await supabase
-          .from("events")
-          .update(eventData)
-          .eq("event_id", editingEvent.event_id);
+        const { error } = await dbApi.update("events", eventData, {
+          event_id: editingEvent.event_id,
+        });
 
-        if (error) throw error;
+        if (error) throw new Error(error);
         toast.success("Event updated successfully!");
       } else {
         // Create new event
-        const { error } = await supabase.from("events").insert([eventData]);
+        const { error } = await dbApi.insert("events", eventData);
 
-        if (error) throw error;
+        if (error) throw new Error(error);
         toast.success("Event created successfully!");
       }
 
@@ -212,12 +208,11 @@ const AdminEventPage = () => {
       }
 
       // Delete event from database
-      const { error } = await supabase
-        .from("events")
-        .delete()
-        .eq("event_id", event.event_id);
+      const { error } = await dbApi.delete("events", {
+        event_id: event.event_id,
+      });
 
-      if (error) throw error;
+      if (error) throw new Error(error);
 
       toast.success("Event deleted successfully!");
       fetchEvents();

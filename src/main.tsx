@@ -3,6 +3,12 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./index.css";
 import { createRoutesFromElements, Route } from "react-router-dom";
+import { initializeConsoleInterceptor } from "@/lib/console-interceptor";
+
+// Initialize console interceptor in development
+if (import.meta.env.DEV) {
+  initializeConsoleInterceptor();
+}
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AppStateProvider } from "@/contexts/AppStateProvider";

@@ -60,7 +60,7 @@ export interface DatabaseTicket {
   created_at: string;
   updated_at: string;
   ticket_price: number;
-  events_venues_id?: number;
+  event_venue_id?: number;
   quantity: number; // Added by migration
 }
 
@@ -71,7 +71,7 @@ export interface TicketWithDetails {
   created_at: string;
   updated_at: string;
   ticket_price: number;
-  events_venues_id?: number;
+  event_venue_id?: number;
   quantity: number;
   events_venues?: DatabaseEventVenue & {
     events?: DatabaseEvent;
@@ -102,7 +102,7 @@ export interface BookingDetails {
 // Foreign key relationships in Supabase format
 export type ForeignKeyRelationships = {
   tickets: {
-    events_venues_id: "events_venues";
+    event_venue_id: "events_venues";
     customer_id: "users";
   };
   events_venues: {

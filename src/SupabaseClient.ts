@@ -36,7 +36,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Create a single dedicated client for non-auth database operations to avoid conflicts
-let databaseClient: any = null;
+let databaseClient: unknown = null;
 
 export const createDatabaseClient = () => {
   if (!databaseClient) {
