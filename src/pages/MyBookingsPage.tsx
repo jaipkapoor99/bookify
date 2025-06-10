@@ -41,7 +41,7 @@ const MyBookingsPage = () => {
   }
 
   const getDisplayLocation = (ticket: BookingQueryResult) => {
-    const locationData = ticket.events_venues.venues?.locations;
+    const locationData = ticket.events_venues?.venues?.locations;
     if (!locationData) return "Location not available";
 
     const details = locationDetails[locationData.pincode];
@@ -49,8 +49,8 @@ const MyBookingsPage = () => {
       return `${details.area}, ${details.city}, ${details.state}`;
     }
 
-    // Fallback to database location data
-    return `${locationData.area}, ${locationData.city}, ${locationData.state}`;
+    // Since database location only has pincode, show just that if no external data
+    return `Pincode: ${locationData.pincode}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -133,10 +133,10 @@ const MyBookingsPage = () => {
                   <div className="lg:w-64 lg:flex-shrink-0">
                     <StorageImage
                       imagePath={
-                        ticket.events_venues.events?.image_path ||
-                        ticket.events_venues.events?.image_url
+                        ticket.events_venues?.events?.image_path ||
+                        ticket.events_venues?.events?.image_url
                       }
-                      alt={ticket.events_venues.events?.name || "Event"}
+                      alt={ticket.events_venues?.events?.name || "Event"}
                       className="w-full h-48 lg:h-full object-cover"
                     />
                   </div>
@@ -146,7 +146,7 @@ const MyBookingsPage = () => {
                     <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
                       <div className="flex-1">
                         <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                          {ticket.events_venues.events?.name ||
+                          {ticket.events_venues?.events?.name ||
                             "Event Name Not Available"}
                         </h3>
 
@@ -155,7 +155,7 @@ const MyBookingsPage = () => {
                           <div className="flex items-center text-gray-700">
                             <MapPin className="h-4 w-4 mr-2 text-gray-500" />
                             <span className="font-medium">
-                              {ticket.events_venues.venues?.venue_name ||
+                              {ticket.events_venues?.venues?.venue_name ||
                                 "Venue Not Available"}
                             </span>
                           </div>
@@ -170,7 +170,7 @@ const MyBookingsPage = () => {
                           <div className="flex items-center text-gray-700">
                             <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                             <span>
-                              {ticket.events_venues.event_venue_date
+                              {ticket.events_venues?.event_venue_date
                                 ? formatDate(
                                     ticket.events_venues.event_venue_date
                                   )
@@ -179,7 +179,7 @@ const MyBookingsPage = () => {
                           </div>
 
                           {/* Description */}
-                          {ticket.events_venues.events?.description && (
+                          {ticket.events_venues?.events?.description && (
                             <p className="text-gray-600 text-sm mt-3 line-clamp-2">
                               {ticket.events_venues.events.description}
                             </p>

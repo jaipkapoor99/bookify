@@ -21,6 +21,7 @@ interface TicketRaw {
   quantity: number;
   ticket_price: number;
   created_at: string;
+  updated_at: string;
 }
 
 interface EventVenueRaw {
@@ -29,30 +30,36 @@ interface EventVenueRaw {
   venue_id: number;
   event_venue_date: string;
   price: number;
-  no_of_tickets?: number;
+  no_of_tickets: number;
+  created_at: string;
+  updated_at: string;
 }
 
 interface VenueRaw {
   venue_id: number;
   venue_name: string;
-  venue_address?: string;
   location_id: number;
+  created_at: string;
+  updated_at: string;
 }
 
 interface EventRaw {
   event_id: number;
   name: string;
   description?: string;
+  start_time: string;
+  end_time: string;
   image_url?: string;
   image_path?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface LocationRaw {
   location_id: number;
   pincode: string;
-  city: string;
-  state: string;
-  area: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -432,29 +439,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           return {
             ticket_id: ticket.ticket_id,
-            ticket_price: ticket.ticket_price,
-            created_at: ticket.created_at,
             customer_id: ticket.customer_id,
+            event_venue_id: ticket.event_venue_id,
+            ticket_price: ticket.ticket_price,
             quantity: ticket.quantity || 1,
+            created_at: ticket.created_at,
+            updated_at: ticket.updated_at,
             events_venues: {
               event_venue_date: eventVenue.event_venue_date,
               price: eventVenue.price,
               no_of_tickets: eventVenue.no_of_tickets,
               venues: {
                 venue_name: venue.venue_name,
-                venue_address: venue.venue_address,
                 locations: location
                   ? {
                       pincode: location.pincode,
-                      city: location.city,
-                      state: location.state,
-                      area: location.area,
                     }
                   : undefined,
               },
               events: {
                 name: event.name,
                 description: event.description,
+                start_time: event.start_time,
+                end_time: event.end_time,
                 image_url: event.image_url,
                 image_path: event.image_path,
               },
@@ -475,7 +482,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       > = {};
 
       for (const ticket of ticketsData) {
-        const locationData = ticket.events_venues.venues?.locations;
+        const locationData = ticket.events_venues?.venues?.locations;
         if (locationData) {
           try {
             const response = await axios.post(
@@ -499,12 +506,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               `Failed to fetch location for pincode ${locationData.pincode}:`,
               error
             );
-            // Fallback to database location data
-            locationDetailsMap[locationData.pincode] = {
-              city: locationData.city,
-              area: locationData.area,
-              state: locationData.state,
-            };
+            // Since database location only has pincode, we can't provide fallback city/area/state
+            // The external API fetch failed, so we don't add to locationDetailsMap
           }
         }
       }
