@@ -10,7 +10,7 @@ import type {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
 
@@ -44,16 +44,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const getSession = async () => {
       try {
+        // Add timeout to prevent hanging (5 seconds for initial session)
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Session timeout")), 5000)
+        );
+
         const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = await Promise.race([sessionPromise, timeoutPromise]);
         setSession(session);
         setUser(session?.user ?? null);
         await fetchProfile(session?.user ?? null);
       } catch (error) {
-        // Silently handle session errors
-      } finally {
-        setLoading(false);
+        // If session fails, continue with no user - don't throw
+        setSession(null);
+        setUser(null);
+        setProfile(null);
       }
     };
 
@@ -64,7 +71,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         await fetchProfile(session?.user ?? null);
-        setLoading(false);
       }
     );
 
