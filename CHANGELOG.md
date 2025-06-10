@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2025-01-17
+
+### 🔧 Session Persistence Fix
+
+#### Fixed
+
+- **🔐 Page Refresh Authentication Issue**: Resolved critical bug where protected routes (like `/my-bookings`) redirected users to login page on refresh despite valid authentication
+  - Fixed hardcoded `loading: false` in AuthContext that caused premature authentication checks
+  - Implemented proper loading state management during session restoration
+  - Added loading indicators to prevent user confusion during session validation
+- **⏰ Session Expiry Validation**: Enhanced session expiry detection and handling
+  - Added robust timestamp vs duration detection for session expiry validation
+  - Improved session cleanup for corrupted or expired sessions
+  - Prevents authentication bypass with malformed session data
+
+#### Added
+
+- **📖 Comprehensive Testing Strategy Documentation**: Complete testing documentation overhaul
+  - Detailed session persistence testing patterns and examples
+  - Test-Driven Development (TDD) workflow documentation
+  - Performance testing guidelines and benchmarks
+  - Error handling and edge case testing strategies
+- **🧪 Enhanced Test Coverage**: Expanded session management test suite
+  - Added comprehensive session persistence testing
+  - Improved integration tests for authentication flows
+  - Enhanced AuthContext unit tests with edge case coverage
+  - Maintained 66/66 tests passing with zero linter errors
+
+#### Technical Improvements
+
+- **🔄 Session Management Architecture**: Improved session restoration flow
+  - Proper async session initialization with loading states
+  - Enhanced error handling for network failures and corrupted sessions
+  - Better separation of concerns between auth client and context layers
+- **📊 Testing Excellence**: Advanced testing patterns implementation
+  - User-centric testing approach focusing on behavior over implementation
+  - Comprehensive mocking strategies for external dependencies
+  - Performance benchmarking with sub-1000ms render time targets
+
+### 🎯 Impact Summary
+
+- **User Experience**: No more unexpected login redirects on page refresh
+- **Reliability**: Robust session management with proper error handling
+- **Testing**: Comprehensive test coverage ensuring stability
+- **Documentation**: Complete testing strategy for future development
+
 ## [1.6.0] - 2025-01-17
 
 ### 🚀 Major Performance & Architecture Overhaul

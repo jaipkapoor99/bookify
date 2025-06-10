@@ -58,7 +58,7 @@ interface LocationRaw {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const loading = false;
+  const [loading, setLoading] = useState(true); // Start as loading during initialization
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
 
@@ -159,6 +159,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setSession(null);
           setUser(null);
           setProfile(null);
+          setLoading(false); // Initialization complete
           return;
         }
 
@@ -177,6 +178,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setSession(null);
             setUser(null);
             setProfile(null);
+            setLoading(false); // Initialization complete
+            return;
+          }
+
+          // Check if session is expired (additional validation)
+          // Only check expiry if expires_in looks like a timestamp (> 1 billion = after year 2001)
+          const now = Math.floor(Date.now() / 1000);
+          const isTimestamp = session.expires_in > 1000000000; // 1 billion seconds
+
+          if (isTimestamp && now >= session.expires_in) {
+            debug.error("Session expired, clearing session");
+            localStorage.removeItem(STORAGE_KEYS.SESSION);
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            setLoading(false); // Initialization complete
             return;
           }
 
@@ -195,6 +212,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(null);
         setUser(null);
         setProfile(null);
+      } finally {
+        setLoading(false); // Ensure loading is always set to false when initialization completes
       }
     };
 
