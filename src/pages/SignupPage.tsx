@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createSupabaseSignupClient } from "@/SupabaseClient";
+import {
+  createSupabaseSignupClient,
+  createDatabaseClient,
+} from "@/SupabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,7 +29,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { Mail, Lock, User, Loader2 } from "lucide-react";
-import { supabase } from "@/SupabaseClient";
+// Removed direct supabase import to avoid multiple client instances
 
 const signupSchema = z
   .object({
@@ -105,8 +108,9 @@ const SignupPage = () => {
           });
         }
       } else if (authData.user) {
-        // User is created in auth.users, now create profile in public.users
-        const { error: profileError } = await supabase.from("users").insert({
+        // User is created in auth.users, now create profile in public.users using database client
+        const dbClient = createDatabaseClient();
+        const { error: profileError } = await dbClient.from("users").insert({
           supabase_id: authData.user.id,
           name: data.fullName,
           // email: data.email, // The 'email' column does not exist in your 'users' table

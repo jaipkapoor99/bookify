@@ -103,23 +103,18 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
           return cached;
         }
       }
-      console.log("📡 Starting database query using optimized direct fetch...");
+
       setLoading(cacheKey, true);
       try {
+        console.log("🚀 Using reliable direct fetch for events query...");
         const query = `event_id,name,description,start_time,end_time,image_url,image_path,events_venues(venues(venue_name,locations(pincode)))`;
         const filters = `&order=start_time.asc`;
-
-        console.log("🔧 Fetching events with optimized query...");
         const data = await fetchFromSupabase("events", query, filters);
-        console.log("📡 Optimized fetch response:", {
-          dataLength: data?.length,
-        });
-
-        console.log("📡 Database response:", {
-          dataLength: data?.length,
-        });
         const events: Event[] = (data as unknown as Event[]) || [];
-        console.log("✅ Successfully processed events:", events.length);
+        console.log(
+          "✅ Successfully got events via direct fetch:",
+          events.length
+        );
         setCache(cacheKey, events);
         setState((prev) => ({ ...prev, events }));
         return events;
@@ -132,7 +127,6 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         }
         return [];
       } finally {
-        console.log("🏁 Setting loading to false");
         setLoading(cacheKey, false);
       }
     },

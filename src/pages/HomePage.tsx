@@ -33,7 +33,7 @@ import {
   Loader2,
   MoreVertical,
 } from "lucide-react";
-import { supabase } from "@/SupabaseClient";
+
 import StorageImage from "@/components/ui/StorageImage";
 
 console.log(`🔥 HomePage module loading`);
@@ -108,16 +108,36 @@ const HomePage = () => {
         const currentLocations = locations;
         if (!currentLocations[pincode]) {
           console.log(`📍 Fetching location for pincode: ${pincode}`);
-          // Fetch only if not already in state
-          const { data, error } = await supabase.functions.invoke(
-            "get-location-from-pincode",
-            { body: { pincode } }
-          );
-          if (!error) {
-            console.log(`✅ Location data for ${pincode}:`, data);
-            newLocations[pincode] = data as LocationInfo;
-          } else {
-            console.error(`❌ Error fetching location for ${pincode}:`, error);
+          try {
+            // Fetch location via direct HTTP request to avoid client issues
+            const response = await fetch(
+              `${
+                import.meta.env.VITE_SUPABASE_URL
+              }/functions/v1/get-location-from-pincode`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${
+                    import.meta.env.VITE_SUPABASE_ANON_KEY
+                  }`,
+                },
+                body: JSON.stringify({ pincode }),
+              }
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              console.log(`✅ Location data for ${pincode}:`, data);
+              newLocations[pincode] = data as LocationInfo;
+            } else {
+              console.error(
+                `❌ Error fetching location for ${pincode}:`,
+                response.statusText
+              );
+            }
+          } catch (error) {
+            console.error(`❌ Network error for ${pincode}:`, error);
           }
         }
       });
