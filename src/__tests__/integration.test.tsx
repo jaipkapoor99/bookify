@@ -125,12 +125,9 @@ describe("Integration Tests", () => {
       fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith(
-          "An unexpected error occurred",
-          {
-            description: "Please try again later.",
-          }
-        );
+        expect(toast.error).toHaveBeenCalledWith("Invalid credentials", {
+          description: "Please check your email and password.",
+        });
       });
     });
 
@@ -149,8 +146,11 @@ describe("Integration Tests", () => {
       });
 
       // Mock window.location.href assignment
-      delete (window as any).location;
-      window.location = { href: "" } as any;
+      const mockLocation = { href: "" };
+      Object.defineProperty(window, "location", {
+        value: mockLocation,
+        writable: true,
+      });
 
       render(<App initialEntries={["/login"]} />);
 
@@ -350,10 +350,6 @@ describe("Integration Tests", () => {
 
   describe("Error Boundaries", () => {
     it("should catch rendering errors gracefully", async () => {
-      const ErrorComponent = () => {
-        throw new Error("Test rendering error");
-      };
-
       // Mock console.error to prevent test output pollution
       const consoleSpy = vi
         .spyOn(console, "error")
@@ -361,6 +357,7 @@ describe("Integration Tests", () => {
 
       // We can't easily test error boundaries with this approach
       // This would need a dedicated test component setup
+      // TODO: Implement proper error boundary testing
       consoleSpy.mockRestore();
     });
   });

@@ -21,7 +21,7 @@ const StorageImage: React.FC<StorageImageProps> = ({
           if (url) {
             setImageUrl(url);
           }
-        } catch (error) {
+        } catch {
           // Keep placeholder on error
         }
       }

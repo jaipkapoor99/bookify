@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   createSupabaseSignupClient,
   createDatabaseClient,
@@ -109,7 +110,7 @@ const SignupPage = () => {
         }
       } else if (authData.user) {
         // User is created in auth.users, now create profile in public.users using database client
-        const dbClient = createDatabaseClient();
+        const dbClient = createDatabaseClient() as SupabaseClient;
         const { error: profileError } = await dbClient.from("users").insert({
           supabase_id: authData.user.id,
           name: data.fullName,

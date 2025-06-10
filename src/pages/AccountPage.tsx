@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { authApi } from "@/lib/api-client";
+// import { authApi } from "@/lib/api-client"; // TODO: Enable when phone update functionality is implemented
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,13 +8,15 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function AccountPage() {
   const { user } = useAuth();
-  const [fullName, setFullName] = useState(user?.user_metadata.full_name || "");
+  const [fullName, setFullName] = useState(
+    user?.user_metadata?.full_name || ""
+  );
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [otpSent, setOtpSent] = useState(false);
+  const [otpSent] = useState(false); // TODO: Remove setOtpSent when phone functionality is implemented
 
   const handleUpdateName = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +108,7 @@ export default function AccountPage() {
                 <Input
                   id="fullName"
                   type="text"
-                  value={fullName}
+                  value={String(fullName)}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Your full name"
                   required

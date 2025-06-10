@@ -1,5 +1,5 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import EventDetailPage from "@/pages/EventDetailPage";

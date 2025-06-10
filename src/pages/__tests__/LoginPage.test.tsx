@@ -113,8 +113,8 @@ describe("LoginPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith("An unexpected error occurred", {
-        description: "Please try again later.",
+      expect(toast.error).toHaveBeenCalledWith("Invalid credentials", {
+        description: "Please check your email and password.",
       });
     });
   });
@@ -132,7 +132,7 @@ describe("LoginPage", () => {
 
   it("shows error toast on Google login failure", async () => {
     const errorMessage = "Google login failed";
-    mockLoginWithGoogle.mockResolvedValue({ error: { message: errorMessage } });
+    mockLoginWithGoogle.mockResolvedValue({ error: errorMessage });
     renderWithProviders(<LoginPage />);
 
     fireEvent.click(screen.getByRole("button", { name: "Google" }));
