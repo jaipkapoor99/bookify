@@ -1,8 +1,11 @@
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { BookingQueryResult } from "@/types/database.types";
 import { formatCurrency } from "@/lib/utils";
+import { Calendar, MapPin, Ticket, Hash } from "lucide-react";
+import StorageImage from "@/components/ui/StorageImage";
 import debug from "@/lib/debug";
 
 const MyBookingsPage = () => {
@@ -120,73 +123,119 @@ const MyBookingsPage = () => {
       {bookings.length > 0 && (
         <div className="space-y-6">
           {bookings.map((ticket) => (
-            <div
+            <Card
               key={ticket.ticket_id}
-              className="bg-white border border-gray-200 rounded-lg shadow-sm p-6"
+              className="overflow-hidden hover:shadow-lg transition-all duration-300"
             >
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {ticket.events_venues.events?.name ||
-                      "Event Name Not Available"}
-                  </h3>
+              <CardContent className="p-0">
+                <div className="flex flex-col lg:flex-row">
+                  {/* Event Image */}
+                  <div className="lg:w-64 lg:flex-shrink-0">
+                    <StorageImage
+                      imagePath={
+                        ticket.events_venues.events?.image_path ||
+                        ticket.events_venues.events?.image_url
+                      }
+                      alt={ticket.events_venues.events?.name || "Event"}
+                      className="w-full h-48 lg:h-full object-cover"
+                    />
+                  </div>
 
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <p>
-                      <span className="font-medium">Venue:</span>{" "}
-                      {ticket.events_venues.venues?.venue_name ||
-                        "Venue Not Available"}
-                    </p>
+                  {/* Event Details */}
+                  <div className="flex-1 p-6">
+                    <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+                      <div className="flex-1">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                          {ticket.events_venues.events?.name ||
+                            "Event Name Not Available"}
+                        </h3>
 
-                    <p>
-                      <span className="font-medium">Address:</span>{" "}
-                      {ticket.events_venues.venues?.venue_address ||
-                        "Address Not Available"}
-                    </p>
+                        <div className="space-y-3">
+                          {/* Venue */}
+                          <div className="flex items-center text-gray-700">
+                            <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+                            <span className="font-medium">
+                              {ticket.events_venues.venues?.venue_name ||
+                                "Venue Not Available"}
+                            </span>
+                          </div>
 
-                    <p>
-                      <span className="font-medium">Location:</span>{" "}
-                      {getDisplayLocation(ticket)}
-                    </p>
+                          {/* Location */}
+                          <div className="flex items-start text-gray-600">
+                            <MapPin className="h-4 w-4 mr-2 mt-0.5 text-gray-400" />
+                            <span>{getDisplayLocation(ticket)}</span>
+                          </div>
 
-                    <p>
-                      <span className="font-medium">Event Date:</span>{" "}
-                      {ticket.events_venues.event_venue_date
-                        ? formatDate(ticket.events_venues.event_venue_date)
-                        : "Date Not Available"}
-                    </p>
+                          {/* Event Date */}
+                          <div className="flex items-center text-gray-700">
+                            <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+                            <span>
+                              {ticket.events_venues.event_venue_date
+                                ? formatDate(
+                                    ticket.events_venues.event_venue_date
+                                  )
+                                : "Date Not Available"}
+                            </span>
+                          </div>
 
-                    <p>
-                      <span className="font-medium">Booked On:</span>{" "}
-                      {formatDateTime(ticket.created_at)}
-                    </p>
+                          {/* Description */}
+                          {ticket.events_venues.events?.description && (
+                            <p className="text-gray-600 text-sm mt-3 line-clamp-2">
+                              {ticket.events_venues.events.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Booking Details */}
+                      <div className="lg:w-48 bg-gray-50 p-4 rounded-lg">
+                        <div className="space-y-3">
+                          {/* Ticket Price */}
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-green-600">
+                              {formatCurrency(ticket.ticket_price)}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Total Amount
+                            </p>
+                          </div>
+
+                          {/* Quantity */}
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center">
+                              <Ticket className="h-4 w-4 mr-1 text-gray-500" />
+                              <span>Quantity:</span>
+                            </div>
+                            <span className="font-medium">
+                              {ticket.quantity}
+                            </span>
+                          </div>
+
+                          {/* Ticket ID */}
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="flex items-center">
+                              <Hash className="h-4 w-4 mr-1 text-gray-500" />
+                              <span>Ticket ID:</span>
+                            </div>
+                            <span className="font-mono text-xs">
+                              {ticket.ticket_id}
+                            </span>
+                          </div>
+
+                          {/* Booking Date */}
+                          <div className="pt-2 border-t border-gray-200">
+                            <p className="text-xs text-gray-500">Booked on</p>
+                            <p className="text-sm font-medium">
+                              {formatDateTime(ticket.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="md:text-right">
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-600">
-                      Quantity: {ticket.quantity}
-                    </p>
-                    <p className="text-lg font-semibold text-green-600">
-                      {formatCurrency(ticket.ticket_price)}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Ticket ID: {ticket.ticket_id}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {ticket.events_venues.events?.description && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">About:</span>{" "}
-                    {ticket.events_venues.events.description}
-                  </p>
-                </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

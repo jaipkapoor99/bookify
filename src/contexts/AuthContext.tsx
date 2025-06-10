@@ -460,11 +460,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (locationData) {
           try {
             const response = await axios.post(
-              `${process.env.VITE_SUPABASE_URL}${API_ENDPOINTS.FUNCTIONS.GET_LOCATION_FROM_PINCODE}`,
-              { pincode: locationData.pincode }
+              `${import.meta.env.VITE_SUPABASE_URL}${
+                API_ENDPOINTS.FUNCTIONS.GET_LOCATION_FROM_PINCODE
+              }`,
+              { pincode: locationData.pincode },
+              {
+                headers: {
+                  Authorization: `Bearer ${
+                    import.meta.env.VITE_SUPABASE_ANON_KEY
+                  }`,
+                  "Content-Type": "application/json",
+                },
+                timeout: 10000,
+              }
             );
             locationDetailsMap[locationData.pincode] = response.data;
-          } catch {
+          } catch (error) {
+            debug.warn(
+              `Failed to fetch location for pincode ${locationData.pincode}:`,
+              error
+            );
             // Fallback to database location data
             locationDetailsMap[locationData.pincode] = {
               city: locationData.city,
