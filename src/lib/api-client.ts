@@ -1,11 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
-import {
-  STORAGE_KEYS,
-  API_ENDPOINTS,
-  ENV_VARS,
-  DEFAULTS,
-  OAUTH_PROVIDERS,
-} from "./constants";
+import { STORAGE_KEYS, ENV_VARS } from "./constants";
 import debug from "./debug";
 
 const SUPABASE_URL = import.meta.env[ENV_VARS.SUPABASE_URL];
@@ -15,6 +9,21 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   if (import.meta.env.MODE !== "test") {
     throw new Error("Missing Supabase environment variables");
   }
+}
+
+// Error interfaces for better type safety
+interface SupabaseErrorResponse {
+  error_description?: string;
+  message?: string;
+}
+
+interface ApiError {
+  response?: {
+    data?: SupabaseErrorResponse;
+    status?: number;
+    statusText?: string;
+  };
+  message?: string;
 }
 
 // Create axios instance for Supabase REST API
@@ -47,8 +56,8 @@ export interface ApiResponse<T> {
 export interface User {
   id: string;
   email?: string;
-  user_metadata?: any;
-  app_metadata?: any;
+  user_metadata?: Record<string, unknown>;
+  app_metadata?: Record<string, unknown>;
   created_at?: string;
   updated_at?: string;
 }
@@ -66,12 +75,8 @@ export interface AuthResponse {
   session: Session | null;
 }
 
-// Auth token management
-let currentAccessToken: string | null = null;
-
 // Set auth token for API requests
 const setAuthToken = (token: string | null) => {
-  currentAccessToken = token;
   if (token) {
     apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   } else {
@@ -143,12 +148,13 @@ export const authApi = {
       }
 
       return { data: authData, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       return {
         data: null,
         error:
-          error.response?.data?.error_description ||
-          error.message ||
+          apiError.response?.data?.error_description ||
+          apiError.message ||
           "Sign in failed",
       };
     }
@@ -169,7 +175,7 @@ export const authApi = {
       }
       storeSession(null);
       return { data: null, error: null };
-    } catch (error: any) {
+    } catch {
       // Clear local session even if API call fails
       storeSession(null);
       return { data: null, error: null };
@@ -203,8 +209,9 @@ export const authApi = {
       }
 
       return { data: storedSession, error: null };
-    } catch (error: any) {
-      return { data: null, error: error.message || "Failed to get session" };
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      return { data: null, error: apiError.message || "Failed to get session" };
     }
   },
 
@@ -222,12 +229,13 @@ export const authApi = {
       storeSession(session);
 
       return { data: session, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       return {
         data: null,
         error:
-          error.response?.data?.error_description ||
-          error.message ||
+          apiError.response?.data?.error_description ||
+          apiError.message ||
           "Refresh failed",
       };
     }
@@ -245,12 +253,13 @@ export const authApi = {
       )}`;
 
       return { data: { url: oauthUrl }, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       return {
         data: null,
         error:
-          error.response?.data?.error_description ||
-          error.message ||
+          apiError.response?.data?.error_description ||
+          apiError.message ||
           "OAuth init failed",
       };
     }
@@ -263,7 +272,7 @@ export const dbApi = {
   select: async <T>(
     table: string,
     columns: string = "*",
-    filters?: Record<string, any>,
+    filters?: Record<string, unknown>,
     options?: {
       single?: boolean;
       limit?: number;
@@ -296,21 +305,26 @@ export const dbApi = {
       const response: AxiosResponse = await apiClient.get(url, { headers });
 
       return { data: response.data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       const errorMessage =
-        error.response?.data?.message || error.message || "Query failed";
+        apiError.response?.data?.message || apiError.message || "Query failed";
       return { data: null, error: errorMessage };
     }
   },
 
   // Insert data
-  insert: async <T>(table: string, data: any): Promise<ApiResponse<T>> => {
+  insert: async <T>(
+    table: string,
+    data: Record<string, unknown>
+  ): Promise<ApiResponse<T>> => {
     try {
       const response: AxiosResponse = await apiClient.post(`/${table}`, data);
       return { data: response.data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       const errorMessage =
-        error.response?.data?.message || error.message || "Insert failed";
+        apiError.response?.data?.message || apiError.message || "Insert failed";
       return { data: null, error: errorMessage };
     }
   },
@@ -318,8 +332,8 @@ export const dbApi = {
   // Update data
   update: async <T>(
     table: string,
-    data: any,
-    filters: Record<string, any>
+    data: Record<string, unknown>,
+    filters: Record<string, unknown>
   ): Promise<ApiResponse<T>> => {
     try {
       let url = `/${table}?`;
@@ -332,9 +346,10 @@ export const dbApi = {
 
       const response: AxiosResponse = await apiClient.patch(url, data);
       return { data: response.data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       const errorMessage =
-        error.response?.data?.message || error.message || "Update failed";
+        apiError.response?.data?.message || apiError.message || "Update failed";
       return { data: null, error: errorMessage };
     }
   },
@@ -342,7 +357,7 @@ export const dbApi = {
   // Delete data
   delete: async <T>(
     table: string,
-    filters: Record<string, any>
+    filters: Record<string, unknown>
   ): Promise<ApiResponse<T>> => {
     try {
       let url = `/${table}?`;
@@ -355,9 +370,10 @@ export const dbApi = {
 
       const response: AxiosResponse = await apiClient.delete(url);
       return { data: response.data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       const errorMessage =
-        error.response?.data?.message || error.message || "Delete failed";
+        apiError.response?.data?.message || apiError.message || "Delete failed";
       return { data: null, error: errorMessage };
     }
   },
@@ -365,7 +381,7 @@ export const dbApi = {
   // Call RPC function
   rpc: async <T>(
     functionName: string,
-    params: Record<string, any>
+    params: Record<string, unknown>
   ): Promise<ApiResponse<T>> => {
     try {
       debug.api(`Calling RPC function: ${functionName}`, {
@@ -385,26 +401,29 @@ export const dbApi = {
       });
 
       return { data: response.data, error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
       const errorMessage =
-        error.response?.data?.message || error.message || "RPC call failed";
+        apiError.response?.data?.message ||
+        apiError.message ||
+        "RPC call failed";
 
       debug.error(`RPC function ${functionName} failed`, {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
+        status: apiError.response?.status,
+        statusText: apiError.response?.statusText,
+        data: apiError.response?.data,
         message: errorMessage,
         params,
-        fullError: error.response || error,
+        fullError: apiError.response || apiError,
       });
 
       // Also log to console.error to ensure it appears in terminal
       console.error(
-        `🚨 API ERROR: RPC ${functionName} failed with status ${error.response?.status}`,
+        `🚨 API ERROR: RPC ${functionName} failed with status ${apiError.response?.status}`,
         {
           params,
-          response: error.response?.data,
-          fullError: error.response || error,
+          response: apiError.response?.data,
+          fullError: apiError.response || apiError,
         }
       );
 

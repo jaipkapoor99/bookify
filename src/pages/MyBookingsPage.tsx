@@ -12,10 +12,58 @@ import {
   ENV_VARS,
   API_ENDPOINTS,
   TIMEOUTS,
-  ERROR_MESSAGES,
   POSTGREST_ERRORS,
 } from "@/lib/constants";
 import debug from "@/lib/debug";
+
+// Type definitions for the API responses that match database types
+interface UserProfile {
+  user_id: number;
+  supabase_id?: string;
+  name?: string;
+  role: string;
+}
+
+interface TicketRaw {
+  ticket_id: number;
+  event_venue_id: number;
+  customer_id: number;
+  quantity: number;
+  ticket_price: number;
+  created_at: string;
+}
+
+interface EventVenueRaw {
+  event_venue_id: number;
+  event_id: number;
+  venue_id: number;
+  event_venue_date: string;
+  price: number;
+  no_of_tickets?: number;
+}
+
+interface VenueRaw {
+  venue_id: number;
+  venue_name: string;
+  venue_address?: string;
+  location_id: number;
+}
+
+interface EventRaw {
+  event_id: number;
+  name: string;
+  description?: string;
+  image_url?: string;
+  image_path?: string;
+}
+
+interface LocationRaw {
+  location_id: number;
+  pincode: string;
+  city: string;
+  state: string;
+  area: string;
+}
 
 const MyBookingsPage = () => {
   const { user } = useAuth();
@@ -59,11 +107,13 @@ const MyBookingsPage = () => {
           return;
         }
 
+        const userProfile = userData as UserProfile;
+
         // Query tickets for this internal user ID (simplified for new API)
         const { data: ticketsRaw, error: fetchError } = await dbApi.select(
           TABLES.TICKETS,
           QUERY_COLUMNS.TICKETS_BASIC,
-          { [COLUMNS.TICKETS.CUSTOMER_ID]: userData.user_id }
+          { [COLUMNS.TICKETS.CUSTOMER_ID]: userProfile.user_id }
         );
 
         if (fetchError) {
@@ -72,7 +122,9 @@ const MyBookingsPage = () => {
           return;
         }
 
-        if (!ticketsRaw || ticketsRaw.length === 0) {
+        const ticketsArray = (ticketsRaw as TicketRaw[]) || [];
+
+        if (ticketsArray.length === 0) {
           setTickets([]);
           setLoading(false);
           return;
@@ -80,7 +132,11 @@ const MyBookingsPage = () => {
 
         // Get unique event_venue IDs to fetch related data
         const eventVenueIds = [
-          ...new Set(ticketsRaw.map((t) => t[COLUMNS.TICKETS.EVENT_VENUE_ID])),
+          ...new Set(
+            ticketsArray.map(
+              (t: TicketRaw) => t[COLUMNS.TICKETS.EVENT_VENUE_ID]
+            )
+          ),
         ];
 
         // For now, fetch related data one by one since our API doesn't support array filters
@@ -97,17 +153,21 @@ const MyBookingsPage = () => {
         const eventsVenuesResults = await Promise.all(eventsVenuesPromises);
         const eventsVenues = eventsVenuesResults
           .filter((result) => result.data)
-          .map((result) => result.data);
+          .map((result) => result.data as EventVenueRaw);
 
         // Get unique venue and event IDs
         const venueIds = [
           ...new Set(
-            eventsVenues.map((ev) => ev[COLUMNS.EVENTS_VENUES.VENUE_ID])
+            eventsVenues.map(
+              (ev: EventVenueRaw) => ev[COLUMNS.EVENTS_VENUES.VENUE_ID]
+            )
           ),
         ];
         const eventIds = [
           ...new Set(
-            eventsVenues.map((ev) => ev[COLUMNS.EVENTS_VENUES.EVENT_ID])
+            eventsVenues.map(
+              (ev: EventVenueRaw) => ev[COLUMNS.EVENTS_VENUES.EVENT_ID]
+            )
           ),
         ];
 
@@ -136,14 +196,16 @@ const MyBookingsPage = () => {
 
         const venues = venuesResults
           .filter((result) => result.data)
-          .map((result) => result.data);
+          .map((result) => result.data as VenueRaw);
         const events = eventsResults
           .filter((result) => result.data)
-          .map((result) => result.data);
+          .map((result) => result.data as EventRaw);
 
         // Get unique location IDs and fetch locations
         const locationIds = [
-          ...new Set(venues.map((v) => v[COLUMNS.VENUES.LOCATION_ID])),
+          ...new Set(
+            venues.map((v: VenueRaw) => v[COLUMNS.VENUES.LOCATION_ID])
+          ),
         ];
         const locationsPromises = locationIds.map((id) =>
           dbApi.select(
@@ -156,50 +218,73 @@ const MyBookingsPage = () => {
         const locationsResults = await Promise.all(locationsPromises);
         const locations = locationsResults
           .filter((result) => result.data)
-          .map((result) => result.data);
+          .map((result) => result.data as LocationRaw);
 
         // Create lookup maps
         const eventsVenuesMap = new Map(
-          eventsVenues.map((ev) => [ev.event_venue_id, ev])
+          eventsVenues.map((ev: EventVenueRaw) => [ev.event_venue_id, ev])
         );
-        const venuesMap = new Map(venues.map((v) => [v.venue_id, v]));
-        const eventsMap = new Map(events.map((e) => [e.event_id, e]));
-        const locationsMap = new Map(locations.map((l) => [l.location_id, l]));
+        const venuesMap = new Map(venues.map((v: VenueRaw) => [v.venue_id, v]));
+        const eventsMap = new Map(events.map((e: EventRaw) => [e.event_id, e]));
+        const locationsMap = new Map(
+          locations.map((l: LocationRaw) => [l.location_id, l])
+        );
 
         // Transform tickets data to match expected structure
-        const ticketsData: BookingQueryResult[] = ticketsRaw.map((ticket) => {
-          const eventVenue = eventsVenuesMap.get(ticket.event_venue_id);
-          const venue = eventVenue ? venuesMap.get(eventVenue.venue_id) : null;
-          const event = eventVenue ? eventsMap.get(eventVenue.event_id) : null;
-          const location = venue ? locationsMap.get(venue.location_id) : null;
+        // Filter out tickets that don't have complete data to avoid null assignments
+        const ticketsData: BookingQueryResult[] = ticketsArray
+          .map((ticket: TicketRaw): BookingQueryResult | null => {
+            const eventVenue = eventsVenuesMap.get(ticket.event_venue_id);
+            const venue = eventVenue
+              ? venuesMap.get(eventVenue.venue_id)
+              : null;
+            const event = eventVenue
+              ? eventsMap.get(eventVenue.event_id)
+              : null;
+            const location = venue ? locationsMap.get(venue.location_id) : null;
 
-          return {
-            ...ticket,
-            events_venues: eventVenue
-              ? {
-                  event_venue_date: eventVenue.event_venue_date,
-                  price: eventVenue.price,
-                  venues: venue
-                    ? {
-                        venue_name: venue.venue_name,
-                        locations: location
-                          ? {
-                              pincode: location.pincode,
-                            }
-                          : null,
-                      }
-                    : null,
-                  events: event
-                    ? {
-                        name: event.name,
-                        image_url: event.image_url,
-                        image_path: event.image_path,
-                      }
-                    : null,
-                }
-              : null,
-          };
-        });
+            // Only process tickets with complete data
+            if (!eventVenue) return null;
+
+            return {
+              ticket_id: ticket.ticket_id,
+              customer_id: ticket.customer_id,
+              ticket_price: ticket.ticket_price,
+              created_at: ticket.created_at,
+              quantity: ticket.quantity,
+              events_venues: {
+                event_venue_date: eventVenue.event_venue_date,
+                price: eventVenue.price,
+                no_of_tickets: eventVenue.no_of_tickets,
+                venues: venue
+                  ? {
+                      venue_name: venue.venue_name,
+                      venue_address: venue.venue_address,
+                      locations: location
+                        ? {
+                            pincode: location.pincode,
+                            city: location.city,
+                            state: location.state,
+                            area: location.area,
+                          }
+                        : undefined,
+                    }
+                  : undefined,
+                events: event
+                  ? {
+                      name: event.name,
+                      description: event.description,
+                      image_url: event.image_url,
+                      image_path: event.image_path,
+                    }
+                  : undefined,
+              },
+            };
+          })
+          .filter(
+            (ticket: BookingQueryResult | null): ticket is BookingQueryResult =>
+              ticket !== null
+          );
 
         debug.booking("MyBookingsPage loaded successfully", {
           ticketsRaw: ticketsRaw,

@@ -1,6 +1,6 @@
 /// <reference types="vitest/globals" />
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import SignupPage from "@/pages/SignupPage";
 import {
@@ -22,6 +22,8 @@ vi.mock("@/SupabaseClient", () => ({
   createDatabaseClient: vi.fn(),
 }));
 vi.mock("sonner");
+
+// Test mocks and utilities
 
 const renderWithToaster = (ui: React.ReactElement) => {
   return render(
@@ -48,13 +50,13 @@ describe("SignupPage", () => {
           error: { message: "Default error" },
         }),
       },
-    } as any);
+    } as unknown as ReturnType<typeof createSupabaseSignupClient>);
 
     mockedCreateDatabaseClient.mockReturnValue({
       from: vi.fn().mockReturnValue({
         insert: vi.fn().mockResolvedValue({ error: null }),
       }),
-    } as any);
+    } as unknown as ReturnType<typeof createDatabaseClient>);
   });
 
   it("renders the signup form", () => {
@@ -78,7 +80,7 @@ describe("SignupPage", () => {
           error: null,
         }),
       },
-    } as any);
+    } as unknown as ReturnType<typeof createSupabaseSignupClient>);
 
     renderWithToaster(<SignupPage />);
 
@@ -112,7 +114,7 @@ describe("SignupPage", () => {
           error: { message: "Network error" },
         }),
       },
-    } as any);
+    } as unknown as ReturnType<typeof createSupabaseSignupClient>);
 
     renderWithToaster(<SignupPage />);
 
@@ -146,7 +148,7 @@ describe("SignupPage", () => {
           error: { message: "User already registered" },
         }),
       },
-    } as any);
+    } as unknown as ReturnType<typeof createSupabaseSignupClient>);
 
     renderWithToaster(<SignupPage />);
 

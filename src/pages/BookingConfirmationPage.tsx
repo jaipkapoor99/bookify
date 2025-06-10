@@ -17,21 +17,21 @@ import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import debug from "@/lib/debug";
 
-// Corrected Type: This now matches the structure from the error message.
-type RawConfirmationData = {
-  price: number;
-  event_venue_date: string;
-  no_of_tickets: number;
-  events: {
-    name: string;
-  }; // It's an object now
-  venues: {
-    venue_name: string;
-    locations: {
-      pincode: string;
-    } | null;
-  }; // It's an object now
-};
+// TODO: This type may be needed for future complex data handling
+// type RawConfirmationData = {
+//   price: number;
+//   event_venue_date: string;
+//   no_of_tickets: number;
+//   events: {
+//     name: string;
+//   }; // It's an object now
+//   venues: {
+//     venue_name: string;
+//     locations: {
+//       pincode: string;
+//     } | null;
+//   }; // It's an object now
+// };
 
 // The clean data structure for the component's state.
 type ConfirmationDetails = {
@@ -75,13 +75,13 @@ const BookingConfirmationPage = () => {
       } else if (data) {
         // TODO: Implement proper joins - for now use mock data for testing
         setDetails({
-          price: data.price || 1500, // 1500 paise = ₹15.00
-          eventDate: data.event_venue_date || new Date().toISOString(),
+          price: (data as { price?: number }).price || 1500, // 1500 paise = ₹15.00
+          eventDate: (data as { event_venue_date?: string }).event_venue_date || new Date().toISOString(),
           eventName: "Tech Conference 2025", // Mock data
           venueName: "Grand Convention Hall", // Mock data
           location: "Loading location...",
           pincode: "110001", // Mock pincode
-          availableTickets: data.no_of_tickets || 10,
+          availableTickets: (data as { no_of_tickets?: number }).no_of_tickets || 10,
         });
       }
       setLoading(false);

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
 import { useAppState } from "@/hooks/useAppState";
+import { AppState } from "@/contexts/AppStateTypes";
 import React from "react";
 
 // Mock the useAppState hook
@@ -13,6 +14,16 @@ const renderWithProviders = (ui: React.ReactElement) => {
 };
 
 const mockedUseAppState = vi.mocked(useAppState);
+
+// Helper function to create a complete AppState object
+const createMockAppState = (partialState: Partial<AppState>): AppState => ({
+  events: [],
+  eventVenues: {},
+  venues: [],
+  loading: {},
+  cache: {},
+  ...partialState,
+});
 
 describe("HomePage", () => {
   beforeEach(() => {
@@ -52,8 +63,11 @@ describe("HomePage", () => {
     ];
 
     mockedUseAppState.mockReturnValue({
-      state: { events: mockEvents },
+      state: createMockAppState({ events: mockEvents }),
       fetchEvents: vi.fn(),
+      fetchEventVenue: vi.fn(),
+      fetchVenues: vi.fn(),
+      clearCache: vi.fn(),
       isLoading: vi.fn().mockReturnValue(false),
     });
 
@@ -84,8 +98,11 @@ describe("HomePage", () => {
     ];
 
     mockedUseAppState.mockReturnValue({
-      state: { events: mockEvents },
+      state: createMockAppState({ events: mockEvents }),
       fetchEvents: vi.fn(),
+      fetchEventVenue: vi.fn(),
+      fetchVenues: vi.fn(),
+      clearCache: vi.fn(),
       isLoading: vi.fn().mockReturnValue(false),
     });
 
@@ -99,8 +116,11 @@ describe("HomePage", () => {
 
   it("should display a message if fetching events fails", async () => {
     mockedUseAppState.mockReturnValue({
-      state: { events: [] },
+      state: createMockAppState({ events: [] }),
       fetchEvents: vi.fn(),
+      fetchEventVenue: vi.fn(),
+      fetchVenues: vi.fn(),
+      clearCache: vi.fn(),
       isLoading: vi.fn().mockReturnValue(false),
     });
 

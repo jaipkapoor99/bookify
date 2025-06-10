@@ -72,7 +72,7 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, []); // Only run once on mount
+  }, [fetchEvents]); // Include fetchEvents in dependencies
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -114,7 +114,7 @@ const HomePage = () => {
               const data = await response.json();
               newLocations[pincode] = data as LocationInfo;
             }
-          } catch (error) {
+          } catch {
             // Silently handle errors
           }
         }

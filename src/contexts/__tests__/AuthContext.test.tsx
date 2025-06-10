@@ -351,8 +351,11 @@ describe("AuthContext", () => {
       });
 
       // Mock window.location.href assignment
-      delete (window as any).location;
-      window.location = { href: "" } as any;
+      const mockLocation = { href: "" };
+      Object.defineProperty(window, "location", {
+        value: mockLocation,
+        writable: true,
+      });
 
       renderWithProvider(<TestComponent />);
 

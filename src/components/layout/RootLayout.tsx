@@ -12,13 +12,16 @@ const RootLayout = () => {
       const { error } = await logout();
       if (error) {
         toast.error("Logout failed", {
-          description: error.message,
+          description:
+            typeof error === "string"
+              ? error
+              : (error as { message?: string })?.message || "Unknown error",
         });
       } else {
         toast.success("Logged out successfully");
         navigate("/");
       }
-    } catch (err) {
+    } catch {
       toast.error("An unexpected error occurred during logout");
     }
   };
@@ -59,10 +62,12 @@ const RootLayout = () => {
                   Admin
                 </Link>
                 <span className="text-sm text-gray-700">
-                  {profile?.name ||
-                    user.user_metadata?.full_name ||
-                    user.email ||
-                    "User"}
+                  {String(
+                    profile?.name ||
+                      user.user_metadata?.full_name ||
+                      user.email ||
+                      "User"
+                  )}
                 </span>
                 <Button onClick={handleLogout}>Logout</Button>
               </>

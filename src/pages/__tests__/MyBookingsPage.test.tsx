@@ -191,7 +191,8 @@ describe("MyBookingsPage", () => {
       });
 
     // Mock axios for location API calls
-    mockedAxios.post
+    mockedAxios.post = vi
+      .fn()
       .mockResolvedValueOnce({
         data: {
           area: "Connaught Place",
@@ -412,7 +413,9 @@ describe("MyBookingsPage", () => {
       });
 
     // Mock axios to throw error for location API
-    mockedAxios.post.mockRejectedValue(new Error("Location API error"));
+    mockedAxios.post = vi
+      .fn()
+      .mockRejectedValue(new Error("Location API error"));
 
     render(
       <MemoryRouter>

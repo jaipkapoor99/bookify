@@ -93,10 +93,9 @@ const AdminEventPage = () => {
     setLoading(true);
     try {
       const { data, error } = await dbApi.select("events", "*");
-
       if (error) throw new Error(error);
-      setEvents(data || []);
-    } catch (error) {
+      setEvents(data as Event[] || []);
+    } catch {
       toast.error("Failed to fetch events");
     } finally {
       setLoading(false);

@@ -48,13 +48,16 @@ const getTimestamp = (): string => {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-    fractionalSecondDigits: 3,
   });
 };
 
 // Main debug function
 export const debug = {
-  log: (message: string, data?: any, level: DebugLevel = DEBUG_LEVELS.INFO) => {
+  log: (
+    message: string,
+    data?: unknown,
+    level: DebugLevel = DEBUG_LEVELS.INFO
+  ) => {
     if (!isDebugEnabled()) return;
 
     const timestamp = getTimestamp();
@@ -77,40 +80,40 @@ export const debug = {
     }
   },
 
-  info: (message: string, data?: any) => {
+  info: (message: string, data?: unknown) => {
     debug.log(message, data, DEBUG_LEVELS.INFO);
   },
 
-  warn: (message: string, data?: any) => {
+  warn: (message: string, data?: unknown) => {
     debug.log(message, data, DEBUG_LEVELS.WARN);
   },
 
-  error: (message: string, data?: any) => {
+  error: (message: string, data?: unknown) => {
     debug.log(message, data, DEBUG_LEVELS.ERROR);
   },
 
-  success: (message: string, data?: any) => {
+  success: (message: string, data?: unknown) => {
     debug.log(message, data, DEBUG_LEVELS.SUCCESS);
   },
 
   // Specific debug functions for different parts of the app
-  auth: (message: string, data?: any) => {
+  auth: (message: string, data?: unknown) => {
     debug.info(`🔐 AUTH: ${message}`, data);
   },
 
-  api: (message: string, data?: any) => {
+  api: (message: string, data?: unknown) => {
     debug.info(`🌐 API: ${message}`, data);
   },
 
-  db: (message: string, data?: any) => {
+  db: (message: string, data?: unknown) => {
     debug.info(`🗄️  DB: ${message}`, data);
   },
 
-  ui: (message: string, data?: any) => {
+  ui: (message: string, data?: unknown) => {
     debug.info(`🎨 UI: ${message}`, data);
   },
 
-  booking: (message: string, data?: any) => {
+  booking: (message: string, data?: unknown) => {
     debug.info(`🎫 BOOKING: ${message}`, data);
   },
 

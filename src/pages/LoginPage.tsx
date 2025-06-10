@@ -61,18 +61,18 @@ const LoginPage = () => {
       const { error } = await login(data.email, data.password);
 
       if (error) {
-        if (error.message.includes("Invalid login credentials")) {
+        if (error.includes("Invalid login credentials")) {
           toast.error("Invalid credentials", {
             description: "Please check your email and password.",
           });
-        } else if (error.message.includes("Email not confirmed")) {
+        } else if (error.includes("Email not confirmed")) {
           toast.warning("Email not confirmed", {
             description:
               "Please check your email and confirm your account before logging in.",
           });
         } else {
           toast.error("Login failed", {
-            description: error.message,
+            description: error,
           });
         }
       } else {
@@ -96,7 +96,7 @@ const LoginPage = () => {
       const { error } = await loginWithGoogle();
       if (error) {
         toast.error("Google login failed", {
-          description: error.message,
+          description: error,
         });
       }
       // On success, Supabase handles the redirect, so no navigation is needed here.
