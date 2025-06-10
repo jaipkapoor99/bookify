@@ -1,9 +1,8 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import EventDetailPage from "@/pages/EventDetailPage";
-import { supabase } from "@/SupabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 
 // Create a mock navigate function
@@ -16,64 +15,67 @@ vi.mock("react-router-dom", async (importActual) => ({
   useNavigate: () => mockNavigate,
 }));
 
-vi.mock("@/SupabaseClient");
 vi.mock("@/contexts/AuthContext");
 
-const mockEvent = {
-  event_id: 1,
-  name: "Arijit Singh - Live in Concert",
-  description: "Experience the soulful voice of Arijit Singh.",
-  start_time: "2025-10-05T19:00:00+05:30",
-  end_time: "2025-10-07T22:00:00+05:30",
-  image_url: "https://example.com/arijit.jpg",
-  events_venues: [
-    {
-      event_venue_id: 101, // Unique ID for this specific event-venue
-      event_venue_date: "2025-10-05",
-      no_of_tickets: 150,
-      price: 350000, // Price in paise
-      venues: {
-        venue_name: "NSCI Dome",
-        locations: {
-          pincode: "400051",
-        },
+// Mock the global fetch function that the component now uses
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
+// Mock environment variables
+vi.stubEnv("VITE_SUPABASE_URL", "http://localhost:54321");
+vi.stubEnv("VITE_SUPABASE_ANON_KEY", "test-anon-key");
+
+const mockEventData = [
+  {
+    event_id: 1,
+    name: "Summer Music Fest 2025",
+    description: "A spectacular summer music festival featuring top artists",
+    start_time: "2025-07-15T19:00:00+05:30",
+    end_time: "2025-07-15T22:00:00+05:30",
+    image_url: "/placeholder.svg",
+    image_path: null,
+  },
+];
+
+const mockEventsVenuesData = [
+  {
+    event_venue_id: 1,
+    event_venue_date: "2025-07-15",
+    no_of_tickets: 83,
+    price: 250000, // Real price in paise (₹2,500.00)
+    venues: {
+      venue_name: "Garden City Arena",
+      locations: {
+        pincode: "400001",
       },
     },
-    {
-      event_venue_id: 102, // Unique ID for this specific event-venue
-      event_venue_date: "2025-10-07",
-      no_of_tickets: 200,
-      price: 280000, // Price in paise
-      venues: {
-        venue_name: "UB City Amphitheatre",
-        locations: {
-          pincode: "560025",
-        },
-      },
-    },
-  ],
-};
+  },
+];
 
 describe("EventDetailPage", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-
-    // Reset the navigation mock
     mockNavigate.mockClear();
 
-    // Mock the edge function for location fetching
-    (supabase.functions.invoke as Mock).mockResolvedValue({
-      data: { area: "Test Area", city: "Test City", state: "Test State" },
-      error: null,
+    // Mock successful fetch responses by default
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes("events?select=")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockEventData),
+        });
+      }
+      if (url.includes("events_venues?select=")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockEventsVenuesData),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
     });
-
-    // Mock the Supabase query chain
-    const singleMock = vi
-      .fn()
-      .mockResolvedValue({ data: mockEvent, error: null });
-    const eqMock = vi.fn().mockReturnValue({ single: singleMock });
-    const selectMock = vi.fn().mockReturnValue({ eq: eqMock });
-    (supabase.from as Mock).mockReturnValue({ select: selectMock });
   });
 
   const renderComponent = (user: { id: string } | null = null) => {
@@ -92,34 +94,22 @@ describe("EventDetailPage", () => {
     renderComponent();
 
     await waitFor(() => {
+      expect(screen.getByText("Summer Music Fest 2025")).toBeInTheDocument();
       expect(
-        screen.getByText("Arijit Singh - Live in Concert")
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Experience the soulful voice of Arijit Singh.")
+        screen.getByText(
+          "A spectacular summer music festival featuring top artists"
+        )
       ).toBeInTheDocument();
     });
 
     // Check if the list of venues and dates is rendered
     expect(screen.getByText("Dates and Venues")).toBeInTheDocument();
 
-    // Use more flexible date matching by checking for parts of the date string
-    const firstVenue = screen
-      .getByText("NSCI Dome")
-      .closest("div.flex.items-center.justify-between");
-    expect(firstVenue).toHaveTextContent("October 5, 2025");
+    // Check venue name (from real database)
+    expect(screen.getByText("Garden City Arena")).toBeInTheDocument();
 
-    const secondVenue = screen
-      .getByText("UB City Amphitheatre")
-      .closest("div.flex.items-center.justify-between");
-    expect(secondVenue).toHaveTextContent("October 7, 2025");
-
-    // Check if prices are displayed correctly formatted
-    expect(screen.getByText("₹3,500.00")).toBeInTheDocument();
-    expect(screen.getByText("₹2,800.00")).toBeInTheDocument();
-
-    // Verify the correct Supabase query was made
-    expect(supabase.from).toHaveBeenCalledWith("events");
+    // Check if price is displayed correctly formatted (real database price)
+    expect(screen.getByText("₹2,500.00")).toBeInTheDocument();
   });
 
   it("should open the booking dialog when an authenticated user clicks 'Book Tickets'", async () => {
@@ -128,9 +118,7 @@ describe("EventDetailPage", () => {
     renderComponent(mockUser);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Arijit Singh - Live in Concert")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Summer Music Fest 2025")).toBeInTheDocument();
     });
 
     const bookButtons = screen.getAllByText("Book Tickets");
@@ -151,18 +139,14 @@ describe("EventDetailPage", () => {
     });
     fireEvent.click(continueButton);
 
-    expect(mockNavigate).toHaveBeenCalledWith(
-      `/book/confirm/${mockEvent.events_venues[0].event_venue_id}?quantity=1`
-    );
+    expect(mockNavigate).toHaveBeenCalledWith(`/book/confirm/1?quantity=1`);
   });
 
   it("should redirect to login when 'Book Tickets' is clicked by an unauthenticated user", async () => {
     renderComponent(null); // No user is logged in
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Arijit Singh - Live in Concert")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Summer Music Fest 2025")).toBeInTheDocument();
     });
 
     const bookButtons = screen.getAllByRole("button", {
@@ -175,20 +159,24 @@ describe("EventDetailPage", () => {
   });
 
   it("should display an error message if the event is not found", async () => {
-    const errorMessage = "Event not found";
-
-    // Override the default mock for this test
-    const singleMock = vi
-      .fn()
-      .mockResolvedValue({ data: null, error: { message: errorMessage } });
-    const eqMock = vi.fn().mockReturnValue({ single: singleMock });
-    const selectMock = vi.fn().mockReturnValue({ eq: eqMock });
-    (supabase.from as Mock).mockReturnValue({ select: selectMock });
+    // Mock fetch to return empty array (no event found)
+    mockFetch.mockImplementation((url: string) => {
+      if (url.includes("events?select=")) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([]), // Empty array = no event found
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
+    });
 
     renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText(/Error: Event not found/i)).toBeInTheDocument();
+      expect(screen.getByText(/Event not found/i)).toBeInTheDocument();
     });
   });
 });

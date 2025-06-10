@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const RootLayout = () => {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, profile } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -59,7 +59,10 @@ const RootLayout = () => {
                   Admin
                 </Link>
                 <span className="text-sm text-gray-700">
-                  {user.user_metadata.full_name || user.email}
+                  {profile?.name ||
+                    user.user_metadata?.full_name ||
+                    user.email ||
+                    "User"}
                 </span>
                 <Button onClick={handleLogout}>Logout</Button>
               </>

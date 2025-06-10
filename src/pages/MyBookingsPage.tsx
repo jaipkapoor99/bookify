@@ -1,9 +1,21 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/SupabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { BookingQueryResult } from "@/types/database.types";
 import { formatCurrency } from "@/lib/utils";
+import { dbApi } from "@/lib/api-client";
+import axios from "axios";
+import {
+  TABLES,
+  QUERY_COLUMNS,
+  COLUMNS,
+  ENV_VARS,
+  API_ENDPOINTS,
+  TIMEOUTS,
+  ERROR_MESSAGES,
+  POSTGREST_ERRORS,
+} from "@/lib/constants";
+import debug from "@/lib/debug";
 
 const MyBookingsPage = () => {
   const { user } = useAuth();
@@ -14,13 +26,12 @@ const MyBookingsPage = () => {
     Record<string, { city: string; area: string; state: string }>
   >({});
 
+  // Early return if user is not authenticated
   useEffect(() => {
+    if (!user) {
+      return;
+    }
     const fetchTickets = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
       if (!user.id) {
         setError(
           "Authentication error: User ID missing. Please log out and log back in."
@@ -30,62 +41,175 @@ const MyBookingsPage = () => {
       }
 
       try {
-        // Try to get existing user profile - only select fields that actually exist
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("user_id, supabase_id")
-          .eq("supabase_id", user.id)
-          .single();
+        // Try to get existing user profile
+        const { data: userData, error: userError } = await dbApi.select(
+          TABLES.USERS,
+          QUERY_COLUMNS.USERS_PROFILE,
+          { [COLUMNS.USERS.SUPABASE_ID]: user.id },
+          { single: true }
+        );
 
-        // Handle other errors or missing data
+        // Handle errors or missing data
         if (userError || !userData) {
-          const errorMessage =
-            userError?.code === "PGRST116"
-              ? "Your user profile is not set up. Please sign up again or contact support."
-              : "Unable to fetch user profile. Please try again later.";
+          const errorMessage = userError?.includes(POSTGREST_ERRORS.NO_ROWS)
+            ? "Your user profile is not set up. Please sign up again or contact support."
+            : "Unable to fetch user profile. Please try again later.";
           setError(errorMessage);
           setLoading(false);
           return;
         }
 
-        // Now query tickets for this internal user ID
-        const { data, error: fetchError } = await supabase
-          .from("tickets")
-          .select(
-            `
-            ticket_id,
-            ticket_price,
-            created_at,
-            customer_id,
-            quantity,
-            events_venues!events_venues_id (
-              event_venue_date,
-              price,
-              venues!venue_id (
-                venue_name,
-                locations!location_id (
-                  pincode
-                )
-              ),
-              events!event_id (
-                name,
-                image_url,
-                image_path
-              )
-            )
-          `
-          )
-          .eq("customer_id", userData.user_id);
+        // Query tickets for this internal user ID (simplified for new API)
+        const { data: ticketsRaw, error: fetchError } = await dbApi.select(
+          TABLES.TICKETS,
+          QUERY_COLUMNS.TICKETS_BASIC,
+          { [COLUMNS.TICKETS.CUSTOMER_ID]: userData.user_id }
+        );
 
         if (fetchError) {
-          setError(`Error fetching bookings: ${fetchError.message}`);
+          setError(`Error fetching bookings: ${fetchError}`);
           setLoading(false);
           return;
         }
 
-        // Convert to proper type
-        const ticketsData: BookingQueryResult[] =
-          (data as unknown as BookingQueryResult[]) || [];
+        if (!ticketsRaw || ticketsRaw.length === 0) {
+          setTickets([]);
+          setLoading(false);
+          return;
+        }
+
+        // Get unique event_venue IDs to fetch related data
+        const eventVenueIds = [
+          ...new Set(ticketsRaw.map((t) => t[COLUMNS.TICKETS.EVENT_VENUE_ID])),
+        ];
+
+        // For now, fetch related data one by one since our API doesn't support array filters
+        // This is a temporary solution until we enhance the API client
+        const eventsVenuesPromises = eventVenueIds.map((id) =>
+          dbApi.select(
+            TABLES.EVENTS_VENUES,
+            QUERY_COLUMNS.EVENTS_VENUES_BASIC,
+            { [COLUMNS.EVENTS_VENUES.EVENT_VENUE_ID]: id },
+            { single: true }
+          )
+        );
+
+        const eventsVenuesResults = await Promise.all(eventsVenuesPromises);
+        const eventsVenues = eventsVenuesResults
+          .filter((result) => result.data)
+          .map((result) => result.data);
+
+        // Get unique venue and event IDs
+        const venueIds = [
+          ...new Set(
+            eventsVenues.map((ev) => ev[COLUMNS.EVENTS_VENUES.VENUE_ID])
+          ),
+        ];
+        const eventIds = [
+          ...new Set(
+            eventsVenues.map((ev) => ev[COLUMNS.EVENTS_VENUES.EVENT_ID])
+          ),
+        ];
+
+        // Fetch venues and events one by one
+        const venuesPromises = venueIds.map((id) =>
+          dbApi.select(
+            TABLES.VENUES,
+            QUERY_COLUMNS.VENUES_BASIC,
+            { [COLUMNS.VENUES.VENUE_ID]: id },
+            { single: true }
+          )
+        );
+        const eventsPromises = eventIds.map((id) =>
+          dbApi.select(
+            TABLES.EVENTS,
+            QUERY_COLUMNS.EVENTS_BASIC,
+            { [COLUMNS.EVENTS.EVENT_ID]: id },
+            { single: true }
+          )
+        );
+
+        const [venuesResults, eventsResults] = await Promise.all([
+          Promise.all(venuesPromises),
+          Promise.all(eventsPromises),
+        ]);
+
+        const venues = venuesResults
+          .filter((result) => result.data)
+          .map((result) => result.data);
+        const events = eventsResults
+          .filter((result) => result.data)
+          .map((result) => result.data);
+
+        // Get unique location IDs and fetch locations
+        const locationIds = [
+          ...new Set(venues.map((v) => v[COLUMNS.VENUES.LOCATION_ID])),
+        ];
+        const locationsPromises = locationIds.map((id) =>
+          dbApi.select(
+            TABLES.LOCATIONS,
+            QUERY_COLUMNS.LOCATIONS_BASIC,
+            { [COLUMNS.LOCATIONS.LOCATION_ID]: id },
+            { single: true }
+          )
+        );
+        const locationsResults = await Promise.all(locationsPromises);
+        const locations = locationsResults
+          .filter((result) => result.data)
+          .map((result) => result.data);
+
+        // Create lookup maps
+        const eventsVenuesMap = new Map(
+          eventsVenues.map((ev) => [ev.event_venue_id, ev])
+        );
+        const venuesMap = new Map(venues.map((v) => [v.venue_id, v]));
+        const eventsMap = new Map(events.map((e) => [e.event_id, e]));
+        const locationsMap = new Map(locations.map((l) => [l.location_id, l]));
+
+        // Transform tickets data to match expected structure
+        const ticketsData: BookingQueryResult[] = ticketsRaw.map((ticket) => {
+          const eventVenue = eventsVenuesMap.get(ticket.event_venue_id);
+          const venue = eventVenue ? venuesMap.get(eventVenue.venue_id) : null;
+          const event = eventVenue ? eventsMap.get(eventVenue.event_id) : null;
+          const location = venue ? locationsMap.get(venue.location_id) : null;
+
+          return {
+            ...ticket,
+            events_venues: eventVenue
+              ? {
+                  event_venue_date: eventVenue.event_venue_date,
+                  price: eventVenue.price,
+                  venues: venue
+                    ? {
+                        venue_name: venue.venue_name,
+                        locations: location
+                          ? {
+                              pincode: location.pincode,
+                            }
+                          : null,
+                      }
+                    : null,
+                  events: event
+                    ? {
+                        name: event.name,
+                        image_url: event.image_url,
+                        image_path: event.image_path,
+                      }
+                    : null,
+                }
+              : null,
+          };
+        });
+
+        debug.booking("MyBookingsPage loaded successfully", {
+          ticketsRaw: ticketsRaw,
+          eventsVenues: eventsVenues,
+          venues: venues,
+          events: events,
+          locations: locations,
+          transformedTickets: ticketsData,
+        });
+
         setTickets(ticketsData);
 
         // Fetch location details for all pincodes
@@ -98,19 +222,29 @@ const MyBookingsPage = () => {
         ];
 
         if (pincodes.length > 0) {
+          const SUPABASE_URL = import.meta.env[ENV_VARS.SUPABASE_URL];
+          const SUPABASE_ANON_KEY = import.meta.env[ENV_VARS.SUPABASE_ANON_KEY];
+
           const locationPromises = pincodes.map(async (pincode) => {
             try {
-              const { data: locationData, error: locationError } =
-                await supabase.functions.invoke("get-location-from-pincode", {
-                  body: { pincode },
-                });
+              const response = await axios.post(
+                `${SUPABASE_URL}${API_ENDPOINTS.FUNCTIONS.GET_LOCATION_FROM_PINCODE}`,
+                { pincode },
+                {
+                  headers: {
+                    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  timeout: TIMEOUTS.LOCATION_API,
+                }
+              );
 
-              if (locationError || !locationData) {
-                return { pincode, data: null };
-              }
-
-              return { pincode, data: locationData };
+              return { pincode, data: response.data };
             } catch (err) {
+              debug.warn(
+                `Failed to fetch location for pincode ${pincode}`,
+                err
+              );
               return { pincode, data: null };
             }
           });
@@ -146,6 +280,11 @@ const MyBookingsPage = () => {
 
     fetchTickets();
   }, [user]);
+
+  // Early return if user is not authenticated
+  if (!user) {
+    return null;
+  }
 
   const getDisplayLocation = (ticket: BookingQueryResult) => {
     const location = ticket.events_venues?.venues?.locations;

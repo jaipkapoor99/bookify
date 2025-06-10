@@ -1,16 +1,13 @@
 import { useEffect, useState, type ReactNode, useCallback } from "react";
-import { supabase } from "../SupabaseClient";
 import { AuthContext, type UserProfile } from "./AuthContext.context";
-import type {
-  User,
-  Session as AuthSession,
-  AuthError,
-} from "@supabase/supabase-js";
+import { authApi, dbApi, type User, type Session } from "@/lib/api-client";
+import { STORAGE_KEYS, DEFAULTS } from "@/lib/constants";
+import debug from "@/lib/debug";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<AuthSession | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const loading = false;
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(false);
 
@@ -20,21 +17,73 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
+    if (!user.id) {
+      console.error("User ID is missing:", user);
+      setProfile(null);
+      return;
+    }
+
     setLoadingProfile(true);
 
     try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("supabase_id", user.id)
-        .single();
+      // First, try to get existing profile (without single: true to avoid 406 errors)
+      const { data, error } = await dbApi.select<UserProfile>("users", "*", {
+        supabase_id: user.id,
+      });
 
-      if (error) {
+      if (data && Array.isArray(data) && data.length > 0) {
+        // Profile exists, use the first one
+        setProfile(data[0]);
+      } else if (
+        !data ||
+        (Array.isArray(data) && data.length === 0) ||
+        error?.includes("PGRST116") ||
+        error?.includes("no rows")
+      ) {
+        // Profile doesn't exist, create it for OAuth users
+        debug.auth("Creating new user profile for OAuth user", {
+          userId: user.id,
+        });
+
+        const newProfile = {
+          supabase_id: user.id,
+          name:
+            user.user_metadata?.full_name ||
+            user.email?.split("@")[0] ||
+            DEFAULTS.USER_NAME,
+          created_at: new Date().toISOString(),
+        };
+
+        const createResult = await dbApi.insert("users", newProfile);
+        const createError = createResult?.error;
+
+        if (createError) {
+          console.warn("Failed to create user profile:", createError);
+          setProfile(null);
+        } else {
+          debug.success("Successfully created user profile");
+          // Fetch the created profile
+          const { data: fetchedProfile } = await dbApi.select<UserProfile>(
+            "users",
+            "*",
+            { supabase_id: user.id }
+          );
+          if (
+            fetchedProfile &&
+            Array.isArray(fetchedProfile) &&
+            fetchedProfile.length > 0
+          ) {
+            setProfile(fetchedProfile[0]);
+          } else {
+            setProfile(null);
+          }
+        }
+      } else {
+        console.warn("Profile fetch error:", error);
         setProfile(null);
-      } else if (data) {
-        setProfile(data);
       }
-    } catch (e) {
+    } catch (error) {
+      console.warn("Profile fetch exception:", error);
       setProfile(null);
     } finally {
       setLoadingProfile(false);
@@ -42,67 +91,122 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    const getSession = async () => {
+    const initializeSession = async () => {
       try {
-        // Add timeout to prevent hanging (5 seconds for initial session)
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Session timeout")), 5000)
-        );
+        const { data: session, error } = await authApi.getSession();
 
-        const {
-          data: { session },
-        } = await Promise.race([sessionPromise, timeoutPromise]);
-        setSession(session);
-        setUser(session?.user ?? null);
-        await fetchProfile(session?.user ?? null);
+        if (error) {
+          debug.error("Session initialization error", error);
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          return;
+        }
+
+        if (session) {
+          debug.auth("Initializing with session", {
+            hasToken: !!session.access_token,
+            userId: session.user?.id,
+            fullUser: session.user,
+          });
+
+          // Validate that user has required fields
+          if (!session.user?.id) {
+            debug.error("Session user missing ID, clearing corrupted session");
+            // Clear corrupted session
+            localStorage.removeItem(STORAGE_KEYS.SESSION);
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            return;
+          }
+
+          // Ensure auth token is set before making database calls
+          const { setAuthToken } = await import("@/lib/api-client");
+          setAuthToken(session.access_token);
+
+          setSession(session);
+          setUser(session.user);
+          await fetchProfile(session.user);
+        } else {
+          console.log("AuthContext: No session found");
+        }
       } catch (error) {
-        // If session fails, continue with no user - don't throw
+        console.warn("Session initialization exception:", error);
         setSession(null);
         setUser(null);
         setProfile(null);
       }
     };
 
-    getSession();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        await fetchProfile(session?.user ?? null);
-      }
-    );
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
+    initializeSession();
   }, [fetchProfile]);
 
   const login = async (
     email: string,
     password: string
-  ): Promise<{ error: AuthError | null }> => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+  ): Promise<{ error: string | null }> => {
+    try {
+      const { data, error } = await authApi.signIn(email, password);
+
+      if (error) {
+        return { error };
+      }
+
+      if (data?.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        await fetchProfile(data.session.user);
+      }
+
+      return { error: null };
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Login failed";
+      return { error: errorMessage };
+    }
   };
 
-  const logout = async (): Promise<{ error: AuthError | null }> => {
-    const { error } = await supabase.auth.signOut();
-    return { error };
+  const logout = async (): Promise<{ error: string | null }> => {
+    try {
+      const { error } = await authApi.signOut();
+
+      // Clear state regardless of API response
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+
+      return { error };
+    } catch (error: unknown) {
+      // Clear state even if logout API fails
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+      const errorMessage =
+        error instanceof Error ? error.message : "Logout failed";
+      return { error: errorMessage };
+    }
   };
 
-  const loginWithGoogle = async (): Promise<{ error: AuthError | null }> => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    return { error };
+  const loginWithGoogle = async (): Promise<{ error: string | null }> => {
+    try {
+      const { data, error } = await authApi.signInWithGoogle();
+
+      if (error) {
+        return { error };
+      }
+
+      if (data?.url) {
+        // Redirect to Google OAuth URL
+        window.location.href = data.url;
+      }
+
+      return { error: null };
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Google login failed";
+      return { error: errorMessage };
+    }
   };
 
   const value = {

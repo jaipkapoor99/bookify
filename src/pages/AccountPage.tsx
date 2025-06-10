@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/SupabaseClient";
+import { authApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,16 +22,17 @@ export default function AccountPage() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase.auth.updateUser({
-      data: { full_name: fullName },
-    });
+    // TODO: Implement user profile update in authApi
+    setError("Profile updates are not yet implemented in this version");
+    // const { error } = await authApi.updateUser({
+    //   data: { full_name: fullName },
+    // });
 
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess("Name updated successfully!");
-      // The user object in useAuth will update automatically via onAuthStateChange
-    }
+    // if (error) {
+    //   setError(error);
+    // } else {
+    //   setSuccess("Name updated successfully!");
+    // }
     setLoading(false);
   };
 
@@ -41,16 +42,18 @@ export default function AccountPage() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase.auth.updateUser({
-      phone: phoneNumber,
-    });
+    // TODO: Implement phone number update in authApi
+    setError("Phone number updates are not yet implemented in this version");
+    // const { error } = await authApi.updateUser({
+    //   phone: phoneNumber,
+    // });
 
-    if (error) {
-      setError(error.message);
-    } else {
-      setOtpSent(true);
-      setSuccess("An OTP has been sent to your new phone number.");
-    }
+    // if (error) {
+    //   setError(error);
+    // } else {
+    //   setOtpSent(true);
+    //   setSuccess("An OTP has been sent to your new phone number.");
+    // }
     setLoading(false);
   };
 
@@ -60,20 +63,22 @@ export default function AccountPage() {
     setError(null);
     setSuccess(null);
 
-    const { error } = await supabase.auth.verifyOtp({
-      phone: phoneNumber,
-      token: otp,
-      type: "phone_change",
-    });
+    // TODO: Implement OTP verification in authApi
+    setError("OTP verification is not yet implemented in this version");
+    // const { error } = await authApi.verifyOtp({
+    //   phone: phoneNumber,
+    //   token: otp,
+    //   type: "phone_change",
+    // });
 
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess("Phone number updated successfully!");
-      setOtpSent(false);
-      setPhoneNumber("");
-      setOtp("");
-    }
+    // if (error) {
+    //   setError(error);
+    // } else {
+    //   setSuccess("Phone number updated successfully!");
+    //   setOtpSent(false);
+    //   setPhoneNumber("");
+    //   setOtp("");
+    // }
     setLoading(false);
   };
 

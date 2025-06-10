@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/SupabaseClient";
+import axios from "axios";
+import { dbApi } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,7 @@ import StorageImage from "@/components/ui/StorageImage";
 // Corrected Type: This now matches the structure from the error message.
 interface EventVenue {
   event_venue_id: number;
-  event_venue_date: string;
+  event_venue_date: string; // User corrected database to use event_venue_date
   no_of_tickets: number;
   price: number;
   venues: {
@@ -55,42 +56,77 @@ const EventDetailPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Fetch data from Supabase directly like AppStateProvider does
+  const fetchFromSupabase = async (
+    table: string,
+    query: string,
+    filters: string = ""
+  ) => {
+    const url = `${
+      import.meta.env.VITE_SUPABASE_URL
+    }/rest/v1/${table}?select=${encodeURIComponent(query)}${filters}`;
+
+    const response = await fetch(url, {
+      headers: {
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY!}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response.json();
+  };
+
   useEffect(() => {
     const fetchEventDetails = async () => {
       if (!eventId) return;
 
-      const { data, error: queryError } = await supabase
-        .from("events")
-        .select(
-          `
-          event_id,
-          name,
-          description,
-          image_url,
-          image_path,
-          start_time,
-          end_time,
-          events_venues!inner (
-            event_venue_id, 
-            event_venue_date,
-            no_of_tickets,
-            price,
-            venues!inner (
-              venue_name,
-              locations!inner ( pincode )
-            )
-          )
-        `
-        )
-        .eq("event_id", eventId)
-        .single();
+      try {
+        // First, fetch the basic event details
+        const eventQuery =
+          "event_id,name,description,image_url,image_path,start_time,end_time";
+        const eventFilters = `&event_id=eq.${eventId}`;
+        const eventData = await fetchFromSupabase(
+          "events",
+          eventQuery,
+          eventFilters
+        );
 
-      if (queryError) {
-        setError(queryError.message);
-      } else if (data) {
-        setEventDetails(data as unknown as EventDetail);
+        if (!eventData || eventData.length === 0) {
+          setError("Event not found");
+          return;
+        }
+
+        const event = eventData[0];
+
+        // Then fetch the events_venues with venues and locations joined
+        const eventsVenuesQuery = "*,venues(*,locations(*))";
+        const eventsVenuesFilters = `&event_id=eq.${eventId}`;
+        const eventsVenuesData = await fetchFromSupabase(
+          "events_venues",
+          eventsVenuesQuery,
+          eventsVenuesFilters
+        );
+
+        const eventDetail: EventDetail = {
+          ...event,
+          events_venues: eventsVenuesData || [],
+        };
+
+        console.log("Fetched event detail with real prices:", eventDetail);
+        setEventDetails(eventDetail);
+      } catch (err) {
+        console.error("Error fetching event details:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch event details"
+        );
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchEventDetails();
@@ -109,11 +145,27 @@ const EventDetailPage = () => {
       ];
 
       const locationPromises = pincodes.map(async (pincode) => {
-        const { data, error } = await supabase.functions.invoke(
-          "get-location-from-pincode",
-          { body: { pincode } }
-        );
-        return { pincode, data, error };
+        try {
+          const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+          const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+          const response = await axios.post(
+            `${SUPABASE_URL}/functions/v1/get-location-from-pincode`,
+            { pincode },
+            {
+              headers: {
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                "Content-Type": "application/json",
+              },
+              timeout: 10000,
+            }
+          );
+
+          return { pincode, data: response.data, error: null };
+        } catch (err) {
+          console.warn(`Failed to fetch location for pincode ${pincode}:`, err);
+          return { pincode, data: null, error: "Failed to fetch location" };
+        }
       });
 
       const results = await Promise.all(locationPromises);

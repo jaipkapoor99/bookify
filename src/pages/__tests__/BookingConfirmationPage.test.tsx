@@ -1,14 +1,15 @@
 /// <reference types="vitest/globals" />
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import BookingConfirmationPage from "@/pages/BookingConfirmationPage";
-import { supabase } from "@/SupabaseClient";
+import { dbApi } from "@/lib/api-client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 
 vi.mock("@/contexts/AuthContext");
+vi.mock("@/lib/api-client");
 
 // Mock window.alert
 global.alert = vi.fn();
@@ -37,34 +38,23 @@ const renderComponent = () =>
     </MemoryRouter>
   );
 
+const mockedDbApi = vi.mocked(dbApi);
+
 describe("BookingConfirmationPage", () => {
   const mockDetails = {
     price: 1500,
     event_venue_date: "2025-10-15T00:00:00",
     no_of_tickets: 50,
-    events: {
-      name: "Tech Conference 2025",
-    },
-    venues: {
-      venue_name: "Grand Convention Hall",
-      locations: {
-        pincode: "100001",
-      },
-    },
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockNavigate.mockClear();
     (useAuth as any).mockReturnValue({ user: { id: "user-123" } });
-    (supabase.functions.invoke as Mock).mockResolvedValue({
-      data: { area: "Metropolis", city: "NY", state: "NY" },
+
+    mockedDbApi.select.mockResolvedValue({
+      data: mockDetails,
       error: null,
-    });
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: mockDetails, error: null }),
     });
   });
 
@@ -84,7 +74,7 @@ describe("BookingConfirmationPage", () => {
   });
 
   it("should call the book_ticket RPC and redirect on successful booking", async () => {
-    (supabase.rpc as any).mockResolvedValue({ error: null });
+    mockedDbApi.rpc.mockResolvedValue({ data: null, error: null });
 
     renderComponent();
 
@@ -97,7 +87,7 @@ describe("BookingConfirmationPage", () => {
     fireEvent.click(bookButton!);
 
     await waitFor(() => {
-      expect(supabase.rpc).toHaveBeenCalledWith("book_ticket", {
+      expect(mockedDbApi.rpc).toHaveBeenCalledWith("book_ticket", {
         p_event_venue_id: 1,
         p_quantity: 1,
       });
