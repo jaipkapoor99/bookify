@@ -45,9 +45,44 @@ graph TB
     style Edge fill:#fce4ec
 ```
 
-## 🚀 Major Architecture Improvements (v1.6.0)
+## 🚀 Major Architecture Improvements
 
-### 🔧 **Modular API Client Architecture**
+### 🔧 **Critical Module Resolution Fixes (v1.6.3)**
+
+#### **Vite Configuration Optimization**
+
+Enhanced the build system with improved ESM/CommonJS compatibility:
+
+```typescript
+// vite.config.ts - Optimized dependency pre-bundling
+export default defineConfig({
+  // ... other config
+  optimizeDeps: {
+    include: [
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "@supabase/supabase-js",
+      "@supabase/postgrest-js",
+      "@supabase/realtime-js",
+      "@supabase/storage-js",
+      "@supabase/gotrue-js",
+    ],
+    exclude: ["lucide-react"], // Only exclude truly large dependencies
+    esbuildOptions: { target: "esnext" },
+  },
+  define: { global: "globalThis" }, // ESM compatibility
+});
+```
+
+#### **Benefits of Configuration Improvements**
+
+- ✅ **Startup Reliability**: Eliminated module resolution errors
+- ✅ **Development Performance**: Faster hot reload and server startup
+- ✅ **ESM Compatibility**: Better handling of modern JavaScript modules
+- ✅ **Test Stability**: Enhanced JSDOM compatibility for testing
+
+### 🔧 **Modular API Client Architecture (v1.6.0)**
 
 #### Before: Monolithic Approach
 

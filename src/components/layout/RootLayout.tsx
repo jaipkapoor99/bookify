@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -16,11 +15,19 @@ import {
   LogOut,
   Settings,
   Calendar,
-  ShieldCheck,
   Menu,
   X,
+  Home,
+  Ticket,
+  Shield,
 } from "lucide-react";
 import { useState } from "react";
+
+// Import preload functions
+import { preloadComponents } from "@/components/LazyComponents";
+
+// Import DevTools for development
+import DevTools from "@/components/DevTools";
 
 const RootLayout = () => {
   const { user, loading, logout, profile } = useAuth();
@@ -55,18 +62,21 @@ const RootLayout = () => {
     to,
     children,
     onClick,
+    onMouseEnter,
   }: {
     to: string;
     children: React.ReactNode;
     onClick?: () => void;
+    onMouseEnter?: () => void;
   }) => (
     <Link
       to={to}
       onClick={onClick}
-      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+      onMouseEnter={onMouseEnter}
+      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
         isActivePath(to)
           ? "bg-primary text-primary-foreground"
-          : "text-muted-foreground hover:text-foreground hover:bg-accent"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted"
       }`}
     >
       {children}
@@ -79,40 +89,52 @@ const RootLayout = () => {
       user?.email?.split("@")[0] ||
       "User"
   );
+  const isAdmin = profile?.role === "admin";
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Enhanced Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <Link
               to="/"
-              className="flex items-center gap-3 hover:opacity-90 transition-opacity"
+              className="flex items-center space-x-3 cursor-pointer"
+              onMouseEnter={() => preloadComponents.homepage()}
             >
-              <div className="relative">
-                <img
-                  src="/Bookify_SVG.svg"
-                  alt="Bookify"
-                  className="h-9 w-9 object-contain"
-                />
-              </div>
+              <img
+                src="/Bookify_SVG.svg"
+                alt="Bookify"
+                className="h-8 w-8 object-contain"
+              />
               <span className="text-2xl font-bold gradient-text">Bookify</span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex items-center space-x-6">
+              <NavLink to="/" onMouseEnter={() => preloadComponents.homepage()}>
+                <Home className="w-4 h-4 inline-block mr-2" />
+                Home
+              </NavLink>
               {user && (
                 <>
-                  <NavLink to="/my-bookings">
-                    <Calendar className="w-4 h-4 mr-2 inline" />
+                  <NavLink
+                    to="/my-bookings"
+                    onMouseEnter={() => preloadComponents.bookings()}
+                  >
+                    <Ticket className="w-4 h-4 inline-block mr-2" />
                     My Bookings
                   </NavLink>
-                  <NavLink to="/admin/events">
-                    <ShieldCheck className="w-4 h-4 mr-2 inline" />
-                    Admin
-                  </NavLink>
+                  {isAdmin && (
+                    <NavLink
+                      to="/admin/events"
+                      onMouseEnter={() => preloadComponents.admin()}
+                    >
+                      <Shield className="w-4 h-4 inline-block mr-2" />
+                      Admin
+                    </NavLink>
+                  )}
                 </>
               )}
             </nav>
@@ -140,30 +162,45 @@ const RootLayout = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>
-                          <div className="flex flex-col space-y-1">
-                            <p className="text-sm font-medium leading-none">
-                              {userName}
-                            </p>
-                            <p className="text-xs leading-none text-muted-foreground">
-                              {user.email}
-                            </p>
-                          </div>
-                        </DropdownMenuLabel>
-                        <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link to="/account" className="flex items-center">
+                          <Link
+                            to="/account"
+                            onMouseEnter={() => preloadComponents.account()}
+                            className="cursor-pointer"
+                          >
                             <Settings className="mr-2 h-4 w-4" />
-                            Account Settings
+                            <span>Account Settings</span>
                           </Link>
                         </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link
+                            to="/my-bookings"
+                            className="cursor-pointer"
+                            onMouseEnter={() => preloadComponents.bookings()}
+                          >
+                            <Calendar className="mr-2 h-4 w-4" />
+                            <span>My Bookings</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        {isAdmin && (
+                          <DropdownMenuItem asChild>
+                            <Link
+                              to="/admin/events"
+                              className="cursor-pointer"
+                              onMouseEnter={() => preloadComponents.admin()}
+                            >
+                              <Shield className="mr-2 h-4 w-4" />
+                              <span>Admin Panel</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={handleLogout}
-                          className="text-red-600"
+                          className="cursor-pointer text-red-600 focus:text-red-600"
                         >
                           <LogOut className="mr-2 h-4 w-4" />
-                          Logout
+                          <span>Sign out</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -172,7 +209,7 @@ const RootLayout = () => {
                   {/* Mobile Menu Button */}
                   <Button
                     variant="ghost"
-                    size="icon"
+                    size="sm"
                     className="md:hidden"
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   >
@@ -185,10 +222,10 @@ const RootLayout = () => {
                 </>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button asChild variant="ghost">
-                    <Link to="/login">Login</Link>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to="/login">Sign In</Link>
                   </Button>
-                  <Button asChild className="button-press">
+                  <Button asChild size="sm">
                     <Link to="/signup">Sign Up</Link>
                   </Button>
                 </div>
@@ -199,47 +236,51 @@ const RootLayout = () => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && user && (
-          <div className="md:hidden border-t bg-background/95 backdrop-blur">
-            <div className="container mx-auto px-4 py-3 space-y-2">
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">{userName}</p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
-                </div>
-              </div>
-
+          <div className="md:hidden border-t bg-background">
+            <div className="container mx-auto px-4 py-4 space-y-2">
+              <NavLink
+                to="/"
+                onClick={() => setMobileMenuOpen(false)}
+                onMouseEnter={() => preloadComponents.homepage()}
+              >
+                <Home className="w-4 h-4 inline-block mr-2" />
+                Home
+              </NavLink>
               <NavLink
                 to="/my-bookings"
                 onClick={() => setMobileMenuOpen(false)}
+                onMouseEnter={() => preloadComponents.bookings()}
               >
-                <Calendar className="w-4 h-4 mr-2 inline" />
+                <Ticket className="w-4 h-4 inline-block mr-2" />
                 My Bookings
               </NavLink>
-
-              <NavLink to="/account" onClick={() => setMobileMenuOpen(false)}>
-                <Settings className="w-4 h-4 mr-2 inline" />
-                Account Settings
-              </NavLink>
-
               <NavLink
-                to="/admin/events"
+                to="/account"
                 onClick={() => setMobileMenuOpen(false)}
+                onMouseEnter={() => preloadComponents.account()}
               >
-                <ShieldCheck className="w-4 h-4 mr-2 inline" />
-                Admin
+                <Settings className="w-4 h-4 inline-block mr-2" />
+                Account
               </NavLink>
-
-              <div className="pt-2 border-t">
+              {isAdmin && (
+                <NavLink
+                  to="/admin/events"
+                  onClick={() => setMobileMenuOpen(false)}
+                  onMouseEnter={() => preloadComponents.admin()}
+                >
+                  <Shield className="w-4 h-4 inline-block mr-2" />
+                  Admin
+                </NavLink>
+              )}
+              <div className="pt-2">
                 <Button
-                  variant="ghost"
                   onClick={handleLogout}
-                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                  Sign out
                 </Button>
               </div>
             </div>
@@ -343,6 +384,9 @@ const RootLayout = () => {
           </div>
         </div>
       </footer>
+
+      {/* Development Tools Panel */}
+      <DevTools />
     </div>
   );
 };

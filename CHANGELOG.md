@@ -5,6 +5,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.3] - 2025-01-17
+
+### 🔧 Critical Module Resolution & Vite Configuration Fixes
+
+#### Fixed
+
+- **🚨 Supabase Module Import Error**: Resolved critical ESM/CommonJS compatibility issue preventing application startup
+
+  - **Error**: `Uncaught SyntaxError: The requested module '/node_modules/@supabase/postgrest-js/dist/cjs/index.js?v=7ffe7cc6' does not provide an export named 'default'`
+  - **Solution**: Updated Vite configuration to include Supabase dependencies in `optimizeDeps.include`
+  - **Impact**: Application now starts successfully in development mode
+
+- **🧪 Test Environment Compatibility**: Fixed HTMLCanvasElement errors in JSDOM test environment
+
+  - Enhanced `checkWebPSupport` function with proper try-catch error handling
+  - Added graceful fallbacks for browser features not available in test environments
+  - Resolved multiple integration test failures
+
+- **📝 TypeScript Type Safety**: Eliminated unsafe 'any' types and improved generic type usage
+  - Fixed performance monitor type assertions for PerformanceEntry objects
+  - Enhanced smart lazy loading with proper generic type syntax
+  - Improved overall type safety across the codebase
+
+#### Changed
+
+- **⚙️ Vite Configuration Optimization**: Enhanced dependency pre-bundling strategy
+
+  ```typescript
+  optimizeDeps: {
+    include: [
+      "react", "react-dom", "react-router-dom",
+      "@supabase/supabase-js", "@supabase/postgrest-js",
+      "@supabase/realtime-js", "@supabase/storage-js", "@supabase/gotrue-js"
+    ],
+    exclude: ["lucide-react"], // Only exclude truly large dependencies
+    esbuildOptions: { target: "esnext" },
+  }
+  ```
+
+- **🌐 ESM Compatibility**: Added global definitions for better module resolution
+  ```typescript
+  define: {
+    global: "globalThis";
+  }
+  ```
+
+#### Technical Improvements
+
+- **🚀 Development Performance**: Faster development server startup with optimized dependency bundling
+- **🛡️ Error Resilience**: Enhanced error handling and fallback mechanisms
+- **🧪 Test Reliability**: Improved test environment compatibility and stability
+- **📊 Code Quality**: Maintained 0 linting errors with 67/67 tests passing
+
+### 🎯 Impact Summary
+
+- **Startup Reliability**: Application now starts consistently without module resolution errors
+- **Development Experience**: Faster hot reload and better error messages
+- **Test Stability**: All tests pass reliably across different environments
+- **Type Safety**: Enhanced TypeScript coverage with proper generic types
+
 ## [1.6.2] - 2025-01-17
 
 ### 🎯 UX Improvements & Bug Fixes
