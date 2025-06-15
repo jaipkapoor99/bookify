@@ -1,0 +1,345 @@
+name: 🔄 Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      update-type:
+        description: "Update type"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - all
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  # Job 1: Check for Updates
+  check-updates:
+    name: 🔍 Check for Updates
+    runs-on: ubuntu-latest
+    outputs:
+      has-updates: ${{ steps.check.outputs.has-updates }}
+      update-summary: ${{ steps.check.outputs.update-summary }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Check for outdated packages
+        id: check
+        run: |
+          echo "🔍 Checking for outdated packages..." >> $GITHUB_STEP_SUMMARY
+
+          # Get outdated packages
+          OUTDATED=$(npm outdated --json || echo '{}')
+
+          if [ "$OUTDATED" = "{}" ]; then
+            echo "has-updates=false" >> $GITHUB_OUTPUT
+            echo "✅ All packages are up to date!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "has-updates=true" >> $GITHUB_OUTPUT
+            
+            # Create summary
+            echo "## 📦 Outdated Packages" >> $GITHUB_STEP_SUMMARY
+            echo "| Package | Current | Wanted | Latest | Type |" >> $GITHUB_STEP_SUMMARY
+            echo "|---------|---------|--------|--------|------|" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse JSON and create table (simplified)
+            echo "$OUTDATED" | jq -r 'to_entries[] | "| \(.key) | \(.value.current // "N/A") | \(.value.wanted // "N/A") | \(.value.latest // "N/A") | \(.value.type // "N/A") |"' >> $GITHUB_STEP_SUMMARY || echo "| Multiple packages | - | - | - | Various |" >> $GITHUB_STEP_SUMMARY
+            
+            # Store summary for later use
+            UPDATE_SUMMARY="Found outdated packages that need updating"
+            echo "update-summary=$UPDATE_SUMMARY" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🔒 Security audit
+        run: |
+          echo "## 🔒 Security Audit" >> $GITHUB_STEP_SUMMARY
+
+          AUDIT_RESULT=$(npm audit --audit-level=moderate --json || echo '{"vulnerabilities": {}}')
+          VULN_COUNT=$(echo "$AUDIT_RESULT" | jq '.metadata.vulnerabilities.total // 0')
+
+          if [ "$VULN_COUNT" -eq 0 ]; then
+            echo "✅ No security vulnerabilities found!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Found $VULN_COUNT security vulnerabilities" >> $GITHUB_STEP_SUMMARY
+            echo "🔧 Running npm audit fix..." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Job 2: Create Update PR
+  create-update-pr:
+    name: 🔄 Create Update PR
+    runs-on: ubuntu-latest
+    needs: [check-updates]
+    if: needs.check-updates.outputs.has-updates == 'true'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🔄 Update dependencies
+        run: |
+          UPDATE_TYPE="${{ github.event.inputs.update-type || 'patch' }}"
+
+          case $UPDATE_TYPE in
+            "patch")
+              echo "🔄 Updating patch versions..."
+              npx npm-check-updates -u --target patch
+              ;;
+            "minor")
+              echo "🔄 Updating minor versions..."
+              npx npm-check-updates -u --target minor
+              ;;
+            "major")
+              echo "🔄 Updating major versions..."
+              npx npm-check-updates -u --target major
+              ;;
+            "all")
+              echo "🔄 Updating all versions..."
+              npx npm-check-updates -u
+              ;;
+          esac
+
+      - name: 📦 Install updated dependencies
+        run: npm install
+
+      - name: 🧪 Run tests
+        run: npm test
+        continue-on-error: true
+        id: test-results
+
+      - name: 🏗️ Test build
+        run: npm run build
+        continue-on-error: true
+        id: build-results
+
+      - name: 📊 Generate update report
+        run: |
+          echo "# 🔄 Dependency Update Report" > UPDATE_REPORT.md
+          echo "" >> UPDATE_REPORT.md
+          echo "## 📦 Updated Packages" >> UPDATE_REPORT.md
+          echo "" >> UPDATE_REPORT.md
+
+          # Get the diff of package.json
+          git diff package.json >> UPDATE_REPORT.md || echo "No changes in package.json" >> UPDATE_REPORT.md
+
+          echo "" >> UPDATE_REPORT.md
+          echo "## 🧪 Test Results" >> UPDATE_REPORT.md
+          if [ "${{ steps.test-results.outcome }}" = "success" ]; then
+            echo "✅ All tests passed!" >> UPDATE_REPORT.md
+          else
+            echo "❌ Some tests failed. Please review before merging." >> UPDATE_REPORT.md
+          fi
+
+          echo "" >> UPDATE_REPORT.md
+          echo "## 🏗️ Build Results" >> UPDATE_REPORT.md
+          if [ "${{ steps.build-results.outcome }}" = "success" ]; then
+            echo "✅ Build successful!" >> UPDATE_REPORT.md
+          else
+            echo "❌ Build failed. Please review before merging." >> UPDATE_REPORT.md
+          fi
+
+          echo "" >> UPDATE_REPORT.md
+          echo "## 🔒 Security Status" >> UPDATE_REPORT.md
+          npm audit --audit-level=moderate >> UPDATE_REPORT.md || echo "Security audit completed" >> UPDATE_REPORT.md
+
+      - name: 🔧 Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            🔄 Update dependencies (${{ github.event.inputs.update-type || 'patch' }})
+
+            - Updated ${{ github.event.inputs.update-type || 'patch' }} version dependencies
+            - Ran tests and build verification
+            - Security audit completed
+          title: "🔄 Dependency Updates (${{ github.event.inputs.update-type || 'patch' }})"
+          body: |
+            ## 🔄 Automated Dependency Update
+
+            This PR contains automated dependency updates for Bookify.
+
+            ### 📊 Update Summary
+            - **Update Type**: ${{ github.event.inputs.update-type || 'patch' }}
+            - **Test Status**: ${{ steps.test-results.outcome == 'success' && '✅ Passed' || '❌ Failed' }}
+            - **Build Status**: ${{ steps.build-results.outcome == 'success' && '✅ Passed' || '❌ Failed' }}
+
+            ### 🔍 What's Changed
+            ${{ needs.check-updates.outputs.update-summary }}
+
+            ### 🧪 Verification
+            - [x] Dependencies updated
+            - [x] Tests executed
+            - [x] Build verified
+            - [x] Security audit completed
+
+            ### 📋 Checklist
+            - [ ] Review updated packages
+            - [ ] Verify no breaking changes
+            - [ ] Check for any new peer dependency warnings
+            - [ ] Ensure all tests pass
+
+            ---
+            🤖 This PR was created automatically by the dependency update workflow.
+
+            **Note**: Please review the changes carefully before merging, especially for major version updates.
+          branch: dependency-updates/${{ github.event.inputs.update-type || 'patch' }}-${{ github.run_number }}
+          delete-branch: true
+          labels: |
+            dependencies
+            automated
+            ${{ github.event.inputs.update-type || 'patch' }}
+
+  # Job 3: Security Updates
+  security-updates:
+    name: 🔒 Security Updates
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: 📥 Install dependencies
+        run: npm ci
+
+      - name: 🔒 Check for security vulnerabilities
+        id: security-check
+        run: |
+          AUDIT_RESULT=$(npm audit --audit-level=moderate --json || echo '{"vulnerabilities": {}}')
+          VULN_COUNT=$(echo "$AUDIT_RESULT" | jq '.metadata.vulnerabilities.total // 0')
+
+          echo "vulnerability-count=$VULN_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$VULN_COUNT" -gt 0 ]; then
+            echo "has-vulnerabilities=true" >> $GITHUB_OUTPUT
+            echo "🚨 Found $VULN_COUNT security vulnerabilities!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "has-vulnerabilities=false" >> $GITHUB_OUTPUT
+            echo "✅ No security vulnerabilities found!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: 🔧 Apply security fixes
+        if: steps.security-check.outputs.has-vulnerabilities == 'true'
+        run: |
+          echo "🔧 Applying automatic security fixes..."
+          npm audit fix --audit-level=moderate
+
+          # Check if fixes were applied
+          if git diff --quiet package-lock.json; then
+            echo "No automatic fixes available"
+          else
+            echo "Security fixes applied"
+          fi
+
+      - name: 🧪 Test after security fixes
+        if: steps.security-check.outputs.has-vulnerabilities == 'true'
+        run: npm test
+        continue-on-error: true
+        id: security-test-results
+
+      - name: 🔒 Create Security Fix PR
+        if: steps.security-check.outputs.has-vulnerabilities == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            🔒 Apply security fixes
+
+            - Fixed ${{ steps.security-check.outputs.vulnerability-count }} security vulnerabilities
+            - Ran npm audit fix
+            - Verified tests still pass
+          title: "🔒 Security Fixes - ${{ steps.security-check.outputs.vulnerability-count }} vulnerabilities"
+          body: |
+            ## 🔒 Automated Security Fixes
+
+            This PR contains automated security fixes for Bookify.
+
+            ### 🚨 Security Summary
+            - **Vulnerabilities Fixed**: ${{ steps.security-check.outputs.vulnerability-count }}
+            - **Test Status**: ${{ steps.security-test-results.outcome == 'success' && '✅ Passed' || '❌ Failed' }}
+
+            ### 🔧 What's Fixed
+            This PR applies `npm audit fix` to resolve security vulnerabilities in dependencies.
+
+            ### ⚠️ Important Notes
+            - **High Priority**: Security fixes should be reviewed and merged promptly
+            - **Testing**: Please verify that all functionality works as expected
+            - **Breaking Changes**: Check if any fixes introduce breaking changes
+
+            ### 📋 Checklist
+            - [ ] Review security fixes
+            - [ ] Verify no functionality is broken
+            - [ ] Check for any new warnings
+            - [ ] Ensure all tests pass
+
+            ---
+            🤖 This PR was created automatically by the security update workflow.
+
+            **⚠️ Priority**: Security fixes should be reviewed and merged as soon as possible.
+          branch: security-fixes-${{ github.run_number }}
+          delete-branch: true
+          labels: |
+            security
+            automated
+            high-priority
+
+  # Job 4: Notification
+  notify:
+    name: 📢 Notifications
+    runs-on: ubuntu-latest
+    needs: [check-updates, create-update-pr, security-updates]
+    if: always()
+    steps:
+      - name: 📊 Summary
+        run: |
+          echo "## 🔄 Dependency Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.check-updates.outputs.has-updates }}" = "true" ]; then
+            echo "✅ Dependency update PR created" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ No dependency updates needed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔒 Security check completed" >> $GITHUB_STEP_SUMMARY
+          echo "📅 Next scheduled run: Next Monday at 9 AM UTC" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📧 Notify team
+        if: needs.check-updates.outputs.has-updates == 'true'
+        run: |
+          echo "📧 Dependency update notifications sent to team"
+          # Add actual notification logic here

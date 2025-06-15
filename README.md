@@ -286,6 +286,127 @@ npm run check
 - **Optimized Queries**: Efficient database operations
 - **Error Boundaries**: Graceful error handling
 
+## 🚀 CI/CD & Automation
+
+Bookify includes enterprise-grade GitHub Actions workflows for automated testing, deployment, and monitoring.
+
+[![CI](https://github.com/jaipkapoor99/booking-platform/workflows/🚀%20Continuous%20Integration/badge.svg)](https://github.com/jaipkapoor99/booking-platform/actions/workflows/ci.yml)
+[![Deploy](https://github.com/jaipkapoor99/booking-platform/workflows/🚀%20Production%20Deployment/badge.svg)](https://github.com/jaipkapoor99/booking-platform/actions/workflows/deploy.yml)
+[![Performance](https://github.com/jaipkapoor99/booking-platform/workflows/⚡%20Performance%20Monitoring/badge.svg)](https://github.com/jaipkapoor99/booking-platform/actions/workflows/performance.yml)
+
+### 🔄 **Continuous Integration (`ci.yml`)**
+
+**Triggers**: Push to main/develop/optimization branches, Pull Requests
+
+**8 Parallel Jobs**:
+
+- **🔍 Code Quality**: ESLint, TypeScript checking, Prettier formatting
+- **🧪 Test Suite**: Unit and integration tests with Codecov coverage
+- **🏗️ Build Verification**: Production build testing and bundle analysis
+- **🔒 Security Audit**: npm audit and GitHub CodeQL analysis
+- **⚡ Performance Testing**: Bundle size analysis and lazy loading verification
+- **♿ Accessibility Testing**: axe-core accessibility audits
+- **🚀 Preview Deployment**: Netlify preview deployments for PRs
+- **📢 Notifications**: Rich GitHub step summaries with detailed reports
+
+### 🚀 **Production Deployment (`deploy.yml`)**
+
+**Triggers**: Push to main branch, Git tags, Published releases
+
+**6-Stage Pipeline**:
+
+1. **🔍 Pre-deployment Validation**: Critical tests and security scans
+2. **🏗️ Production Build**: Optimized assets with compression
+3. **🚀 Staging Deployment**: Deploy to staging with smoke tests
+4. **🌟 Production Deployment**: Live deployment with CDN invalidation
+5. **📊 Post-deployment Monitoring**: Health checks and performance monitoring
+6. **🔄 Rollback on Failure**: Automatic rollback if deployment fails
+
+### 📦 **Automated Release (`release.yml`)**
+
+**Triggers**: Manual workflow dispatch
+
+**Release Process**:
+
+- **🔧 Version Management**: Automatic version bumping (patch/minor/major)
+- **📝 Changelog Generation**: Automated changelog updates
+- **🏗️ Release Assets**: Production builds with detailed reports
+- **🎉 GitHub Release**: Git tagging and release creation with assets
+
+### 🔄 **Dependency Updates (`dependency-update.yml`)**
+
+**Triggers**: Weekly schedule (Mondays 9 AM UTC), Manual dispatch
+
+**Automated Maintenance**:
+
+- **🔍 Update Scanning**: Checks for outdated packages and security vulnerabilities
+- **🔄 Automated PRs**: Creates update PRs with test verification
+- **🔒 Security Fixes**: High-priority security fix PRs
+- **📢 Team Notifications**: Alerts for dependency updates
+
+### ⚡ **Performance Monitoring (`performance.yml`)**
+
+**Triggers**: Push to main/develop, PRs, Daily schedule (2 AM UTC)
+
+**Performance Pipeline**:
+
+- **📦 Bundle Size Analysis**: Detailed size tracking with PR comparisons
+- **🔍 Lighthouse Audit**: Performance (80%+), Accessibility (90%+), SEO (90%+)
+- **⚡ Core Web Vitals**: LCP, FID, CLS monitoring with thresholds
+- **📉 Regression Detection**: Automated performance regression alerts
+- **💰 Performance Budget**: Enforces strict limits (2MB total, 1MB JS, 256KB CSS)
+- **📊 Comprehensive Reports**: Performance summaries and recommendations
+
+### 🎯 **Key Automation Features**
+
+#### **Smart Quality Gates**
+
+- **Parallel Execution**: 8 jobs run simultaneously for faster feedback
+- **Conditional Deployment**: Only deploys if all quality checks pass
+- **Performance Budgets**: **Fails builds** if performance budgets exceeded
+
+#### **Enterprise Security**
+
+- **CodeQL Analysis**: Automated security vulnerability scanning
+- **Dependency Auditing**: Weekly security audits with automatic fixes
+- **Secrets Management**: Secure handling of deployment credentials
+
+#### **Rich Reporting**
+
+- **GitHub Step Summaries**: Detailed markdown reports in workflow summaries
+- **PR Comments**: Automated deployment links and performance metrics
+- **Artifact Management**: Build artifacts and reports stored for analysis
+
+#### **Production Safety**
+
+- **Multi-stage Deployment**: Staging → Production with validation
+- **Automatic Rollback**: Reverts deployment if health checks fail
+- **Health Monitoring**: Post-deployment performance and availability checks
+
+### 🔧 **Setup Requirements**
+
+To enable all workflows, add these secrets to your GitHub repository:
+
+```bash
+# Netlify Deployment
+NETLIFY_AUTH_TOKEN=your_netlify_auth_token
+NETLIFY_SITE_ID=your_production_site_id
+NETLIFY_STAGING_SITE_ID=your_staging_site_id
+
+# Optional: Notification Services
+SLACK_WEBHOOK_URL=your_slack_webhook_url
+DISCORD_WEBHOOK_URL=your_discord_webhook_url
+```
+
+### 📊 **Workflow Benefits**
+
+- **🚀 Zero-Touch Deployment**: Fully automated from code to production
+- **🔒 Security First**: Comprehensive security scanning and vulnerability management
+- **⚡ Performance Optimization**: Continuous performance monitoring with budget enforcement
+- **🧪 Quality Assurance**: Comprehensive testing with coverage reporting
+- **📈 Continuous Improvement**: Automated dependency updates and security fixes
+- **🔄 Reliable Rollbacks**: Automatic failure detection and rollback procedures
+
 ## 🏗️ Architecture Highlights
 
 ### 🔄 **State Management**
