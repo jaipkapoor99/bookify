@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const { data: fetchedProfile } = await dbApi.select<UserProfile>(
             "users",
             "*",
-            { supabase_id: user.id }
+            { supabase_id: user.id },
           );
           if (
             fetchedProfile &&
@@ -230,7 +230,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (
     email: string,
-    password: string
+    password: string,
   ): Promise<{ error: string | null }> => {
     try {
       const { data, error } = await authApi.signIn(email, password);
@@ -317,7 +317,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data: ticketsRaw, error: fetchError } = await dbApi.select(
         TABLES.TICKETS,
         QUERY_COLUMNS.TICKETS_BASIC,
-        { [COLUMNS.TICKETS.CUSTOMER_ID]: userProfile.user_id }
+        { [COLUMNS.TICKETS.CUSTOMER_ID]: userProfile.user_id },
       );
 
       if (fetchError) {
@@ -335,7 +335,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Get unique event_venue IDs to fetch related data
       const eventVenueIds = [
         ...new Set(
-          ticketsArray.map((t: TicketRaw) => t[COLUMNS.TICKETS.EVENT_VENUE_ID])
+          ticketsArray.map((t: TicketRaw) => t[COLUMNS.TICKETS.EVENT_VENUE_ID]),
         ),
       ];
 
@@ -345,8 +345,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           TABLES.EVENTS_VENUES,
           QUERY_COLUMNS.EVENTS_VENUES_BASIC,
           { [COLUMNS.EVENTS_VENUES.EVENT_VENUE_ID]: id },
-          { single: true }
-        )
+          { single: true },
+        ),
       );
 
       const eventsVenuesResults = await Promise.all(eventsVenuesPromises);
@@ -358,15 +358,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const venueIds = [
         ...new Set(
           eventsVenues.map(
-            (ev: EventVenueRaw) => ev[COLUMNS.EVENTS_VENUES.VENUE_ID]
-          )
+            (ev: EventVenueRaw) => ev[COLUMNS.EVENTS_VENUES.VENUE_ID],
+          ),
         ),
       ];
       const eventIds = [
         ...new Set(
           eventsVenues.map(
-            (ev: EventVenueRaw) => ev[COLUMNS.EVENTS_VENUES.EVENT_ID]
-          )
+            (ev: EventVenueRaw) => ev[COLUMNS.EVENTS_VENUES.EVENT_ID],
+          ),
         ),
       ];
 
@@ -376,16 +376,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           TABLES.VENUES,
           QUERY_COLUMNS.VENUES_BASIC,
           { [COLUMNS.VENUES.VENUE_ID]: id },
-          { single: true }
-        )
+          { single: true },
+        ),
       );
       const eventsPromises = eventIds.map((id) =>
         dbApi.select(
           TABLES.EVENTS,
           QUERY_COLUMNS.EVENTS_BASIC,
           { [COLUMNS.EVENTS.EVENT_ID]: id },
-          { single: true }
-        )
+          { single: true },
+        ),
       );
 
       const [venuesResults, eventsResults] = await Promise.all([
@@ -411,8 +411,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           TABLES.LOCATIONS,
           QUERY_COLUMNS.LOCATIONS_BASIC,
           { [COLUMNS.LOCATIONS.LOCATION_ID]: id },
-          { single: true }
-        )
+          { single: true },
+        ),
       );
 
       const locationsResults = await Promise.all(locationsPromises);
@@ -424,7 +424,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const ticketsData: BookingQueryResult[] = ticketsArray
         .map((ticket: TicketRaw): BookingQueryResult | null => {
           const eventVenue = eventsVenues.find(
-            (ev) => ev.event_venue_id === ticket.event_venue_id
+            (ev) => ev.event_venue_id === ticket.event_venue_id,
           );
           if (!eventVenue) return null;
 
@@ -435,7 +435,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (!event) return null;
 
           const location = locations.find(
-            (l) => l.location_id === venue.location_id
+            (l) => l.location_id === venue.location_id,
           );
 
           return {
@@ -471,7 +471,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         })
         .filter(
           (ticket: BookingQueryResult | null): ticket is BookingQueryResult =>
-            ticket !== null
+            ticket !== null,
         );
 
       setBookings(ticketsData);
@@ -499,13 +499,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   "Content-Type": "application/json",
                 },
                 timeout: 10000,
-              }
+              },
             );
             locationDetailsMap[locationData.pincode] = response.data;
           } catch (error) {
             debug.warn(
               `Failed to fetch location for pincode ${locationData.pincode}:`,
-              error
+              error,
             );
             // Since database location only has pincode, we can't provide fallback city/area/state
             // The external API fetch failed, so we don't add to locationDetailsMap

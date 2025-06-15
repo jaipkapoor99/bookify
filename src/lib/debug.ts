@@ -56,7 +56,7 @@ export const debug = {
   log: (
     message: string,
     data?: unknown,
-    level: DebugLevel = DEBUG_LEVELS.INFO
+    level: DebugLevel = DEBUG_LEVELS.INFO,
   ) => {
     if (!isDebugEnabled()) return;
 
@@ -75,7 +75,7 @@ export const debug = {
       // Use console.error to ensure it appears in the terminal (Vite captures console.error)
       console.error(
         `🐛 [${level}] ${message}`,
-        data ? JSON.stringify(data, null, 2) : ""
+        data ? JSON.stringify(data, null, 2) : "",
       );
     }
   },

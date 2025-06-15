@@ -37,7 +37,7 @@ self.addEventListener("install", (event) => {
       console.log("✅ Service Worker: Installation complete");
       // Force activation of new service worker
       return self.skipWaiting();
-    })
+    }),
   );
 });
 
@@ -53,7 +53,7 @@ self.addEventListener("activate", (event) => {
       self.clients.claim(),
     ]).then(() => {
       console.log("✅ Service Worker: Activation complete");
-    })
+    }),
   );
 });
 
@@ -211,14 +211,14 @@ async function cleanupOldCaches() {
       name.startsWith("bookify-") &&
       name !== CACHE_NAME &&
       name !== STATIC_CACHE &&
-      name !== CHUNK_CACHE
+      name !== CHUNK_CACHE,
   );
 
   await Promise.all(
     oldCaches.map((name) => {
       console.log(`🗑️ Deleting old cache: ${name}`);
       return caches.delete(name);
-    })
+    }),
   );
 }
 

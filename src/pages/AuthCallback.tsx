@@ -20,7 +20,7 @@ const AuthCallback = () => {
 
         // For OAuth callbacks, extract tokens from URL fragments
         const hashParams = new URLSearchParams(
-          window.location.hash.substring(1)
+          window.location.hash.substring(1),
         );
         const accessToken = hashParams.get("access_token");
         const refreshToken = hashParams.get("refresh_token");
@@ -103,7 +103,7 @@ const AuthCallback = () => {
 
           localStorage.setItem(
             "booking-platform-session",
-            JSON.stringify(session)
+            JSON.stringify(session),
           );
 
           // Update the API client with the new token

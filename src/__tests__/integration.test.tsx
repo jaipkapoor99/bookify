@@ -64,7 +64,7 @@ describe("Integration Tests", () => {
       // Should see login form
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText("Enter your email")
+          screen.getByPlaceholderText("Enter your email"),
         ).toBeInTheDocument();
       });
 
@@ -111,7 +111,7 @@ describe("Integration Tests", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText("Enter your email")
+          screen.getByPlaceholderText("Enter your email"),
         ).toBeInTheDocument();
       });
 
@@ -156,12 +156,12 @@ describe("Integration Tests", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByRole("button", { name: "Continue with Google" })
+          screen.getByRole("button", { name: "Continue with Google" }),
         ).toBeInTheDocument();
       });
 
       fireEvent.click(
-        screen.getByRole("button", { name: "Continue with Google" })
+        screen.getByRole("button", { name: "Continue with Google" }),
       );
 
       await waitFor(() => {
@@ -194,7 +194,7 @@ describe("Integration Tests", () => {
       await waitFor(() => {
         expect(screen.getByRole("link", { name: "Login" })).toBeInTheDocument();
         expect(
-          screen.getByRole("link", { name: "Sign Up" })
+          screen.getByRole("link", { name: "Sign Up" }),
         ).toBeInTheDocument();
       });
     });
@@ -285,7 +285,7 @@ describe("Integration Tests", () => {
       // Should redirect to login page
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText("Enter your email")
+          screen.getByPlaceholderText("Enter your email"),
         ).toBeInTheDocument();
       });
     });

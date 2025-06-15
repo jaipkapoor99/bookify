@@ -208,7 +208,7 @@ const DevTools: React.FC = () => {
                   <span className="ml-1">
                     {Math.round(
                       analytics.performance.timing.loadEventEnd -
-                        analytics.performance.timing.navigationStart
+                        analytics.performance.timing.navigationStart,
                     )}
                     ms
                   </span>
@@ -218,7 +218,7 @@ const DevTools: React.FC = () => {
                   <span className="ml-1">
                     {Math.round(
                       analytics.performance.timing.domContentLoadedEventEnd -
-                        analytics.performance.timing.navigationStart
+                        analytics.performance.timing.navigationStart,
                     )}
                     ms
                   </span>

@@ -44,8 +44,8 @@ const router = createBrowserRouter(
           <Route path="/admin/events" element={<AdminEventPage />} />
         </Route>
       </Route>
-    </>
-  )
+    </>,
+  ),
 );
 
 createRoot(document.getElementById("root")!).render(
@@ -56,5 +56,5 @@ createRoot(document.getElementById("root")!).render(
         <Toaster />
       </AppStateProvider>
     </AuthProvider>
-  </StrictMode>
+  </StrictMode>,
 );

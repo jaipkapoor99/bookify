@@ -35,7 +35,7 @@ const renderComponent = () =>
         <Route path="/my-bookings" element={<div>My Bookings</div>} />
       </Routes>
       <Toaster />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 
 const mockedDbApi = vi.mocked(dbApi);
@@ -101,7 +101,7 @@ describe("BookingConfirmationPage", () => {
       () => {
         expect(mockNavigate).toHaveBeenCalledWith("/my-bookings");
       },
-      { timeout: 2000 }
+      { timeout: 2000 },
     );
   });
 });

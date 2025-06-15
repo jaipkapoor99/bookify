@@ -30,7 +30,7 @@ const renderWithProviders = (component: React.ReactElement) => {
         {component}
         <Toaster />
       </MemoryRouter>
-    </AuthProvider>
+    </AuthProvider>,
   );
 };
 
@@ -47,10 +47,10 @@ describe("LoginPage", () => {
     expect(signInElements.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByPlaceholderText("Enter your email")).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText("Enter your password")
+      screen.getByPlaceholderText("Enter your password"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /sign in/i })
+      screen.getByRole("button", { name: /sign in/i }),
     ).toBeInTheDocument();
   });
 
@@ -58,10 +58,10 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />);
 
     const emailInput = screen.getByPlaceholderText(
-      "Enter your email"
+      "Enter your email",
     ) as HTMLInputElement;
     const passwordInput = screen.getByPlaceholderText(
-      "Enter your password"
+      "Enter your password",
     ) as HTMLInputElement;
 
     expect(emailInput.value).toBe("");
@@ -102,7 +102,7 @@ describe("LoginPage", () => {
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith(
         "test@example.com",
-        "wrongpassword"
+        "wrongpassword",
       );
     });
   });
@@ -113,7 +113,7 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />);
 
     fireEvent.click(
-      screen.getByRole("button", { name: /continue with google/i })
+      screen.getByRole("button", { name: /continue with google/i }),
     );
 
     await waitFor(() => {
@@ -127,7 +127,7 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />);
 
     fireEvent.click(
-      screen.getByRole("button", { name: /continue with google/i })
+      screen.getByRole("button", { name: /continue with google/i }),
     );
 
     await waitFor(() => {
@@ -139,10 +139,10 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />);
 
     const emailInput = screen.getByPlaceholderText(
-      "Enter your email"
+      "Enter your email",
     ) as HTMLInputElement;
     const passwordInput = screen.getByPlaceholderText(
-      "Enter your password"
+      "Enter your password",
     ) as HTMLInputElement;
 
     fireEvent.change(emailInput, { target: { value: "user@example.com" } });
@@ -157,8 +157,8 @@ describe("LoginPage", () => {
     mockLogin.mockImplementation(
       () =>
         new Promise((resolve) =>
-          setTimeout(() => resolve({ error: null }), 100)
-        )
+          setTimeout(() => resolve({ error: null }), 100),
+        ),
     );
 
     renderWithProviders(<LoginPage />);
@@ -184,11 +184,11 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />);
 
     const passwordInput = screen.getByPlaceholderText(
-      "Enter your password"
+      "Enter your password",
     ) as HTMLInputElement;
     // Find the eye/eyeoff toggle button by its position next to the password field
     const toggleButton = passwordInput.parentElement?.querySelector(
-      'button[type="button"]'
+      'button[type="button"]',
     );
     expect(toggleButton).toBeInTheDocument();
 
@@ -208,7 +208,7 @@ describe("LoginPage", () => {
 
     expect(screen.getByText("Don't have an account?")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "Sign up here" })
+      screen.getByRole("link", { name: "Sign up here" }),
     ).toBeInTheDocument();
   });
 

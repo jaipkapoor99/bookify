@@ -97,7 +97,7 @@ class UserBehaviorPredictor {
   trackAction(
     type: UserAction["type"],
     target: string,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ) {
     const action: UserAction = {
       type,
@@ -126,7 +126,7 @@ class UserBehaviorPredictor {
         if (duration) {
           preferences.hoverDelay = Math.max(
             100,
-            preferences.hoverDelay * 0.9 + duration * 0.1
+            preferences.hoverDelay * 0.9 + duration * 0.1,
           );
         }
         break;
@@ -179,7 +179,7 @@ class UserBehaviorPredictor {
 
   // Predict next likely routes
   predictNextRoutes(
-    currentRoute: string
+    currentRoute: string,
   ): Array<{ route: string; probability: number }> {
     const predictions: Array<{ route: string; probability: number }> = [];
 
@@ -187,7 +187,7 @@ class UserBehaviorPredictor {
     const transitions = this.model.routeTransitions[currentRoute] || {};
     const totalTransitions = Object.values(transitions).reduce(
       (sum, count) => sum + count,
-      0
+      0,
     );
 
     if (totalTransitions > 0) {
@@ -202,7 +202,7 @@ class UserBehaviorPredictor {
     // Time-based predictions
     const currentHour = new Date().getHours();
     for (const [route, hourCounts] of Object.entries(
-      this.model.timeBasedPatterns
+      this.model.timeBasedPatterns,
     )) {
       const hourCount = hourCounts[currentHour];
       const totalHourCount = hourCounts.reduce((sum, count) => sum + count, 0);
@@ -274,7 +274,7 @@ class UserBehaviorPredictor {
     try {
       localStorage.setItem(
         this.storageKey,
-        JSON.stringify(this.currentPattern)
+        JSON.stringify(this.currentPattern),
       );
       localStorage.setItem(this.modelKey, JSON.stringify(this.model));
     } catch {
@@ -287,10 +287,10 @@ class UserBehaviorPredictor {
     const routes = this.currentPattern.preferences.preferredRoutes;
 
     for (const [cluster, clusterRoutes] of Object.entries(
-      this.model.userClusters
+      this.model.userClusters,
     )) {
       const overlap = routes.filter((route) =>
-        clusterRoutes.includes(route)
+        clusterRoutes.includes(route),
       ).length;
       if (overlap >= 2) {
         return cluster;
@@ -387,7 +387,7 @@ export const useUserBehaviorPredictor = () => {
   const trackAction = (
     type: UserAction["type"],
     target: string,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ) => {
     userBehaviorPredictor.trackAction(type, target, metadata);
   };

@@ -44,7 +44,7 @@ describe("API Client", () => {
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(
         "booking-platform-session",
-        JSON.stringify(mockSession)
+        JSON.stringify(mockSession),
       );
     });
 
@@ -64,7 +64,7 @@ describe("API Client", () => {
       const session = getStoredSession();
 
       expect(localStorageMock.getItem).toHaveBeenCalledWith(
-        "booking-platform-session"
+        "booking-platform-session",
       );
       expect(session).toEqual(mockSession);
     });
@@ -75,7 +75,7 @@ describe("API Client", () => {
       storeSession(null);
 
       expect(localStorageMock.removeItem).toHaveBeenCalledWith(
-        "booking-platform-session"
+        "booking-platform-session",
       );
     });
 

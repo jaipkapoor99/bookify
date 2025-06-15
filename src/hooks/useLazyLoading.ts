@@ -36,7 +36,7 @@ export const useLazyLoading = (options: LazyLoadingOptions = {}) => {
 
   const loadComponent = useCallback(
     async (
-      importFn: () => Promise<{ default: React.ComponentType<unknown> }>
+      importFn: () => Promise<{ default: React.ComponentType<unknown> }>,
     ) => {
       const cacheKey = importFn.toString();
 
@@ -102,12 +102,12 @@ export const useLazyLoading = (options: LazyLoadingOptions = {}) => {
         }
       }
     },
-    [cache, cacheTimeout, maxConcurrentLoads, activeLoads, loadingQueue]
+    [cache, cacheTimeout, maxConcurrentLoads, activeLoads, loadingQueue],
   );
 
   const preloadComponent = useCallback(
     async (
-      importFn: () => Promise<{ default: React.ComponentType<unknown> }>
+      importFn: () => Promise<{ default: React.ComponentType<unknown> }>,
     ) => {
       const cacheKey = importFn.toString();
 
@@ -131,7 +131,7 @@ export const useLazyLoading = (options: LazyLoadingOptions = {}) => {
         console.warn("Failed to preload component:", error);
       }
     },
-    [cache, cacheTimeout, preloadDelay]
+    [cache, cacheTimeout, preloadDelay],
   );
 
   const clearCache = useCallback(() => {
@@ -159,7 +159,7 @@ export const useSmartPreloading = () => {
       const currentScore = predictions.get(route) || 0;
       predictions.set(route, currentScore + 1);
     },
-    [predictions]
+    [predictions],
   );
 
   const getPredictedRoutes = useCallback(() => {

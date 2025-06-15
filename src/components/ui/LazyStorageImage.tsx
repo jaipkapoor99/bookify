@@ -68,7 +68,7 @@ const LazyStorageImage: React.FC<LazyStorageImageProps> = ({
             }
           });
         },
-        { threshold }
+        { threshold },
       );
 
       if (imgRef.current) {

@@ -22,7 +22,7 @@ export const initializeConsoleInterceptor = () => {
   const sendToTerminal = async (
     level: string,
     message: string,
-    data: unknown[]
+    data: unknown[],
   ) => {
     try {
       await fetch("/__console_log", {
@@ -85,6 +85,6 @@ export const initializeConsoleInterceptor = () => {
   };
 
   console.log(
-    "🔗 Console interceptor initialized - all logs will appear in terminal"
+    "🔗 Console interceptor initialized - all logs will appear in terminal",
   );
 };

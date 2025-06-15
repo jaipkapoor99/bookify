@@ -9,7 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 export default function AccountPage() {
   const { user } = useAuth();
   const [fullName, setFullName] = useState(
-    user?.user_metadata?.full_name || ""
+    user?.user_metadata?.full_name || "",
   );
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");

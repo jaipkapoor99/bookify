@@ -104,7 +104,7 @@ const BookingConfirmationPage = () => {
         "events_venues",
         "price,event_venue_date,no_of_tickets,event_id,venue_id",
         { event_venue_id: eventVenueId },
-        { single: true }
+        { single: true },
       );
 
       if (fetchError) {
@@ -148,17 +148,17 @@ const BookingConfirmationPage = () => {
               "Content-Type": "application/json",
             },
             timeout: 10000,
-          }
+          },
         );
 
         const data = response.data;
         setLocation(
-          `${data.area}, ${data.city}, ${data.state} - ${details.pincode}`
+          `${data.area}, ${data.city}, ${data.state} - ${details.pincode}`,
         );
       } catch (error) {
         console.warn(
           `Failed to fetch location for pincode ${details.pincode}:`,
-          error
+          error,
         );
         setLocation("Location not available");
       }

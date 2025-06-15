@@ -91,7 +91,7 @@ export const authApi = {
   // Sign in with email/password
   signIn: async (
     email: string,
-    password: string
+    password: string,
   ): Promise<ApiResponse<AuthResponse>> => {
     try {
       const response: AxiosResponse = await authClient.post(
@@ -99,7 +99,7 @@ export const authApi = {
         {
           email,
           password,
-        }
+        },
       );
 
       const authData: AuthResponse = response.data;
@@ -130,7 +130,7 @@ export const authApi = {
           {},
           {
             headers: { Authorization: `Bearer ${session.access_token}` },
-          }
+          },
         );
       }
       storeSession(null);
@@ -158,7 +158,7 @@ export const authApi = {
         // 5 minutes before expiry
         // Try to refresh token
         const refreshResult = await authApi.refreshSession(
-          storedSession.refresh_token
+          storedSession.refresh_token,
         );
         if (refreshResult.data) {
           return { data: refreshResult.data, error: null };
@@ -177,7 +177,7 @@ export const authApi = {
 
   // Refresh session
   refreshSession: async (
-    refreshToken: string
+    refreshToken: string,
   ): Promise<ApiResponse<Session>> => {
     try {
       const response: AxiosResponse = await authClient.post("/token", {
@@ -209,7 +209,7 @@ export const authApi = {
       // For OAuth, we need to construct the URL and redirect directly
       // Supabase Auth API doesn't return a redirect URL, it expects direct navigation
       const oauthUrl = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(
-        redirectUrl
+        redirectUrl,
       )}`;
 
       return { data: { url: oauthUrl }, error: null };

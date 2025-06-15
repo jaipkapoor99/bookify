@@ -79,7 +79,7 @@ export const dbApi = {
       limit?: number;
       offset?: number;
       orderBy?: string;
-    }
+    },
   ): Promise<ApiResponse<T>> => {
     try {
       let url = `/${table}?select=${columns}`;
@@ -117,7 +117,7 @@ export const dbApi = {
   // Insert data
   insert: async <T>(
     table: string,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
   ): Promise<ApiResponse<T>> => {
     try {
       const response: AxiosResponse = await dbClient.post(`/${table}`, data);
@@ -134,7 +134,7 @@ export const dbApi = {
   update: async <T>(
     table: string,
     data: Record<string, unknown>,
-    filters: Record<string, unknown>
+    filters: Record<string, unknown>,
   ): Promise<ApiResponse<T>> => {
     try {
       let url = `/${table}?`;
@@ -158,7 +158,7 @@ export const dbApi = {
   // Delete data
   delete: async <T>(
     table: string,
-    filters: Record<string, unknown>
+    filters: Record<string, unknown>,
   ): Promise<ApiResponse<T>> => {
     try {
       let url = `/${table}?`;
@@ -182,7 +182,7 @@ export const dbApi = {
   // Call RPC function
   rpc: async <T>(
     functionName: string,
-    params: Record<string, unknown>
+    params: Record<string, unknown>,
   ): Promise<ApiResponse<T>> => {
     try {
       debug.api(`Calling RPC function: ${functionName}`, {
@@ -193,7 +193,7 @@ export const dbApi = {
 
       const response: AxiosResponse = await dbClient.post(
         `/rpc/${functionName}`,
-        params
+        params,
       );
 
       debug.api(`RPC function ${functionName} completed successfully`, {
@@ -225,7 +225,7 @@ export const dbApi = {
           params,
           response: apiError.response?.data,
           fullError: apiError.response || apiError,
-        }
+        },
       );
 
       return { data: null, error: errorMessage };

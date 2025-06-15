@@ -11,7 +11,7 @@ const debugPlugin = (() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require("./vite-debug-plugin.js").default as () => Plugin;
   } catch {
-    return () => ({ name: "debug-plugin-fallback" } as Plugin);
+    return () => ({ name: "debug-plugin-fallback" }) as Plugin;
   }
 })();
 

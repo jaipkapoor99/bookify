@@ -87,7 +87,7 @@ const RootLayout = () => {
     profile?.name ||
       user?.user_metadata?.full_name ||
       user?.email?.split("@")[0] ||
-      "User"
+      "User",
   );
   const isAdmin = profile?.role === "admin";
 

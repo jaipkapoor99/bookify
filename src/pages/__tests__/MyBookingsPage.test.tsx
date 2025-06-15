@@ -25,7 +25,7 @@ const createMockUser = (id: string = "user-123"): User => ({
 // Helper function to create mock booking data
 const createMockBooking = (
   id: number,
-  eventName?: string
+  eventName?: string,
 ): BookingQueryResult => ({
   ticket_id: id,
   customer_id: 1,
@@ -82,7 +82,7 @@ describe("MyBookingsPage", () => {
     render(
       <MemoryRouter>
         <MyBookingsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Loading your bookings...")).toBeInTheDocument();
@@ -121,7 +121,7 @@ describe("MyBookingsPage", () => {
     render(
       <MemoryRouter>
         <MyBookingsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {
@@ -131,7 +131,7 @@ describe("MyBookingsPage", () => {
       expect(screen.getAllByText("Grand Convention Center")).toHaveLength(2);
       // Check for location using getAllByText since there are multiple locations
       expect(
-        screen.getAllByText("Connaught Place, New Delhi, Delhi")
+        screen.getAllByText("Connaught Place, New Delhi, Delhi"),
       ).toHaveLength(2);
     });
   });
@@ -157,14 +157,14 @@ describe("MyBookingsPage", () => {
     render(
       <MemoryRouter>
         <MyBookingsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("No bookings found")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "You haven't made any bookings yet. Start by browsing our events!"
-      )
+        "You haven't made any bookings yet. Start by browsing our events!",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -190,12 +190,12 @@ describe("MyBookingsPage", () => {
     render(
       <MemoryRouter>
         <MyBookingsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Error loading bookings")).toBeInTheDocument();
     expect(
-      screen.getByText("Failed to fetch bookings: Network error")
+      screen.getByText("Failed to fetch bookings: Network error"),
     ).toBeInTheDocument();
 
     // Test the "Try Again" button
@@ -243,7 +243,7 @@ describe("MyBookingsPage", () => {
     render(
       <MemoryRouter>
         <MyBookingsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {
@@ -282,14 +282,14 @@ describe("MyBookingsPage", () => {
     render(
       <MemoryRouter>
         <MyBookingsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {
       expect(screen.getByText("Test Event")).toBeInTheDocument();
       expect(screen.getByText("Grand Convention Center")).toBeInTheDocument();
       expect(
-        screen.getByText("Test Area, Test City, Test State")
+        screen.getByText("Test Area, Test City, Test State"),
       ).toBeInTheDocument();
       // Check for quantity display
       expect(screen.getByText("2")).toBeInTheDocument(); // quantity
@@ -320,7 +320,7 @@ describe("MyBookingsPage", () => {
     render(
       <MemoryRouter>
         <MyBookingsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     const refreshButton = screen.getByText("Refresh");
@@ -350,7 +350,7 @@ describe("MyBookingsPage", () => {
     render(
       <MemoryRouter>
         <MyBookingsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("Refreshing...")).toBeInTheDocument();
@@ -377,12 +377,12 @@ describe("MyBookingsPage", () => {
     render(
       <MemoryRouter>
         <MyBookingsPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
     expect(screen.getByText("My Bookings")).toBeInTheDocument();
     expect(
-      screen.getByText("Please log in to view your bookings.")
+      screen.getByText("Please log in to view your bookings."),
     ).toBeInTheDocument();
   });
 });

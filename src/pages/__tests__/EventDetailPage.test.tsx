@@ -86,7 +86,7 @@ describe("EventDetailPage", () => {
           <Route path="/events/:eventId" element={<EventDetailPage />} />
           <Route path="/login" element={<div>Login Page</div>} />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   };
 
@@ -97,8 +97,8 @@ describe("EventDetailPage", () => {
       expect(screen.getByText("Summer Music Fest 2025")).toBeInTheDocument();
       expect(
         screen.getByText(
-          "A spectacular summer music festival featuring top artists"
-        )
+          "A spectacular summer music festival featuring top artists",
+        ),
       ).toBeInTheDocument();
     });
 

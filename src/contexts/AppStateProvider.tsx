@@ -15,7 +15,7 @@ const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
 const fetchFromSupabase = async (
   table: string,
   query: string,
-  filters: string = ""
+  filters: string = "",
 ) => {
   const url = `${
     import.meta.env.VITE_SUPABASE_URL
@@ -80,7 +80,7 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         cache: { ...prev.cache, [key]: cacheItem },
       }));
     },
-    []
+    [],
   );
 
   const getCache = useCallback(<T,>(key: string): T | null => {
@@ -119,7 +119,7 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         setLoading(cacheKey, false);
       }
     },
-    [getCache, setCache, setLoading]
+    [getCache, setCache, setLoading],
   );
 
   const fetchEventVenue = useCallback(
@@ -137,10 +137,13 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         const eventVenues = data as EventVenue[];
         setCache(cacheKey, eventVenues);
 
-        const venuesMap = eventVenues.reduce((acc, ev) => {
-          acc[ev.event_venue_id] = ev;
-          return acc;
-        }, {} as Record<number, EventVenue>);
+        const venuesMap = eventVenues.reduce(
+          (acc, ev) => {
+            acc[ev.event_venue_id] = ev;
+            return acc;
+          },
+          {} as Record<number, EventVenue>,
+        );
 
         setState((prev) => ({
           ...prev,
@@ -152,14 +155,14 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         if (error instanceof Error)
           console.error(
             `Failed to fetch venues for event ${eventId}:`,
-            error.message
+            error.message,
           );
         return [];
       } finally {
         setLoading(cacheKey, false);
       }
     },
-    [getCache, setCache, setLoading]
+    [getCache, setCache, setLoading],
   );
 
   const fetchVenues = useCallback(
@@ -187,7 +190,7 @@ export const AppStateProvider: React.FC<{ children: ReactNode }> = ({
         setLoading(cacheKey, false);
       }
     },
-    [getCache, setCache, setLoading]
+    [getCache, setCache, setLoading],
   );
 
   const clearCache = useCallback(() => {
