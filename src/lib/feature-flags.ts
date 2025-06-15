@@ -378,6 +378,14 @@ export const useProgressiveEnhancement = () => {
 
 function checkWebPSupport(): boolean {
   try {
+    // Check if we're in a test environment (JSDOM)
+    if (
+      typeof window !== "undefined" &&
+      window.navigator?.userAgent?.includes("jsdom")
+    ) {
+      return false; // Assume no WebP support in test environment
+    }
+
     const canvas = document.createElement("canvas");
     canvas.width = 1;
     canvas.height = 1;
