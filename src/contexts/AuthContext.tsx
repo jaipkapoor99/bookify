@@ -62,6 +62,28 @@ interface LocationRaw {
   updated_at: string;
 }
 
+// Interface for the optimized database function result
+interface OptimizedBookingResult {
+  ticket_id: number;
+  customer_id: number;
+  event_venue_id: number;
+  ticket_price: number;
+  quantity: number;
+  created_at: string;
+  updated_at: string;
+  event_venue_date: string;
+  event_venue_price: number;
+  no_of_tickets: number;
+  venue_name: string;
+  pincode: string;
+  event_name: string;
+  event_description: string;
+  event_start_time: string;
+  event_end_time: string;
+  event_image_url: string;
+  event_image_path: string;
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -302,17 +324,86 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Booking data fetching logic (moved from MyBookingsPage)
-  const fetchBookings = useCallback(async (userProfile: UserProfile) => {
-    if (!userProfile?.user_id) {
-      setBookingsError("User profile not available");
-      return;
-    }
+  // OPTIMIZATION 3: Batch location fetching with caching and timeout protection
+  const fetchLocationDetailsBatch = useCallback(
+    async (bookingsData: BookingQueryResult[]) => {
+      const locationDetailsMap: Record<
+        string,
+        { city: string; area: string; state: string }
+      > = { ...locationDetails }; // Start with existing cache
 
-    setLoadingBookings(true);
-    setBookingsError(null);
+      // Get unique pincodes that aren't already cached
+      const uniquePincodes = [
+        ...new Set(
+          bookingsData
+            .map((ticket) => ticket.events_venues?.venues?.locations?.pincode)
+            .filter(
+              (pincode): pincode is string =>
+                pincode !== undefined && !locationDetailsMap[pincode],
+            ),
+        ),
+      ];
 
-    try {
+      if (uniquePincodes.length === 0) {
+        return; // All pincodes already cached
+      }
+
+      // OPTIMIZATION 4: Parallel requests with individual timeout handling
+      const locationPromises = uniquePincodes.map(async (pincode) => {
+        try {
+          const response = await Promise.race([
+            axios.post(
+              `${import.meta.env.VITE_SUPABASE_URL}${
+                API_ENDPOINTS.FUNCTIONS.GET_LOCATION_FROM_PINCODE
+              }`,
+              { pincode },
+              {
+                headers: {
+                  Authorization: `Bearer ${
+                    import.meta.env.VITE_SUPABASE_ANON_KEY
+                  }`,
+                  "Content-Type": "application/json",
+                },
+              },
+            ),
+            // 3-second timeout per request instead of 10 seconds
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("Timeout")), 3000),
+            ),
+          ]);
+
+          return {
+            pincode,
+            data: (
+              response as {
+                data: { city: string; area: string; state: string };
+              }
+            ).data,
+          };
+        } catch (error) {
+          debug.warn(`Failed to fetch location for pincode ${pincode}:`, error);
+          return { pincode, data: null };
+        }
+      });
+
+      // Execute all location requests in parallel
+      const locationResults = await Promise.all(locationPromises);
+
+      // Update cache with successful results
+      locationResults.forEach(({ pincode, data }) => {
+        if (data) {
+          locationDetailsMap[pincode] = data;
+        }
+      });
+
+      setLocationDetails(locationDetailsMap);
+    },
+    [locationDetails],
+  );
+
+  // Fallback manual fetch (existing logic as backup)
+  const fetchBookingsManual = useCallback(
+    async (userProfile: UserProfile) => {
       // Query tickets for this internal user ID
       const { data: ticketsRaw, error: fetchError } = await dbApi.select(
         TABLES.TICKETS,
@@ -475,54 +566,121 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         );
 
       setBookings(ticketsData);
+      await fetchLocationDetailsBatch(ticketsData);
+    },
+    [fetchLocationDetailsBatch],
+  );
 
-      // Fetch location details for display
-      const locationDetailsMap: Record<
-        string,
-        { city: string; area: string; state: string }
-      > = {};
-
-      for (const ticket of ticketsData) {
-        const locationData = ticket.events_venues?.venues?.locations;
-        if (locationData) {
-          try {
-            const response = await axios.post(
-              `${import.meta.env.VITE_SUPABASE_URL}${
-                API_ENDPOINTS.FUNCTIONS.GET_LOCATION_FROM_PINCODE
-              }`,
-              { pincode: locationData.pincode },
-              {
-                headers: {
-                  Authorization: `Bearer ${
-                    import.meta.env.VITE_SUPABASE_ANON_KEY
-                  }`,
-                  "Content-Type": "application/json",
-                },
-                timeout: 10000,
-              },
-            );
-            locationDetailsMap[locationData.pincode] = response.data;
-          } catch (error) {
-            debug.warn(
-              `Failed to fetch location for pincode ${locationData.pincode}:`,
-              error,
-            );
-            // Since database location only has pincode, we can't provide fallback city/area/state
-            // The external API fetch failed, so we don't add to locationDetailsMap
-          }
-        }
+  // Booking data fetching logic (optimized to eliminate N+1 queries)
+  const fetchBookings = useCallback(
+    async (userProfile: UserProfile) => {
+      if (!userProfile?.user_id) {
+        setBookingsError("User profile not available");
+        return;
       }
 
-      setLocationDetails(locationDetailsMap);
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to fetch bookings";
-      setBookingsError(errorMessage);
-      debug.error("Bookings fetch error", error);
-    } finally {
-      setLoadingBookings(false);
-    }
-  }, []);
+      setLoadingBookings(true);
+      setBookingsError(null);
+
+      try {
+        // OPTIMIZATION 1: Use the efficient database function instead of multiple queries
+        const { data: ticketsData, error: fetchError } = (await dbApi.rpc(
+          "get_my_bookings_with_details",
+          { p_customer_id: userProfile.user_id },
+        )) as {
+          data: OptimizedBookingResult[] | null;
+          error: string | null;
+        };
+
+        if (fetchError) {
+          // Fallback to manual fetch if function doesn't exist
+          console.warn(
+            "Optimized function not available, falling back to manual fetch",
+          );
+          await fetchBookingsManual(userProfile);
+          return;
+        }
+
+        if (!ticketsData || ticketsData.length === 0) {
+          setBookings([]);
+          setLocationDetails({});
+          return;
+        }
+
+        // Transform the optimized data
+        const bookingsData: BookingQueryResult[] = ticketsData.map(
+          (ticket: OptimizedBookingResult) => ({
+            ticket_id: ticket.ticket_id,
+            customer_id: ticket.customer_id,
+            event_venue_id: ticket.event_venue_id,
+            ticket_price: ticket.ticket_price,
+            quantity: ticket.quantity || 1,
+            created_at: ticket.created_at,
+            updated_at: ticket.updated_at,
+            events_venues: {
+              event_venue_date: ticket.event_venue_date,
+              price: ticket.event_venue_price,
+              no_of_tickets: ticket.no_of_tickets,
+              venues: {
+                venue_name: ticket.venue_name,
+                locations: ticket.pincode
+                  ? {
+                      pincode: ticket.pincode,
+                    }
+                  : undefined,
+              },
+              events: {
+                name: ticket.event_name,
+                description: ticket.event_description,
+                start_time: ticket.event_start_time,
+                end_time: ticket.event_end_time,
+                image_url: ticket.event_image_url,
+                image_path: ticket.event_image_path,
+              },
+            },
+          }),
+        );
+
+        setBookings(bookingsData);
+
+        // OPTIMIZATION 2: Batch and cache location details with timeout protection
+        await fetchLocationDetailsBatch(bookingsData);
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to fetch bookings";
+        setBookingsError(errorMessage);
+        debug.error("Bookings fetch error", error);
+      } finally {
+        setLoadingBookings(false);
+      }
+    },
+    [fetchBookingsManual, fetchLocationDetailsBatch],
+  );
+
+  // OPTIMIZATION 5: Add optimistic update for new bookings
+  const addOptimisticBooking = useCallback(
+    (newBookingData: Partial<BookingQueryResult>) => {
+      if (!newBookingData.ticket_id) return;
+
+      setBookings((prevBookings) => [
+        {
+          ...newBookingData,
+          ticket_id: newBookingData.ticket_id || 0,
+          customer_id: newBookingData.customer_id || 0,
+          event_venue_id: newBookingData.event_venue_id || 0,
+          ticket_price: newBookingData.ticket_price || 0,
+          quantity: newBookingData.quantity || 1,
+          created_at: newBookingData.created_at || new Date().toISOString(),
+          updated_at: newBookingData.updated_at || new Date().toISOString(),
+          events_venues:
+            newBookingData.events_venues ||
+            ({} as BookingQueryResult["events_venues"]),
+        } as BookingQueryResult,
+        ...prevBookings,
+      ]);
+    },
+    [],
+  );
 
   const refreshBookings = useCallback(async () => {
     if (profile) {
@@ -551,6 +709,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     bookingsError,
     locationDetails,
     refreshBookings,
+    addOptimisticBooking,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

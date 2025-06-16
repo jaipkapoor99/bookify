@@ -77,6 +77,7 @@ describe("MyBookingsPage", () => {
       login: vi.fn(),
       logout: vi.fn(),
       loginWithGoogle: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     });
 
     render(
@@ -116,6 +117,7 @@ describe("MyBookingsPage", () => {
       login: vi.fn(),
       logout: vi.fn(),
       loginWithGoogle: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     });
 
     render(
@@ -152,6 +154,7 @@ describe("MyBookingsPage", () => {
       login: vi.fn(),
       logout: vi.fn(),
       loginWithGoogle: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     });
 
     render(
@@ -185,6 +188,7 @@ describe("MyBookingsPage", () => {
       login: vi.fn(),
       logout: vi.fn(),
       loginWithGoogle: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     });
 
     render(
@@ -238,6 +242,7 @@ describe("MyBookingsPage", () => {
       login: vi.fn(),
       logout: vi.fn(),
       loginWithGoogle: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     });
 
     render(
@@ -277,6 +282,7 @@ describe("MyBookingsPage", () => {
       login: vi.fn(),
       logout: vi.fn(),
       loginWithGoogle: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     });
 
     render(
@@ -315,6 +321,7 @@ describe("MyBookingsPage", () => {
       login: vi.fn(),
       logout: vi.fn(),
       loginWithGoogle: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     });
 
     render(
@@ -345,6 +352,7 @@ describe("MyBookingsPage", () => {
       login: vi.fn(),
       logout: vi.fn(),
       loginWithGoogle: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     });
 
     render(
@@ -372,6 +380,7 @@ describe("MyBookingsPage", () => {
       login: vi.fn(),
       logout: vi.fn(),
       loginWithGoogle: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     });
 
     render(

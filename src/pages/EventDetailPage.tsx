@@ -74,7 +74,7 @@ const EventDetailPage = () => {
   const fetchFromSupabase = async (
     table: string,
     query: string,
-    filters: string = ""
+    filters: string = "",
   ) => {
     const url = `${
       import.meta.env.VITE_SUPABASE_URL
@@ -107,7 +107,7 @@ const EventDetailPage = () => {
         const eventData = await fetchFromSupabase(
           "events",
           eventQuery,
-          eventFilters
+          eventFilters,
         );
 
         if (!eventData || eventData.length === 0) {
@@ -123,7 +123,7 @@ const EventDetailPage = () => {
         const eventsVenuesData = await fetchFromSupabase(
           "events_venues",
           eventsVenuesQuery,
-          eventsVenuesFilters
+          eventsVenuesFilters,
         );
 
         const eventDetail: EventDetail = {
@@ -136,7 +136,7 @@ const EventDetailPage = () => {
       } catch (err) {
         console.error("Error fetching event details:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to fetch event details"
+          err instanceof Error ? err.message : "Failed to fetch event details",
         );
       } finally {
         setLoading(false);
@@ -154,7 +154,7 @@ const EventDetailPage = () => {
         ...new Set(
           eventDetails.events_venues
             .map((ev) => ev.venues.locations?.pincode)
-            .filter((p): p is string => !!p)
+            .filter((p): p is string => !!p),
         ),
       ];
 
@@ -172,7 +172,7 @@ const EventDetailPage = () => {
                 "Content-Type": "application/json",
               },
               timeout: 10000,
-            }
+            },
           );
 
           return { pincode, data: response.data, error: null };
@@ -189,9 +189,8 @@ const EventDetailPage = () => {
         if (error) {
           newLocations[pincode] = "Location not available";
         } else {
-          newLocations[
-            pincode
-          ] = `${data.area}, ${data.city}, ${data.state} - ${pincode}`;
+          newLocations[pincode] =
+            `${data.area}, ${data.city}, ${data.state} - ${pincode}`;
         }
       });
 
@@ -231,7 +230,7 @@ const EventDetailPage = () => {
 
     if (selectedVenue) {
       navigate(
-        `/book/confirm/${selectedVenue.event_venue_id}?quantity=${ticketQuantity}`
+        `/book/confirm/${selectedVenue.event_venue_id}?quantity=${ticketQuantity}`,
       );
     }
   };
@@ -467,8 +466,8 @@ const EventDetailPage = () => {
                         {!user
                           ? "Login to Book"
                           : isAvailable
-                          ? "Book Now"
-                          : "Sold Out"}
+                            ? "Book Now"
+                            : "Sold Out"}
                       </Button>
                     </div>
                   </CardContent>
