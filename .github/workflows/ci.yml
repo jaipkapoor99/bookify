@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+  pull-requests: write
+
 env:
   NODE_VERSION: "20"
 
@@ -108,6 +114,10 @@ jobs:
   security:
     name: 🔒 Security Audit
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -118,16 +128,25 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
+      - name: 📥 Install dependencies
+        run: npm ci
+
       - name: 🔒 Run security audit
         run: npm audit --audit-level=moderate
 
-      - name: 🔍 Run CodeQL Analysis
+      - name: 🔍 Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
           languages: javascript
+          queries: security-and-quality
+
+      - name: 🏗️ Autobuild
+        uses: github/codeql-action/autobuild@v3
 
       - name: 🔍 Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
 
   # Job 5: Performance Testing
   performance:
