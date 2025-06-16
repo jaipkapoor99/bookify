@@ -213,8 +213,18 @@ jobs:
       - name: 🏗️ Build and serve
         run: |
           npm run build
-          npx serve -s dist -p 3000 &
-          sleep 5
+          npm run preview &
+
+          # Wait for server to be ready
+          echo "⏳ Waiting for server to start..."
+          for i in {1..15}; do
+            if curl -f http://localhost:4173 > /dev/null 2>&1; then
+              echo "✅ Server is ready!"
+              break
+            fi
+            echo "⏳ Attempt $i/15: Server not ready yet, waiting..."
+            sleep 2
+          done
 
       - name: ♿ Run accessibility tests
         run: |

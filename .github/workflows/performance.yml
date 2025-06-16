@@ -124,9 +124,24 @@ jobs:
 
       - name: 🚀 Start local server
         run: |
-          npx serve -s dist -p 3000 &
-          sleep 10
-          curl -f http://localhost:3000 || exit 1
+          npm run preview &
+
+          # Wait for server to be ready
+          echo "⏳ Waiting for server to start..."
+          for i in {1..30}; do
+            if curl -f http://localhost:4173 > /dev/null 2>&1; then
+              echo "✅ Server is ready!"
+              break
+            fi
+            echo "⏳ Attempt $i/30: Server not ready yet, waiting..."
+            sleep 2
+          done
+
+          # Final check
+          if ! curl -f http://localhost:4173; then
+            echo "❌ Server failed to start after 60 seconds"
+            exit 1
+          fi
 
       - name: 🔍 Run Lighthouse audit
         run: |
@@ -137,8 +152,11 @@ jobs:
           {
             "ci": {
               "collect": {
-                "url": ["http://localhost:3000"],
-                "numberOfRuns": 3
+                "url": ["http://localhost:4173"],
+                "numberOfRuns": 3,
+                "settings": {
+                  "chromeFlags": "--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage"
+                }
               },
               "assert": {
                 "assertions": {
@@ -209,8 +227,24 @@ jobs:
 
       - name: 🚀 Start local server
         run: |
-          npx serve -s dist -p 3000 &
-          sleep 10
+          npm run preview &
+
+          # Wait for server to be ready
+          echo "⏳ Waiting for server to start..."
+          for i in {1..30}; do
+            if curl -f http://localhost:4173 > /dev/null 2>&1; then
+              echo "✅ Server is ready!"
+              break
+            fi
+            echo "⏳ Attempt $i/30: Server not ready yet, waiting..."
+            sleep 2
+          done
+
+          # Final check
+          if ! curl -f http://localhost:4173; then
+            echo "❌ Server failed to start after 60 seconds"
+            exit 1
+          fi
 
       - name: ⚡ Measure Core Web Vitals
         run: |
@@ -251,7 +285,7 @@ jobs:
             });
             
             // Navigate to the page
-            await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
+            await page.goto('http://localhost:4173', { waitUntil: 'networkidle0' });
             
             // Wait for vitals to be collected
             await page.waitForTimeout(3000);
