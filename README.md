@@ -2,17 +2,16 @@
 
 A modern, full-stack event booking platform built with React, TypeScript, and Supabase. Bookify provides a complete event management and ticket booking system with instant performance, advanced caching, and enterprise-grade architecture.
 
-## ✨ Recent Major Updates (v1.6.2)
+## ✨ Recent Major Updates (v1.6.4)
 
-### 🎯 **Latest Improvements (v1.6.2)**
+### 🎯 **Latest Improvements (v1.6.4)**
 
-- **💰 Fixed Total Price Calculation**: My Bookings page now correctly displays total amount (ticket_price × quantity)
-- **🖱️ Enhanced Cursor Styling**: Added pointer cursors for all interactive elements with professional polish
-- **✅ Updated Test Suite**: All 67 tests passing with validated price calculations
+- **💰 Fixed Double Currency Symbols**: Resolved duplicate ₹ symbols in EventDetailPage for clean professional display
+- **📁 Organized Project Structure**: Created dedicated directories for docs, database, and reports
+- **📚 Enhanced Documentation**: Comprehensive documentation indices with quick start guides
+- **🗂️ Improved File Organization**: Logical separation of concerns with dedicated subdirectories
 
 ### 🚀 **Performance Revolution (v1.6.0)**
-
-### 🚀 **Performance Revolution**
 
 - **Instant Bookings**: Eliminated 3-second delays - booking data now loads in ~0ms
 - **Smart Pre-loading**: Booking data automatically fetched when user logs in
@@ -118,9 +117,85 @@ npm run dev
 
 Application available at `http://localhost:5173`
 
+## 📚 Documentation
+
+### 📖 **Quick Navigation**
+
+| Category             | Document                                                           | Description                          |
+| -------------------- | ------------------------------------------------------------------ | ------------------------------------ |
+| **🏗️ Architecture**  | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)                   | System design and technical overview |
+| **📚 API Reference** | [`docs/API_DOCUMENTATION.md`](./docs/API_DOCUMENTATION.md)         | Database schema and API patterns     |
+| **🚀 Deployment**    | [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md)           | Production deployment instructions   |
+| **🧪 Testing**       | [`docs/TESTING_STRATEGY.md`](./docs/TESTING_STRATEGY.md)           | Testing patterns and TDD workflow    |
+| **🐛 Debugging**     | [`docs/DEBUG_GUIDE.md`](./docs/DEBUG_GUIDE.md)                     | Troubleshooting and debugging guide  |
+| **📊 Status**        | [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md) | Feature implementation progress      |
+| **🔄 Changes**       | [`docs/CHANGELOG.md`](./docs/CHANGELOG.md)                         | Version history and release notes    |
+
+### 🎯 **For Different Roles**
+
+#### **Developers**
+
+1. Start with [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for system understanding
+2. Follow [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md) for local setup
+3. Review [`docs/TESTING_STRATEGY.md`](./docs/TESTING_STRATEGY.md) for TDD workflow
+4. Use [`docs/DEBUG_GUIDE.md`](./docs/DEBUG_GUIDE.md) for troubleshooting
+
+#### **DevOps Engineers**
+
+1. Check [`docs/CI_CD_PIPELINE_REPORT.md`](./docs/CI_CD_PIPELINE_REPORT.md) for pipeline status
+2. Follow [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md) for production deployment
+3. Monitor [`docs/DATABASE_STATUS.md`](./docs/DATABASE_STATUS.md) for schema changes
+
+#### **Project Managers**
+
+1. Review [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md) for progress
+2. Check [`docs/CHANGELOG.md`](./docs/CHANGELOG.md) for release notes
+3. Monitor [`reports/report.md`](./reports/report.md) for project health
+
 ## 📁 Project Architecture
 
-### 📂 Folder Structure
+### 📂 Root Directory Structure
+
+```
+bookify/
+├── docs/              # 📚 Comprehensive documentation
+│   ├── README.md             # Documentation index and guide
+│   ├── CHANGELOG.md          # Version history and release notes
+│   ├── ARCHITECTURE.md       # System design and architecture
+│   ├── API_DOCUMENTATION.md  # Database schema and API guide
+│   ├── DEPLOYMENT_GUIDE.md   # Production deployment instructions
+│   ├── TESTING_STRATEGY.md   # Testing patterns and strategies
+│   ├── DEBUG_GUIDE.md        # Troubleshooting and debugging
+│   └── *.md                  # Additional documentation files
+├── database/          # 🗄️ Database files and scripts
+│   ├── README.md             # Database documentation index
+│   ├── database_complete_dump.sql     # Full database backup
+│   ├── database_data_only.sql        # Data-only restoration
+│   └── populate_database_safe.sql    # Safe sample data
+├── reports/           # 📊 Project reports and analyses
+│   ├── README.md             # Reports directory index
+│   └── report.md             # Comprehensive project assessment
+├── scripts/           # 🛠️ Development and deployment scripts
+│   ├── README.md             # Scripts documentation
+│   ├── ci.ps1               # Local CI testing pipeline
+│   ├── deploy.ps1           # Production deployment
+│   ├── database-tools.ps1   # Database management utilities
+│   └── *.ps1                # Additional PowerShell scripts
+├── src/               # 💻 Application source code
+│   ├── components/          # Reusable UI components
+│   ├── contexts/            # React contexts for state management
+│   ├── lib/                 # Core utilities and API clients
+│   ├── pages/               # Route components
+│   ├── hooks/               # Custom React hooks
+│   ├── types/               # TypeScript type definitions
+│   └── __tests__/           # Comprehensive test suites
+├── public/            # 🌐 Static assets
+├── .github/           # ⚙️ GitHub Actions workflows
+├── supabase/          # 🔧 Supabase configuration and migrations
+└── README.md          # 📖 Main project documentation
+```
+
+### 📂 Source Code Structure
 
 ```
 src/

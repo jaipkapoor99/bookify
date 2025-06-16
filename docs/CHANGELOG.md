@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.4] - 2025-01-17
+
+### 🐛 UI Bug Fix
+
+#### Fixed
+
+- **💰 Double Currency Symbol Issue**: Resolved duplicate ₹ symbols in EventDetailPage
+  - Fixed venue card pricing display where both `IndianRupee` icon and `formatCurrency()` were showing currency symbols
+  - Fixed booking dialog "Price per ticket" display with duplicate ₹ symbols
+  - Fixed booking dialog "Total" amount display with duplicate ₹ symbols
+  - Removed redundant `IndianRupee` imports and icon usage since `formatCurrency()` already includes ₹ symbol
+  - **Impact**: Clean currency display showing "₹1,234.56" instead of "₹₹1,234.56"
+
+### 🎯 Impact Summary
+
+- **User Experience**: Professional, clean currency formatting across all price displays
+- **Code Quality**: Eliminated redundant icon usage and cleaned up imports
+- **Consistency**: Unified currency display using only the `formatCurrency()` utility
+
 ## [1.6.3] - 2025-01-17
 
 ### 🔧 Critical Module Resolution & Vite Configuration Fixes

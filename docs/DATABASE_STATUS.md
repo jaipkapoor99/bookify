@@ -14,7 +14,7 @@ Generated: 2025-06-11
 - ✅ `complete_database_setup.sql` - Old setup file
 - ✅ `create_base_schema.sql` - Old base schema
 - ✅ `add_missing_policies.sql` - Applied policies file
-- ✅ `check-project.ps1` - PowerShell check script
+- ✅ `scripts/health-check.ps1` - PowerShell health check script
 - ✅ `vite-debug-plugin.js` - Debug plugin
 - ✅ `populate_database.sql` - Problematic original script
 - ✅ `supabase/migrations/20250609002840_create_get_my_bookings_function.sql` - Empty migration

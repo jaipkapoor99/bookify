@@ -10,7 +10,7 @@ param(
     
     [switch]$SkipTests,
     [switch]$SkipLint,
-    [switch]$Verbose
+    [switch]$VerboseOutput
 )
 
 function Show-Help {
@@ -27,7 +27,7 @@ function Show-Help {
     Write-Host "Options:" -ForegroundColor Yellow
     Write-Host "  -SkipTests  - Skip running tests before build" -ForegroundColor White
     Write-Host "  -SkipLint   - Skip linting before build" -ForegroundColor White
-    Write-Host "  -Verbose    - Show detailed output" -ForegroundColor White
+    Write-Host "  -VerboseOutput - Show detailed output" -ForegroundColor White
     Write-Host ""
     Write-Host "Examples:" -ForegroundColor Cyan
     Write-Host "  pwsh scripts/deploy.ps1 build" -ForegroundColor White
@@ -141,7 +141,7 @@ function Invoke-ProductionBuild {
     Write-Host "🔨 Building application..." -ForegroundColor Yellow
     $buildStart = Get-Date
     
-    if ($Verbose) {
+    if ($VerboseOutput) {
         npm run build
     } else {
         npm run build 2>$null

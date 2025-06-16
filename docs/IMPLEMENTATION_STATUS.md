@@ -163,7 +163,7 @@
 ✅ TypeScript strict mode enabled
 ✅ Zero linter errors across entire codebase
 ✅ Vitest testing framework with 100% pass rate
-✅ PowerShell health check script (check-project.ps1)
+✅ PowerShell health check script (scripts/health-check.ps1)
 ✅ Path aliases (@/* for src/*)
 ✅ Modular architecture with clean separation
 ```
