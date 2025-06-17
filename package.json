@@ -21,7 +21,11 @@
     "clean": "pwsh ./scripts/clean.ps1",
     "deploy": "pwsh ./scripts/deploy.ps1",
     "db": "pwsh ./scripts/database-tools.ps1",
-    "perf": "pwsh ./scripts/performance.ps1"
+    "perf": "pwsh ./scripts/performance.ps1",
+    "workflows": "pwsh ./scripts/run-all-workflows-locally.ps1",
+    "workflows:quick": "pwsh ./scripts/run-all-workflows-locally.ps1 -QuickRun",
+    "workflows:bash": "./scripts/run-all-workflows-locally.sh",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -47,6 +51,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@lhci/cli": "^0.15.0",
     "@tailwindcss/vite": "^4.1.8",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",

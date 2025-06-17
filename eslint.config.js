@@ -25,4 +25,11 @@ export default tseslint.config(
       ],
     },
   },
+  // Override for UI components and utility files
+  {
+    files: ["src/components/ui/*.tsx", "src/lib/module-federation.tsx", "src/components/LazyComponents.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );

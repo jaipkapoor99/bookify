@@ -80,35 +80,79 @@ if ($lazyFiles.Count -gt 0) {
     Write-Host "⚠️ No lazy loading chunks detected" -ForegroundColor Yellow
 }
 
-# Step 4: Start local server for testing
+# Step 4: Start local server and run Lighthouse
 Write-Host ""
-Write-Host "🚀 Starting local server for performance testing..." -ForegroundColor Yellow
-Write-Host "💡 You can now run Lighthouse manually on http://localhost:3000" -ForegroundColor Cyan
-Write-Host "💡 Or use browser dev tools to check Core Web Vitals" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "📋 Manual Performance Checklist:" -ForegroundColor Yellow
-Write-Host "  1. Open http://localhost:3000 in Chrome" -ForegroundColor White
-Write-Host "  2. Open DevTools (F12)" -ForegroundColor White
-Write-Host "  3. Go to Lighthouse tab" -ForegroundColor White
-Write-Host "  4. Run Performance audit" -ForegroundColor White
-Write-Host "  5. Check Core Web Vitals in Performance tab" -ForegroundColor White
-Write-Host ""
-Write-Host "🎯 Target Metrics:" -ForegroundColor Cyan
-Write-Host "  - Performance Score: >80%" -ForegroundColor White
-Write-Host "  - LCP (Largest Contentful Paint): <2.5s" -ForegroundColor White
-Write-Host "  - FID (First Input Delay): <100ms" -ForegroundColor White
-Write-Host "  - CLS (Cumulative Layout Shift): <0.1" -ForegroundColor White
-Write-Host ""
+Write-Host "🚀 Starting local server for Lighthouse testing..." -ForegroundColor Yellow
 
-# Start the server in background
-Write-Host "🚀 Starting server..." -ForegroundColor Yellow
-Start-Job -ScriptBlock { 
-    Set-Location "C:\Coding\booking-platform"
-    npx serve -s dist -p 3000 
-} -Name "BookifyServer" | Out-Null
+# Start the preview server
+Write-Host "🌐 Starting Vite preview server..." -ForegroundColor Yellow
+Start-Process -FilePath "npm" -ArgumentList "run", "preview" -NoNewWindow -PassThru | Out-Null
 
-Start-Sleep -Seconds 3
-Write-Host "🌐 Server started at http://localhost:3000" -ForegroundColor Green
-Write-Host "💡 To stop the server later, run: Get-Job -Name 'BookifyServer' | Stop-Job" -ForegroundColor Cyan
-Write-Host "Press any key to continue..." -ForegroundColor Yellow
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") 
+# Wait for server to be ready
+Write-Host "⏳ Waiting for server to start..." -ForegroundColor Yellow
+$attempts = 0
+$maxAttempts = 30
+do {
+    Start-Sleep -Seconds 2
+    $attempts++
+    try {
+        $response = Invoke-WebRequest -Uri "http://localhost:4173" -UseBasicParsing -TimeoutSec 5 -ErrorAction SilentlyContinue
+        if ($response.StatusCode -eq 200) {
+            Write-Host "✅ Server is ready!" -ForegroundColor Green
+            break
+        }
+    } catch {
+        Write-Host "⏳ Attempt $attempts/$maxAttempts : Server not ready yet..." -ForegroundColor Yellow
+    }
+} while ($attempts -lt $maxAttempts)
+
+if ($attempts -ge $maxAttempts) {
+    Write-Host "❌ Server failed to start after 60 seconds" -ForegroundColor Red
+    exit 1
+}
+
+# Step 5: Install and run Lighthouse CI
+Write-Host ""
+Write-Host "🔍 Installing Lighthouse CI..." -ForegroundColor Yellow
+npm install -g @lhci/cli
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Failed to install Lighthouse CI" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "🔍 Running Lighthouse audit..." -ForegroundColor Yellow
+lhci autorun
+
+Write-Host ""
+Write-Host "📊 Lighthouse audit completed!" -ForegroundColor Green
+Write-Host "📁 Results saved in .lighthouseci/ directory" -ForegroundColor Cyan
+
+# Parse and display results if available
+if (Test-Path ".lighthouseci") {
+    $reportFiles = Get-ChildItem -Path ".lighthouseci" -Filter "*.json" | Select-Object -First 1
+    if ($reportFiles) {
+        Write-Host ""
+        Write-Host "📊 Quick Results Summary:" -ForegroundColor Cyan
+        try {
+            $report = Get-Content $reportFiles.FullName | ConvertFrom-Json
+            $performance = [math]::Round($report.categories.performance.score * 100, 1)
+            $accessibility = [math]::Round($report.categories.accessibility.score * 100, 1)
+            $bestPractices = [math]::Round($report.categories.'best-practices'.score * 100, 1)
+            $seo = [math]::Round($report.categories.seo.score * 100, 1)
+            
+            Write-Host "| Category | Score | Status |" -ForegroundColor White
+            Write-Host "|----------|-------|--------|" -ForegroundColor White
+            Write-Host "| Performance | ${performance}% | $(if ($performance -ge 80) { '✅' } else { '❌' }) |" -ForegroundColor White
+            Write-Host "| Accessibility | ${accessibility}% | $(if ($accessibility -ge 90) { '✅' } else { '❌' }) |" -ForegroundColor White
+            Write-Host "| Best Practices | ${bestPractices}% | $(if ($bestPractices -ge 90) { '✅' } else { '❌' }) |" -ForegroundColor White
+            Write-Host "| SEO | ${seo}% | $(if ($seo -ge 90) { '✅' } else { '❌' }) |" -ForegroundColor White
+        } catch {
+            Write-Host "⚠️ Could not parse Lighthouse results" -ForegroundColor Yellow
+        }
+    }
+}
+
+Write-Host ""
+Write-Host "🎯 Performance Testing Complete!" -ForegroundColor Green
+Write-Host "🌐 Server running at http://localhost:4173" -ForegroundColor Cyan
+Write-Host "💡 Press Ctrl+C to stop the server when done" -ForegroundColor Yellow 
