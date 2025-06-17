@@ -16,22 +16,22 @@ The booking-platform repository has 5 main GitHub workflows:
 
 ### Main Workflow Runner Scripts
 
-| Script | Platform | Description |
-|--------|----------|-------------|
+| Script                          | Platform           | Description                  |
+| ------------------------------- | ------------------ | ---------------------------- |
 | `run-all-workflows-locally.ps1` | Windows/PowerShell | Complete workflow simulation |
-| `run-all-workflows-locally.sh` | Linux/macOS/Bash | Complete workflow simulation |
+| `run-all-workflows-locally.sh`  | Linux/macOS/Bash   | Complete workflow simulation |
 
 ### Individual Workflow Scripts
 
-| Script | Description |
-|--------|-------------|
-| `ci.ps1` | Existing CI script (linting, tests, build) |
-| `performance.ps1` | Existing performance testing script |
-| `health-check.ps1` | System health checks |
-| `deploy.ps1` | Deployment utilities |
-| `database-tools.ps1` | Database management |
-| `dev-setup.ps1` | Development environment setup |
-| `clean.ps1` | Clean build artifacts |
+| Script               | Description                                |
+| -------------------- | ------------------------------------------ |
+| `ci.ps1`             | Existing CI script (linting, tests, build) |
+| `performance.ps1`    | Existing performance testing script        |
+| `health-check.ps1`   | System health checks                       |
+| `deploy.ps1`         | Deployment utilities                       |
+| `database-tools.ps1` | Database management                        |
+| `dev-setup.ps1`      | Development environment setup              |
+| `clean.ps1`          | Clean build artifacts                      |
 
 ## 🚀 Quick Start
 
@@ -51,6 +51,7 @@ npm run workflows:bash
 ### Method 2: Direct script execution
 
 #### Windows (PowerShell)
+
 ```powershell
 # Full run
 .\scripts\run-all-workflows-locally.ps1
@@ -66,6 +67,7 @@ npm run workflows:bash
 ```
 
 #### Linux/macOS (Bash)
+
 ```bash
 # Full run
 ./scripts/run-all-workflows-locally.sh
@@ -84,28 +86,29 @@ npm run workflows:bash
 
 ### PowerShell Script Options
 
-| Parameter | Description |
-|-----------|-------------|
-| `-SkipTests` | Skip all test execution |
-| `-SkipSecurity` | Skip security audits |
-| `-SkipPerformance` | Skip performance testing |
-| `-QuickRun` | Run only essential checks |
+| Parameter                | Description                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| `-SkipTests`             | Skip all test execution                                                         |
+| `-SkipSecurity`          | Skip security audits                                                            |
+| `-SkipPerformance`       | Skip performance testing                                                        |
+| `-QuickRun`              | Run only essential checks                                                       |
 | `-WorkflowFilter <name>` | Run specific workflow: `ci`, `performance`, `dependencies`, `release`, `deploy` |
 
 ### Bash Script Options
 
-| Option | Description |
-|--------|-------------|
-| `--skip-tests` | Skip all test execution |
-| `--skip-security` | Skip security audits |
-| `--skip-performance` | Skip performance testing |
-| `--quick` | Run only essential checks |
-| `--filter <name>` | Run specific workflow: `ci`, `performance`, `dependencies`, `release`, `deploy` |
-| `--help` | Show help message |
+| Option               | Description                                                                     |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `--skip-tests`       | Skip all test execution                                                         |
+| `--skip-security`    | Skip security audits                                                            |
+| `--skip-performance` | Skip performance testing                                                        |
+| `--quick`            | Run only essential checks                                                       |
+| `--filter <name>`    | Run specific workflow: `ci`, `performance`, `dependencies`, `release`, `deploy` |
+| `--help`             | Show help message                                                               |
 
 ## 🔍 What Each Workflow Checks
 
 ### 1. 🔄 CI Workflow
+
 - **Dependencies**: Ensures `node_modules` is properly installed
 - **Linting**: Runs ESLint for code quality
 - **TypeScript**: Type checking with `tsc --noEmit`
@@ -116,6 +119,7 @@ npm run workflows:bash
 - **Bundle Analysis**: Size analysis and optimization checks
 
 ### 2. ⚡ Performance Workflow
+
 - **Bundle Size Analysis**: Detailed breakdown of JS/CSS files
 - **Performance Budget**: Enforces size limits (2MB total, 1MB JS, 256KB CSS)
 - **Lighthouse Audit**: Automated performance, accessibility, best practices, and SEO testing
@@ -128,25 +132,30 @@ npm run workflows:bash
 **Requirements**: Node.js >=18.20 for Lighthouse CI
 
 **Scripts Available**:
+
 - Windows: `.\scripts\performance.ps1` (includes automated Lighthouse)
 - Linux/macOS: `./scripts/lighthouse-local.sh` (dedicated Lighthouse script)
 
 **Manual Lighthouse Testing**:
+
 1. Run `npm run build && npm run preview`
 2. Open Chrome DevTools (F12)
 3. Navigate to Lighthouse tab
 4. Run Performance audit on http://localhost:4173
 
 **Lighthouse CI Fallback** (if Node.js <18.20):
+
 - Use browser-based Lighthouse testing
 - Results should match CI thresholds: Performance >80%, Accessibility >90%
 
 ### 3. 🔄 Dependency Workflow
+
 - **Outdated Packages**: Checks for available updates
 - **Security Vulnerabilities**: Scans for known security issues
 - **Update Readiness**: Validates if updates can be safely applied
 
 ### 4. 📦 Release Workflow
+
 - **Version Management**: Current version validation
 - **Changelog**: Ensures CHANGELOG.md exists and is updated
 - **Git Status**: Verifies clean working directory
@@ -154,6 +163,7 @@ npm run workflows:bash
 - **Release Readiness**: Validates all release prerequisites
 
 ### 5. 🚀 Deploy Workflow
+
 - **Critical Tests**: Runs integration and critical path tests
 - **Production Build**: Validates production-ready build
 - **Artifact Validation**: Ensures all required files are present

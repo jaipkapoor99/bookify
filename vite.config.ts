@@ -7,10 +7,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -63,7 +60,7 @@ export default defineConfig({
 
         // Optimize chunk loading
         chunkFileNames: (chunkInfo: { name?: string }) => {
-          const name = chunkInfo.name || 'unknown';
+          const name = chunkInfo.name || "unknown";
 
           // Add hash for cache busting while keeping names readable
           if (name === "vendor") return "vendor-[hash].js";

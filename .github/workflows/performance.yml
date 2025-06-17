@@ -108,7 +108,7 @@ jobs:
     name: 🔍 Lighthouse Audit (Disabled)
     runs-on: ubuntu-latest
     needs: [bundle-analysis]
-    if: false  # Temporarily disabled due to Chrome rendering issues
+    if: false # Temporarily disabled due to Chrome rendering issues
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -127,14 +127,14 @@ jobs:
           # Disable service worker for Lighthouse testing
           echo "VITE_DISABLE_SERVICE_WORKER=true" > .env.local
           npm run build
-          
+
           # Remove service worker file completely
           rm -f dist/sw.js
-          
+
           # Remove service worker registration from built JS files
           find dist -name "*.js" -exec sed -i 's/navigator\.serviceWorker\.register[^;]*;//g' {} \;
           find dist -name "*.js" -exec sed -i 's/\/sw\.js//g' {} \;
-          
+
           echo "✅ Service worker completely removed from build"
 
       - name: 🚀 Start local server
@@ -161,7 +161,7 @@ jobs:
       - name: 🔍 Run Lighthouse audit
         run: |
           npm install -g @lhci/cli
-          
+
           # Install Chrome dependencies for Ubuntu
           sudo apt-get update
           sudo apt-get install -y \
@@ -174,21 +174,21 @@ jobs:
             libasound2-dev \
             xvfb \
             dbus-x11
-          
+
           # Set up virtual display for headless Chrome
           export DISPLAY=:99
           Xvfb :99 -screen 0 1366x768x24 > /dev/null 2>&1 &
-          
+
           # Set up DBus session to reduce Chrome warnings
           export $(dbus-launch)
-          
+
           # Wait for Xvfb to start
           sleep 2
-          
+
           # Verify server is still running and app loads
           echo "🔍 Testing server response..."
           curl -f http://localhost:4173 || (echo "Server not responding" && exit 1)
-          
+
           # Check if the app actually renders content
           echo "🔍 Checking app content..."
           CONTENT=$(curl -s http://localhost:4173)
@@ -199,7 +199,7 @@ jobs:
             echo "Content preview: ${CONTENT:0:500}..."
             exit 1
           fi
-          
+
           # Warm up the React app with multiple requests to ensure it's fully loaded
           echo "🔍 Warming up React app..."
           for i in {1..3}; do
@@ -207,7 +207,7 @@ jobs:
             sleep 1
           done
           echo "✅ App warm-up complete"
-          
+
           # Check if assets are accessible
           echo "🔍 Checking asset availability..."
           if curl -f http://localhost:4173/assets/ 2>/dev/null | grep -q "index-"; then
@@ -217,7 +217,7 @@ jobs:
             echo "Available files in root:"
             curl -s http://localhost:4173/ | grep -o 'src="[^"]*"' | head -5
           fi
-          
+
           # Verify service worker was removed during build
           echo "🔍 Verifying service workers are disabled..."
           if [ -f "dist/sw.js" ]; then
@@ -226,7 +226,7 @@ jobs:
           else
             echo "✅ Service worker successfully removed during build"
           fi
-          
+
           # Test with a headless browser first to ensure the app renders
           echo "🔍 Testing app rendering with headless Chrome..."
           timeout 30 google-chrome-stable \
@@ -242,7 +242,7 @@ jobs:
             --dump-dom http://localhost:4173 > /tmp/app-content.html || {
             echo "❌ Chrome test failed, but continuing with Lighthouse..."
           }
-          
+
           if [ -f /tmp/app-content.html ]; then
             if grep -q "Bookify" /tmp/app-content.html; then
               echo "✅ App is rendering content in headless Chrome"
@@ -251,7 +251,7 @@ jobs:
               head -20 /tmp/app-content.html
             fi
           fi
-          
+
           # Run Lighthouse CI with reduced timeout and better error handling
           echo "🔍 Starting Lighthouse CI audit..."
           timeout 180 lhci autorun || {
@@ -447,7 +447,7 @@ jobs:
     name: 📉 Performance Regression Detection
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    needs: [bundle-analysis]  # Changed from lighthouse-audit to bundle-analysis
+    needs: [bundle-analysis] # Changed from lighthouse-audit to bundle-analysis
     steps:
       - name: 📥 Download current results
         uses: actions/download-artifact@v4
@@ -534,7 +534,7 @@ jobs:
   performance-report:
     name: 📊 Performance Report
     runs-on: ubuntu-latest
-    needs: [bundle-analysis, web-vitals, performance-budget]  # Removed lighthouse-audit dependency
+    needs: [bundle-analysis, web-vitals, performance-budget] # Removed lighthouse-audit dependency
     if: always()
     steps:
       - name: 📊 Generate performance report

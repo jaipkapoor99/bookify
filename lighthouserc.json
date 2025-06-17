@@ -1,7 +1,9 @@
 {
   "ci": {
     "collect": {
-      "url": ["data:text/html,<html><head><title>Test</title></head><body><h1>Test Page</h1><p>This is a test.</p></body></html>"],
+      "url": [
+        "data:text/html,<html><head><title>Test</title></head><body><h1>Test Page</h1><p>This is a test.</p></body></html>"
+      ],
       "numberOfRuns": 1,
       "settings": {
         "preset": "desktop",
@@ -9,7 +11,7 @@
         "emulatedFormFactor": "desktop",
         "chromeFlags": [
           "--no-sandbox",
-          "--disable-setuid-sandbox", 
+          "--disable-setuid-sandbox",
           "--disable-dev-shm-usage",
           "--disable-gpu",
           "--headless=new",
@@ -26,7 +28,7 @@
     },
     "assert": {
       "assertions": {
-        "categories:performance": ["warn", {"minScore": 0.1}]
+        "categories:performance": ["warn", { "minScore": 0.1 }]
       }
     },
     "upload": {

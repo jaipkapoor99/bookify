@@ -24,13 +24,13 @@
 
 ### 🌐 **GitHub Actions Workflows**
 
-| Workflow                | Status            | Trigger                                | Coverage               |
-| ----------------------- | ----------------- | -------------------------------------- | ---------------------- |
-| `ci.yml`                | ✅ **CONFIGURED** | Push/PR to main, develop, optimization | Complete CI pipeline   |
-| `deploy.yml`            | ✅ **CONFIGURED** | Push to main, tags, releases           | Production deployment  |
+| Workflow                | Status            | Trigger                                | Coverage                |
+| ----------------------- | ----------------- | -------------------------------------- | ----------------------- |
+| `ci.yml`                | ✅ **CONFIGURED** | Push/PR to main, develop, optimization | Complete CI pipeline    |
+| `deploy.yml`            | ✅ **CONFIGURED** | Push to main, tags, releases           | Production deployment   |
 | `performance.yml`       | ✅ **OPTIMIZED**  | Scheduled/manual                       | Lighthouse & monitoring |
-| `release.yml`           | ✅ **CONFIGURED** | Release creation                       | Automated releases     |
-| `dependency-update.yml` | ✅ **CONFIGURED** | Scheduled                              | Dependency management  |
+| `release.yml`           | ✅ **CONFIGURED** | Release creation                       | Automated releases      |
+| `dependency-update.yml` | ✅ **CONFIGURED** | Scheduled                              | Dependency management   |
 
 ---
 
@@ -84,6 +84,7 @@
 **Result:** ✅ Lighthouse CI now uses consistent settings across all environments
 
 **Changes:**
+
 - Enhanced Chrome flags for better CI compatibility
 - Standardized on 3 runs for reliable metrics
 - Simplified workflow to use existing config file
