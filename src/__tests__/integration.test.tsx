@@ -61,12 +61,15 @@ describe("Integration Tests", () => {
 
       render(<App initialEntries={["/login"]} />);
 
-      // Should see login form
-      await waitFor(() => {
-        expect(
-          screen.getByPlaceholderText("Enter your email"),
-        ).toBeInTheDocument();
-      });
+      // Wait for the lazy component to load and login form to appear
+      await waitFor(
+        () => {
+          expect(
+            screen.getByPlaceholderText("Enter your email"),
+          ).toBeInTheDocument();
+        },
+        { timeout: 10000 } // Increase timeout for lazy loading
+      );
 
       // Fill login form
       fireEvent.change(screen.getByPlaceholderText("Enter your email"), {
