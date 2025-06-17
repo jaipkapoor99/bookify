@@ -68,7 +68,7 @@ describe("Integration Tests", () => {
             screen.getByPlaceholderText("Enter your email"),
           ).toBeInTheDocument();
         },
-        { timeout: 10000 } // Increase timeout for lazy loading
+        { timeout: 10000 }, // Increase timeout for lazy loading
       );
 
       // Fill login form
