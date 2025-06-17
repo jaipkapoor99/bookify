@@ -228,28 +228,28 @@ jobs:
             
             echo "🔄 Retrying Lighthouse CI with simplified config..."
             # Create a simplified config for retry
-            cat > lighthouserc-simple.json << 'EOF'
-{
-  "ci": {
-    "collect": {
-      "url": ["http://localhost:4173"],
-      "numberOfRuns": 1,
-      "settings": {
-        "preset": "desktop",
-        "onlyCategories": ["performance"],
-        "chromeFlags": ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--headless=new"],
-        "maxWaitForLoad": 30000,
-        "maxWaitForFcp": 15000
-      }
-    },
-    "assert": {
-      "assertions": {
-        "categories:performance": ["warn", {"minScore": 0.3}]
-      }
-    }
-  }
-}
-EOF
+            cat > lighthouserc-simple.json << 'EOFCONFIG'
+          {
+            "ci": {
+              "collect": {
+                "url": ["http://localhost:4173"],
+                "numberOfRuns": 1,
+                "settings": {
+                  "preset": "desktop",
+                  "onlyCategories": ["performance"],
+                  "chromeFlags": ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--headless=new"],
+                  "maxWaitForLoad": 30000,
+                  "maxWaitForFcp": 15000
+                }
+              },
+              "assert": {
+                "assertions": {
+                  "categories:performance": ["warn", {"minScore": 0.3}]
+                }
+              }
+            }
+          }
+          EOFCONFIG
             timeout 120 lhci autorun --config=lighthouserc-simple.json
           }
 
