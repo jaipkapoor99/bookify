@@ -18,7 +18,7 @@
           "--disable-default-apps", 
           "--disable-web-security",
           "--allow-running-insecure-content",
-          "--disable-features=VizDisplayCompositor,TranslateUI",
+          "--disable-features=VizDisplayCompositor,TranslateUI,ServiceWorkerPaymentApps",
           "--run-all-compositor-stages-before-draw",
           "--disable-background-timer-throttling",
           "--disable-renderer-backgrounding",
@@ -31,7 +31,11 @@
           "--force-device-scale-factor=1",
           "--aggressive-cache-discard",
           "--no-first-run",
-          "--disable-sync"
+          "--disable-sync",
+          "--disable-client-side-phishing-detection",
+          "--disable-background-networking",
+          "--disable-notifications",
+          "--disable-prompt-on-repost"
         ],
         "maxWaitForLoad": 90000,
         "maxWaitForFcp": 45000,
