@@ -166,8 +166,43 @@ jobs:
           # Wait for Xvfb to start
           sleep 2
           
-          # Verify server is still running
+          # Verify server is still running and app loads
+          echo "🔍 Testing server response..."
           curl -f http://localhost:4173 || (echo "Server not responding" && exit 1)
+          
+          # Check if the app actually renders content
+          echo "🔍 Checking app content..."
+          CONTENT=$(curl -s http://localhost:4173)
+          if [[ "$CONTENT" == *"<div id=\"root\"></div>"* ]] && [[ "$CONTENT" == *"</script>"* ]]; then
+            echo "✅ App HTML structure looks correct"
+          else
+            echo "❌ App content seems malformed"
+            echo "Content preview: ${CONTENT:0:500}..."
+            exit 1
+          fi
+          
+          # Test with a headless browser first to ensure the app renders
+          echo "🔍 Testing app rendering with headless Chrome..."
+          timeout 30 google-chrome-stable \
+            --headless=new \
+            --no-sandbox \
+            --disable-setuid-sandbox \
+            --disable-dev-shm-usage \
+            --disable-gpu \
+            --virtual-time-budget=10000 \
+            --run-all-compositor-stages-before-draw \
+            --dump-dom http://localhost:4173 > /tmp/app-content.html || {
+            echo "❌ Chrome test failed, but continuing with Lighthouse..."
+          }
+          
+          if [ -f /tmp/app-content.html ]; then
+            if grep -q "Bookify" /tmp/app-content.html; then
+              echo "✅ App is rendering content in headless Chrome"
+            else
+              echo "⚠️ App may not be fully rendering - content preview:"
+              head -20 /tmp/app-content.html
+            fi
+          fi
           
           # Run Lighthouse CI with timeout and retry
           timeout 300 lhci autorun || {
