@@ -124,6 +124,15 @@ jobs:
           # Disable service worker for Lighthouse testing
           echo "VITE_DISABLE_SERVICE_WORKER=true" > .env.local
           npm run build
+          
+          # Remove service worker file completely
+          rm -f dist/sw.js
+          
+          # Remove service worker registration from built JS files
+          find dist -name "*.js" -exec sed -i 's/navigator\.serviceWorker\.register[^;]*;//g' {} \;
+          find dist -name "*.js" -exec sed -i 's/\/sw\.js//g' {} \;
+          
+          echo "✅ Service worker completely removed from build"
 
       - name: 🚀 Start local server
         run: |
@@ -206,11 +215,13 @@ jobs:
             curl -s http://localhost:4173/ | grep -o 'src="[^"]*"' | head -5
           fi
           
-          # Temporarily remove service worker file as additional safeguard
-          echo "🔍 Ensuring service workers are disabled..."
+          # Verify service worker was removed during build
+          echo "🔍 Verifying service workers are disabled..."
           if [ -f "dist/sw.js" ]; then
-            mv dist/sw.js dist/sw.js.disabled
-            echo "✅ Service worker file disabled for testing"
+            echo "⚠️ Service worker file still exists, removing it"
+            rm -f dist/sw.js
+          else
+            echo "✅ Service worker successfully removed during build"
           fi
           
           # Test with a headless browser first to ensure the app renders
@@ -284,12 +295,6 @@ jobs:
           EOFCONFIG
             timeout 120 lhci autorun --config=lighthouserc-simple.json
           }
-          
-          # Restore service worker after testing
-          if [ -f "dist/sw.js.disabled" ]; then
-            mv dist/sw.js.disabled dist/sw.js
-            echo "✅ Service worker restored"
-          fi
 
       - name: 📊 Parse Lighthouse results
         run: |
