@@ -4,8 +4,9 @@
       "url": ["http://localhost:4173"],
       "numberOfRuns": 1,
       "settings": {
-        "formFactor": "desktop",
+        "preset": "desktop",
         "onlyCategories": ["performance"],
+        "emulatedFormFactor": "desktop",
         "chromeFlags": [
           "--no-sandbox", 
           "--disable-setuid-sandbox", 
@@ -31,6 +32,13 @@
         "networkQuietThresholdMs": 5000,
         "cpuQuietThresholdMs": 5000,
         "skipAudits": ["uses-http2", "redirects-http"],
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1,
+          "disabled": false
+        },
         "throttling": {
           "rttMs": 0,
           "throughputKbps": 0,
