@@ -93,6 +93,12 @@ class SmartLazyLoadingManager {
       return;
     }
 
+    // Check if service workers are disabled via environment variable (for CI/testing)
+    if (import.meta.env.VITE_DISABLE_SERVICE_WORKER === 'true') {
+      console.log("🚫 Service Worker disabled via environment variable");
+      return;
+    }
+
     try {
       this.serviceWorkerRegistration = await navigator.serviceWorker.register(
         "/sw.js",

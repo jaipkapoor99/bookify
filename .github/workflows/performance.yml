@@ -120,7 +120,10 @@ jobs:
         run: npm ci
 
       - name: 🏗️ Build application
-        run: npm run build
+        run: |
+          # Disable service worker for Lighthouse testing
+          echo "VITE_DISABLE_SERVICE_WORKER=true" > .env.local
+          npm run build
 
       - name: 🚀 Start local server
         run: |
@@ -203,11 +206,11 @@ jobs:
             curl -s http://localhost:4173/ | grep -o 'src="[^"]*"' | head -5
           fi
           
-          # Temporarily disable service worker for Lighthouse testing
-          echo "🔍 Disabling service workers for testing..."
+          # Temporarily remove service worker file as additional safeguard
+          echo "🔍 Ensuring service workers are disabled..."
           if [ -f "dist/sw.js" ]; then
             mv dist/sw.js dist/sw.js.disabled
-            echo "✅ Service worker disabled for testing"
+            echo "✅ Service worker file disabled for testing"
           fi
           
           # Test with a headless browser first to ensure the app renders
