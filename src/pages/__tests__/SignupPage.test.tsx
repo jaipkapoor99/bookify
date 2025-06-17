@@ -30,7 +30,7 @@ const renderWithToaster = (ui: React.ReactElement) => {
     <MemoryRouter>
       {ui}
       <Toaster />
-    </MemoryRouter>
+    </MemoryRouter>,
   );
 };
 
@@ -64,16 +64,16 @@ describe("SignupPage", () => {
 
     expect(screen.getByPlaceholderText("Enter your email")).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText("Enter your full name")
+      screen.getByPlaceholderText("Enter your full name"),
     ).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText("Create a strong password")
+      screen.getByPlaceholderText("Create a strong password"),
     ).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText("Confirm your password")
+      screen.getByPlaceholderText("Confirm your password"),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /create account/i })
+      screen.getByRole("button", { name: /create account/i }),
     ).toBeInTheDocument();
   });
 
@@ -92,10 +92,10 @@ describe("SignupPage", () => {
 
     const emailInput = screen.getByPlaceholderText("Enter your email");
     const passwordInput = screen.getByPlaceholderText(
-      "Create a strong password"
+      "Create a strong password",
     );
     const confirmPasswordInput = screen.getByPlaceholderText(
-      "Confirm your password"
+      "Confirm your password",
     );
     const fullNameInput = screen.getByPlaceholderText("Enter your full name");
     const termsCheckbox = screen.getByRole("checkbox");
@@ -133,10 +133,10 @@ describe("SignupPage", () => {
 
     const emailInput = screen.getByPlaceholderText("Enter your email");
     const passwordInput = screen.getByPlaceholderText(
-      "Create a strong password"
+      "Create a strong password",
     );
     const confirmPasswordInput = screen.getByPlaceholderText(
-      "Confirm your password"
+      "Confirm your password",
     );
     const fullNameInput = screen.getByPlaceholderText("Enter your full name");
     const termsCheckbox = screen.getByRole("checkbox");
@@ -174,10 +174,10 @@ describe("SignupPage", () => {
 
     const emailInput = screen.getByPlaceholderText("Enter your email");
     const passwordInput = screen.getByPlaceholderText(
-      "Create a strong password"
+      "Create a strong password",
     );
     const confirmPasswordInput = screen.getByPlaceholderText(
-      "Confirm your password"
+      "Confirm your password",
     );
     const fullNameInput = screen.getByPlaceholderText("Enter your full name");
     const termsCheckbox = screen.getByRole("checkbox");
@@ -197,8 +197,8 @@ describe("SignupPage", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "This email is already registered. Please login instead."
-        )
+          "This email is already registered. Please login instead.",
+        ),
       ).toBeInTheDocument();
     });
   });

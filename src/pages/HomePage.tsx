@@ -78,9 +78,9 @@ const HomePage = () => {
           state.events
             .map(
               (event: Event) =>
-                event.events_venues?.[0]?.venues?.locations?.pincode
+                event.events_venues?.[0]?.venues?.locations?.pincode,
             )
-            .filter((p): p is string => typeof p === "string")
+            .filter((p): p is string => typeof p === "string"),
         ),
       ];
 
@@ -104,7 +104,7 @@ const HomePage = () => {
                   }`,
                 },
                 body: JSON.stringify({ pincode }),
-              }
+              },
             );
 
             if (response.ok) {
@@ -148,7 +148,7 @@ const HomePage = () => {
           event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           event.events_venues?.[0]?.venues?.venue_name
             .toLowerCase()
-            .includes(searchQuery.toLowerCase())
+            .includes(searchQuery.toLowerCase()),
       );
     }
 

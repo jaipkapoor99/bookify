@@ -94,7 +94,7 @@ const AdminEventPage = () => {
     try {
       const { data, error } = await dbApi.select("events", "*");
       if (error) throw new Error(error);
-      setEvents(data as Event[] || []);
+      setEvents((data as Event[]) || []);
     } catch {
       toast.error("Failed to fetch events");
     } finally {

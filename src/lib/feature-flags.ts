@@ -207,7 +207,7 @@ class FeatureFlagManager {
     if (conditions.userAgent) {
       const userAgent = this.context.userAgent.toLowerCase();
       const hasMatchingUA = conditions.userAgent.some((ua) =>
-        userAgent.includes(ua.toLowerCase())
+        userAgent.includes(ua.toLowerCase()),
       );
       if (!hasMatchingUA) return false;
     }
@@ -222,7 +222,7 @@ class FeatureFlagManager {
     // Check route
     if (conditions.route) {
       const hasMatchingRoute = conditions.route.some((route) =>
-        this.context.route.startsWith(route)
+        this.context.route.startsWith(route),
       );
       if (!hasMatchingRoute) return false;
     }
@@ -284,7 +284,7 @@ class FeatureFlagManager {
       const overrides = Object.fromEntries(this.overrides);
       localStorage.setItem(
         "bookify_feature_flag_overrides",
-        JSON.stringify(overrides)
+        JSON.stringify(overrides),
       );
     } catch {
       console.warn("Failed to save feature flag overrides");
@@ -309,7 +309,7 @@ class FeatureFlagManager {
   // Analytics export
   getAnalyticsData() {
     const activeFlags = Array.from(this.flags.keys()).filter((key) =>
-      this.isEnabled(key)
+      this.isEnabled(key),
     );
 
     return {
@@ -378,6 +378,14 @@ export const useProgressiveEnhancement = () => {
 
 function checkWebPSupport(): boolean {
   try {
+    // Check if we're in a test environment (JSDOM)
+    if (
+      typeof window !== "undefined" &&
+      window.navigator?.userAgent?.includes("jsdom")
+    ) {
+      return false; // Assume no WebP support in test environment
+    }
+
     const canvas = document.createElement("canvas");
     canvas.width = 1;
     canvas.height = 1;
@@ -405,7 +413,7 @@ function checkModuleSupport(): boolean {
 }
 
 function calculateEnhancementLevel(
-  capabilities: Record<string, boolean>
+  capabilities: Record<string, boolean>,
 ): "basic" | "enhanced" | "premium" {
   const supportedFeatures = Object.values(capabilities).filter(Boolean).length;
 

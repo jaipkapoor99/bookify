@@ -29,7 +29,7 @@ class PerformanceMonitor {
   trackChunkLoad(
     chunkName: string,
     loadTime: number,
-    fromCache: boolean = false
+    fromCache: boolean = false,
   ) {
     this.addMetric("chunk_load_time", loadTime, {
       chunkName,
@@ -115,7 +115,7 @@ class PerformanceMonitor {
     from: string,
     to: string,
     loadTime: number,
-    wasPreloaded: boolean
+    wasPreloaded: boolean,
   ) {
     this.addMetric("route_transition", loadTime, {
       from,
@@ -128,7 +128,7 @@ class PerformanceMonitor {
   private addMetric(
     name: string,
     value: number,
-    metadata?: Record<string, unknown>
+    metadata?: Record<string, unknown>,
   ) {
     this.metrics.push({
       name,
@@ -169,10 +169,10 @@ class PerformanceMonitor {
 
   private getRouteTransitionMetrics() {
     const transitions = this.metrics.filter(
-      (m) => m.name === "route_transition"
+      (m) => m.name === "route_transition",
     );
     const preloadedTransitions = transitions.filter(
-      (t) => t.metadata?.wasPreloaded
+      (t) => t.metadata?.wasPreloaded,
     );
 
     return {
@@ -238,7 +238,7 @@ export const usePerformanceMonitor = () => {
   const trackChunkLoad = (
     chunkName: string,
     loadTime: number,
-    fromCache?: boolean
+    fromCache?: boolean,
   ) => {
     performanceMonitor.trackChunkLoad(chunkName, loadTime, fromCache);
   };
@@ -246,7 +246,7 @@ export const usePerformanceMonitor = () => {
   const trackPreload = (
     success: boolean,
     chunkName: string,
-    duration?: number
+    duration?: number,
   ) => {
     performanceMonitor.trackPreload(success, chunkName, duration);
   };
@@ -255,7 +255,7 @@ export const usePerformanceMonitor = () => {
     from: string,
     to: string,
     loadTime: number,
-    wasPreloaded: boolean
+    wasPreloaded: boolean,
   ) => {
     performanceMonitor.trackRouteTransition(from, to, loadTime, wasPreloaded);
   };

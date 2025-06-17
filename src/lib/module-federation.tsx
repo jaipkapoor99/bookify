@@ -140,7 +140,7 @@ class ModuleFederationManager {
   }
 
   private async performModuleLoad(
-    metadata: ModuleMetadata
+    metadata: ModuleMetadata,
   ): Promise<LoadedModule> {
     // Wait for available slot if needed
     await this.waitForLoadingSlot();
@@ -157,7 +157,7 @@ class ModuleFederationManager {
       const loadTime = performance.now() - startTime;
 
       console.log(
-        `✅ Module '${metadata.name}' loaded in ${loadTime.toFixed(2)}ms`
+        `✅ Module '${metadata.name}' loaded in ${loadTime.toFixed(2)}ms`,
       );
 
       return {
@@ -180,8 +180,8 @@ class ModuleFederationManager {
           const loadTime = performance.now() - startTime;
           console.log(
             `🔄 Fallback module '${metadata.name}' loaded in ${loadTime.toFixed(
-              2
-            )}ms`
+              2,
+            )}ms`,
           );
 
           return {
@@ -193,7 +193,7 @@ class ModuleFederationManager {
         } catch (fallbackError) {
           console.error(
             `❌ Fallback also failed for '${metadata.name}':`,
-            fallbackError
+            fallbackError,
           );
         }
       }
@@ -221,7 +221,7 @@ class ModuleFederationManager {
   private async loadDependencies(dependencies: string[]): Promise<void> {
     // Check which dependencies are already available
     const missingDeps = dependencies.filter(
-      (dep) => !this.isDependencyAvailable(dep)
+      (dep) => !this.isDependencyAvailable(dep),
     );
 
     if (missingDeps.length === 0) {
@@ -303,7 +303,7 @@ class ModuleFederationManager {
           resolve(module);
         } else {
           reject(
-            new Error(`Module '${metadata.name}' not found after loading`)
+            new Error(`Module '${metadata.name}' not found after loading`),
           );
         }
       };
@@ -489,9 +489,8 @@ export const MicroFrontend: React.FC<{
     const loadMicroFrontend = async () => {
       try {
         setLoading(true);
-        const loadedModule = await moduleFederationManager.loadModule(
-          moduleName
-        );
+        const loadedModule =
+          await moduleFederationManager.loadModule(moduleName);
 
         if (mounted) {
           setModule(loadedModule.module);
@@ -562,7 +561,7 @@ export const MicroFrontend: React.FC<{
 // Helper for dynamic imports with federation fallback
 export const dynamicImportWithFederation = async (
   importPath: string,
-  federationName?: string
+  federationName?: string,
 ): Promise<unknown> => {
   try {
     // Try dynamic import first
@@ -571,11 +570,10 @@ export const dynamicImportWithFederation = async (
     // Fallback to module federation if available
     if (federationName) {
       console.log(
-        `Dynamic import failed, trying federation: ${federationName}`
+        `Dynamic import failed, trying federation: ${federationName}`,
       );
-      const federated = await moduleFederationManager.loadModule(
-        federationName
-      );
+      const federated =
+        await moduleFederationManager.loadModule(federationName);
       return federated.module;
     }
     throw error;

@@ -83,7 +83,7 @@ export const PageError = ({
 // Enhanced higher-order component with smart lazy loading
 const withLazyLoading = <P extends object>(
   importFunc: () => Promise<{ default: ComponentType<P> }>,
-  componentName: string
+  componentName: string,
 ) => {
   const LazyComponent = lazy(() => {
     const startTime = performance.now();
@@ -97,7 +97,7 @@ const withLazyLoading = <P extends object>(
         window.dispatchEvent(
           new CustomEvent("lazy-chunk-loaded", {
             detail: { componentName, loadTime },
-          })
+          }),
         );
       }
 
@@ -116,48 +116,48 @@ const withLazyLoading = <P extends object>(
 // Lazy-loaded page components
 export const LazyHomePage = withLazyLoading(
   () => import("@/pages/HomePage"),
-  "HomePage"
+  "HomePage",
 );
 
 export const LazyLoginPage = withLazyLoading(
   () => import("@/pages/LoginPage"),
-  "LoginPage"
+  "LoginPage",
 );
 
 export const LazySignupPage = withLazyLoading(
   () => import("@/pages/SignupPage"),
-  "SignupPage"
+  "SignupPage",
 );
 
 export const LazyEventDetailPage = withLazyLoading(
   () => import("@/pages/EventDetailPage"),
-  "EventDetailPage"
+  "EventDetailPage",
 );
 
 export const LazyMyBookingsPage = withLazyLoading(
   () => import("@/pages/MyBookingsPage"),
-  "MyBookingsPage"
+  "MyBookingsPage",
 );
 
 export const LazyBookingConfirmationPage = withLazyLoading(
   () => import("@/pages/BookingConfirmationPage"),
-  "BookingConfirmationPage"
+  "BookingConfirmationPage",
 );
 
 export const LazyAccountPage = withLazyLoading(
   () => import("@/pages/AccountPage"),
-  "AccountPage"
+  "AccountPage",
 );
 
 // Admin page - highest priority for lazy loading
 export const LazyAdminEventPage = withLazyLoading(
   () => import("@/pages/AdminEventPage"),
-  "AdminEventPage"
+  "AdminEventPage",
 );
 
 export const LazyAuthCallback = withLazyLoading(
   () => import("@/pages/AuthCallback"),
-  "AuthCallback"
+  "AuthCallback",
 );
 
 // Enhanced preload functions with smart capabilities

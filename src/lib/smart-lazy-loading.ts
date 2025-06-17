@@ -36,19 +36,19 @@ class SmartLazyLoadingManager {
   private getConfig(): SmartLazyLoadingConfig {
     return {
       enableServiceWorker: featureFlagManager.isEnabled(
-        "service-worker-caching"
+        "service-worker-caching",
       ),
       enableBehaviorPrediction: featureFlagManager.isEnabled(
-        "user-behavior-prediction"
+        "user-behavior-prediction",
       ),
       enableModuleFederation: featureFlagManager.isEnabled(
-        "micro-frontend-loader"
+        "micro-frontend-loader",
       ),
       enablePerformanceMonitoring: featureFlagManager.isEnabled(
-        "performance-monitoring"
+        "performance-monitoring",
       ),
       aggressivePreloading: featureFlagManager.isEnabled(
-        "intelligent-preloading"
+        "intelligent-preloading",
       ),
     };
   }
@@ -82,7 +82,7 @@ class SmartLazyLoadingManager {
     } catch (error) {
       console.error(
         "❌ Failed to initialize Smart Lazy Loading System:",
-        error
+        error,
       );
     }
   }
@@ -98,7 +98,7 @@ class SmartLazyLoadingManager {
         "/sw.js",
         {
           scope: "/",
-        }
+        },
       );
 
       console.log("✅ Service Worker registered");
@@ -126,7 +126,7 @@ class SmartLazyLoadingManager {
         performanceMonitor.trackChunkLoad(
           data.chunkName,
           data.duration,
-          data.type === "chunk_cache_hit"
+          data.type === "chunk_cache_hit",
         );
         break;
     }
@@ -142,7 +142,7 @@ class SmartLazyLoadingManager {
       if (target) {
         userBehaviorPredictor.trackAction(
           "click",
-          this.getTargetIdentifier(target)
+          this.getTargetIdentifier(target),
         );
       }
     });
@@ -156,7 +156,7 @@ class SmartLazyLoadingManager {
           userBehaviorPredictor.trackAction(
             "hover",
             this.getTargetIdentifier(target),
-            { duration }
+            { duration },
           );
           target.removeEventListener("mouseleave", handleMouseLeave);
         };
@@ -217,7 +217,7 @@ class SmartLazyLoadingManager {
     // Medium priority - preload with delay
     setTimeout(() => {
       strategy.mediumPriority.forEach((route) =>
-        this.preloadRoute(route, strategy.delay)
+        this.preloadRoute(route, strategy.delay),
       );
     }, strategy.delay);
 
@@ -225,7 +225,7 @@ class SmartLazyLoadingManager {
     if (abTestConfig.preloadStrategy === "aggressive") {
       setTimeout(() => {
         strategy.lowPriority.forEach((route) =>
-          this.preloadRoute(route, strategy.delay * 2)
+          this.preloadRoute(route, strategy.delay * 2),
         );
       }, strategy.delay * 2);
     }
@@ -280,14 +280,14 @@ class SmartLazyLoadingManager {
       const loadTime = performance.now() - startTime;
       const predictions = userBehaviorPredictor.predictNextRoutes(newRoute);
       const wasPreloaded = predictions.some(
-        (p) => p.route === newRoute && p.probability > 0.5
+        (p) => p.route === newRoute && p.probability > 0.5,
       );
 
       performanceMonitor.trackRouteTransition(
         previousRoute || "",
         newRoute,
         loadTime,
-        wasPreloaded
+        wasPreloaded,
       );
 
       userBehaviorPredictor.trackABTestMetric("routeTransitionTime", loadTime);
@@ -383,7 +383,7 @@ export const useSmartLazyLoading = () => {
         smartLazyLoadingManager.performSmartPreload(target);
       }, delay);
     },
-    [location.pathname, intelligentPreloading, getPreloadStrategy, trackAction]
+    [location.pathname, intelligentPreloading, getPreloadStrategy, trackAction],
   );
 
   // Load module with smart federation
@@ -403,7 +403,7 @@ export const useSmartLazyLoading = () => {
 // HOC for smart lazy loading
 export const withSmartLazyLoading = <P extends Record<string, unknown>>(
   Component: React.ComponentType<P>,
-  preloadTargets?: string[]
+  preloadTargets?: string[],
 ) => {
   const WrappedComponent = (props: P) => {
     const { smartPreload } = useSmartLazyLoading();

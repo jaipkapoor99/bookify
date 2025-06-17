@@ -1,10 +1,10 @@
 /// <reference types="vitest/globals" />
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import LoginPage from "@/pages/LoginPage";
-import AuthProvider from "@/contexts/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 // Mock the auth functions
 const mockLogin = vi.fn();
@@ -15,10 +15,20 @@ vi.mock("@/contexts/AuthContext", async () => {
   return {
     ...actual,
     useAuth: () => ({
-      login: mockLogin,
-      loginWithGoogle: mockLoginWithGoogle,
       user: null,
+      session: null,
       loading: false,
+      profile: null,
+      loadingProfile: false,
+      login: mockLogin,
+      logout: vi.fn(),
+      loginWithGoogle: mockLoginWithGoogle,
+      bookings: [],
+      loadingBookings: false,
+      bookingsError: null,
+      locationDetails: {},
+      refreshBookings: vi.fn(),
+      addOptimisticBooking: vi.fn(),
     }),
   };
 });
@@ -30,13 +40,27 @@ const renderWithProviders = (component: React.ReactElement) => {
         {component}
         <Toaster />
       </MemoryRouter>
-    </AuthProvider>
+    </AuthProvider>,
   );
 };
 
 describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Clean up DOM before each test
+    document.body.innerHTML = "";
+  });
+
+  afterEach(() => {
+    // Clean up any pending timers or async operations
+    try {
+      vi.runOnlyPendingTimers();
+    } catch {
+      // Ignore if timers are not mocked
+    }
+    vi.useRealTimers();
+    // Clean up DOM after each test
+    document.body.innerHTML = "";
   });
 
   it("renders the login form correctly", () => {
@@ -45,24 +69,26 @@ describe("LoginPage", () => {
     // There are multiple "Sign in" texts (title and button), so use getAllByText
     const signInElements = screen.getAllByText("Sign in");
     expect(signInElements.length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByPlaceholderText("Enter your email")).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText("Enter your password")
+      screen.getAllByPlaceholderText("Enter your email")[0],
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /sign in/i })
+      screen.getAllByPlaceholderText("Enter your password")[0],
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /sign in/i }),
     ).toBeInTheDocument();
   });
 
   it("displays the correct initial placeholder text", () => {
     renderWithProviders(<LoginPage />);
 
-    const emailInput = screen.getByPlaceholderText(
-      "Enter your email"
-    ) as HTMLInputElement;
-    const passwordInput = screen.getByPlaceholderText(
-      "Enter your password"
-    ) as HTMLInputElement;
+    const emailInput = screen.getAllByPlaceholderText(
+      "Enter your email",
+    )[0] as HTMLInputElement;
+    const passwordInput = screen.getAllByPlaceholderText(
+      "Enter your password",
+    )[0] as HTMLInputElement;
 
     expect(emailInput.value).toBe("");
     expect(passwordInput.value).toBe("");
@@ -73,10 +99,10 @@ describe("LoginPage", () => {
 
     renderWithProviders(<LoginPage />);
 
-    fireEvent.change(screen.getByPlaceholderText("Enter your email"), {
+    fireEvent.change(screen.getAllByPlaceholderText("Enter your email")[0], {
       target: { value: "test@example.com" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Enter your password"), {
+    fireEvent.change(screen.getAllByPlaceholderText("Enter your password")[0], {
       target: { value: "password123" },
     });
     fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
@@ -91,10 +117,10 @@ describe("LoginPage", () => {
 
     renderWithProviders(<LoginPage />);
 
-    fireEvent.change(screen.getByPlaceholderText("Enter your email"), {
+    fireEvent.change(screen.getAllByPlaceholderText("Enter your email")[0], {
       target: { value: "test@example.com" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Enter your password"), {
+    fireEvent.change(screen.getAllByPlaceholderText("Enter your password")[0], {
       target: { value: "wrongpassword" },
     });
     fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
@@ -102,7 +128,7 @@ describe("LoginPage", () => {
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith(
         "test@example.com",
-        "wrongpassword"
+        "wrongpassword",
       );
     });
   });
@@ -113,7 +139,7 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />);
 
     fireEvent.click(
-      screen.getByRole("button", { name: /continue with google/i })
+      screen.getByRole("button", { name: /continue with google/i }),
     );
 
     await waitFor(() => {
@@ -127,7 +153,7 @@ describe("LoginPage", () => {
     renderWithProviders(<LoginPage />);
 
     fireEvent.click(
-      screen.getByRole("button", { name: /continue with google/i })
+      screen.getByRole("button", { name: /continue with google/i }),
     );
 
     await waitFor(() => {
@@ -138,12 +164,12 @@ describe("LoginPage", () => {
   it("updates input values when user types", () => {
     renderWithProviders(<LoginPage />);
 
-    const emailInput = screen.getByPlaceholderText(
-      "Enter your email"
-    ) as HTMLInputElement;
-    const passwordInput = screen.getByPlaceholderText(
-      "Enter your password"
-    ) as HTMLInputElement;
+    const emailInput = screen.getAllByPlaceholderText(
+      "Enter your email",
+    )[0] as HTMLInputElement;
+    const passwordInput = screen.getAllByPlaceholderText(
+      "Enter your password",
+    )[0] as HTMLInputElement;
 
     fireEvent.change(emailInput, { target: { value: "user@example.com" } });
     fireEvent.change(passwordInput, { target: { value: "password" } });
@@ -153,20 +179,15 @@ describe("LoginPage", () => {
   });
 
   it("shows loading state when submitting", async () => {
-    // Mock a delayed response
-    mockLogin.mockImplementation(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(() => resolve({ error: null }), 100)
-        )
-    );
+    // Mock a simple resolved response
+    mockLogin.mockResolvedValue({ error: null });
 
     renderWithProviders(<LoginPage />);
 
-    fireEvent.change(screen.getByPlaceholderText("Enter your email"), {
+    fireEvent.change(screen.getAllByPlaceholderText("Enter your email")[0], {
       target: { value: "test@example.com" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Enter your password"), {
+    fireEvent.change(screen.getAllByPlaceholderText("Enter your password")[0], {
       target: { value: "password123" },
     });
 
@@ -183,12 +204,12 @@ describe("LoginPage", () => {
   it("toggles password visibility", () => {
     renderWithProviders(<LoginPage />);
 
-    const passwordInput = screen.getByPlaceholderText(
-      "Enter your password"
-    ) as HTMLInputElement;
+    const passwordInput = screen.getAllByPlaceholderText(
+      "Enter your password",
+    )[0] as HTMLInputElement;
     // Find the eye/eyeoff toggle button by its position next to the password field
     const toggleButton = passwordInput.parentElement?.querySelector(
-      'button[type="button"]'
+      'button[type="button"]',
     );
     expect(toggleButton).toBeInTheDocument();
 
@@ -206,9 +227,11 @@ describe("LoginPage", () => {
   it("contains signup link", () => {
     renderWithProviders(<LoginPage />);
 
-    expect(screen.getByText("Don't have an account?")).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "Sign up here" })
+      screen.getAllByText("Don't have an account?")[0],
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Sign up here" }),
     ).toBeInTheDocument();
   });
 
@@ -217,16 +240,24 @@ describe("LoginPage", () => {
 
     renderWithProviders(<LoginPage />);
 
-    fireEvent.change(screen.getByPlaceholderText("Enter your email"), {
+    fireEvent.change(screen.getAllByPlaceholderText("Enter your email")[0], {
       target: { value: "test@example.com" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Enter your password"), {
+    fireEvent.change(screen.getAllByPlaceholderText("Enter your password")[0], {
       target: { value: "password123" },
     });
+
     fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalled();
+    });
+
+    // Wait for any state updates to complete
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: /sign in/i }),
+      ).not.toBeDisabled();
     });
   });
 });

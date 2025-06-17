@@ -4,4 +4,4 @@
 // Currently, all our dependencies have proper TypeScript support
 
 // Ensure this file is treated as a module
-export {}
+export {};

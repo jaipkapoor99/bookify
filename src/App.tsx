@@ -116,9 +116,9 @@ const createRouter = (initialEntries?: string[]) => {
               />
             </Route>
           </Route>
-        </>
+        </>,
       ),
-      { initialEntries: initialEntries || ["/"] }
+      { initialEntries: initialEntries || ["/"] },
     );
   }
 
@@ -202,8 +202,8 @@ const createRouter = (initialEntries?: string[]) => {
             />
           </Route>
         </Route>
-      </>
-    )
+      </>,
+    ),
   );
 };
 

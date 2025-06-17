@@ -24,7 +24,6 @@ import {
   Ticket,
   Clock,
   Users,
-  IndianRupee,
   AlertCircle,
   CheckCircle,
   Share2,
@@ -75,7 +74,7 @@ const EventDetailPage = () => {
   const fetchFromSupabase = async (
     table: string,
     query: string,
-    filters: string = ""
+    filters: string = "",
   ) => {
     const url = `${
       import.meta.env.VITE_SUPABASE_URL
@@ -108,7 +107,7 @@ const EventDetailPage = () => {
         const eventData = await fetchFromSupabase(
           "events",
           eventQuery,
-          eventFilters
+          eventFilters,
         );
 
         if (!eventData || eventData.length === 0) {
@@ -124,7 +123,7 @@ const EventDetailPage = () => {
         const eventsVenuesData = await fetchFromSupabase(
           "events_venues",
           eventsVenuesQuery,
-          eventsVenuesFilters
+          eventsVenuesFilters,
         );
 
         const eventDetail: EventDetail = {
@@ -137,7 +136,7 @@ const EventDetailPage = () => {
       } catch (err) {
         console.error("Error fetching event details:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to fetch event details"
+          err instanceof Error ? err.message : "Failed to fetch event details",
         );
       } finally {
         setLoading(false);
@@ -155,7 +154,7 @@ const EventDetailPage = () => {
         ...new Set(
           eventDetails.events_venues
             .map((ev) => ev.venues.locations?.pincode)
-            .filter((p): p is string => !!p)
+            .filter((p): p is string => !!p),
         ),
       ];
 
@@ -173,7 +172,7 @@ const EventDetailPage = () => {
                 "Content-Type": "application/json",
               },
               timeout: 10000,
-            }
+            },
           );
 
           return { pincode, data: response.data, error: null };
@@ -190,9 +189,8 @@ const EventDetailPage = () => {
         if (error) {
           newLocations[pincode] = "Location not available";
         } else {
-          newLocations[
-            pincode
-          ] = `${data.area}, ${data.city}, ${data.state} - ${pincode}`;
+          newLocations[pincode] =
+            `${data.area}, ${data.city}, ${data.state} - ${pincode}`;
         }
       });
 
@@ -232,7 +230,7 @@ const EventDetailPage = () => {
 
     if (selectedVenue) {
       navigate(
-        `/book/confirm/${selectedVenue.event_venue_id}?quantity=${ticketQuantity}`
+        `/book/confirm/${selectedVenue.event_venue_id}?quantity=${ticketQuantity}`,
       );
     }
   };
@@ -455,8 +453,7 @@ const EventDetailPage = () => {
                         <span className="text-sm font-medium">
                           Price per ticket
                         </span>
-                        <div className="flex items-center gap-1 text-2xl font-bold">
-                          <IndianRupee className="h-5 w-5" />
+                        <div className="text-2xl font-bold">
                           {formatCurrency(eventVenue.price)}
                         </div>
                       </div>
@@ -469,8 +466,8 @@ const EventDetailPage = () => {
                         {!user
                           ? "Login to Book"
                           : isAvailable
-                          ? "Book Now"
-                          : "Sold Out"}
+                            ? "Book Now"
+                            : "Sold Out"}
                       </Button>
                     </div>
                   </CardContent>
@@ -548,10 +545,7 @@ const EventDetailPage = () => {
               <div className="p-4 bg-muted/50 rounded-lg space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Price per ticket</span>
-                  <span className="flex items-center gap-1">
-                    <IndianRupee className="h-3 w-3" />
-                    {formatCurrency(selectedVenue.price)}
-                  </span>
+                  <span>{formatCurrency(selectedVenue.price)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Quantity</span>
@@ -559,10 +553,7 @@ const EventDetailPage = () => {
                 </div>
                 <div className="flex justify-between font-semibold text-lg pt-2 border-t">
                   <span>Total</span>
-                  <span className="flex items-center gap-1">
-                    <IndianRupee className="h-4 w-4" />
-                    {formatCurrency(getTotalPrice())}
-                  </span>
+                  <span>{formatCurrency(getTotalPrice())}</span>
                 </div>
               </div>
             </div>

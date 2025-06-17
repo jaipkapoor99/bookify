@@ -172,7 +172,7 @@ const MyBookingsPage = () => {
                             <span>
                               {ticket.events_venues?.event_venue_date
                                 ? formatDate(
-                                    ticket.events_venues.event_venue_date
+                                    ticket.events_venues.event_venue_date,
                                   )
                                 : "Date Not Available"}
                             </span>
@@ -194,7 +194,7 @@ const MyBookingsPage = () => {
                           <div className="text-center">
                             <p className="text-2xl font-bold text-green-600">
                               {formatCurrency(
-                                ticket.ticket_price * ticket.quantity
+                                ticket.ticket_price * ticket.quantity,
                               )}
                             </p>
                             <p className="text-xs text-gray-500">

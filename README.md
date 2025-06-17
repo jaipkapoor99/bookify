@@ -2,17 +2,31 @@
 
 A modern, full-stack event booking platform built with React, TypeScript, and Supabase. Bookify provides a complete event management and ticket booking system with instant performance, advanced caching, and enterprise-grade architecture.
 
-## ✨ Recent Major Updates (v1.6.2)
+## ✨ Recent Major Updates (v1.6.5)
 
-### 🎯 **Latest Improvements (v1.6.2)**
+### 🚀 **Latest Performance Revolution (v1.6.5)**
 
-- **💰 Fixed Total Price Calculation**: My Bookings page now correctly displays total amount (ticket_price × quantity)
-- **🖱️ Enhanced Cursor Styling**: Added pointer cursors for all interactive elements with professional polish
-- **✅ Updated Test Suite**: All 67 tests passing with validated price calculations
+- **⚡ Instant "My Bookings" Navigation**: Eliminated 5-15+ second delays completely
+
+  - **Zero Navigation Delay**: Removed artificial 1.5s delay for instant user experience
+  - **93% Database Optimization**: Reduced 15+ queries to 1 single efficient query
+  - **Optimistic Updates**: New bookings appear instantly with background sync
+  - **Smart Caching**: Parallel API processing with intelligent location caching
+
+- **🗄️ Database Performance Overhaul**:
+  - Created `get_my_bookings_with_details()` function with proper JOINs
+  - Eliminated N+1 query problem with single optimized database call
+  - Enhanced external API timeout from 10s to 3s with parallel processing
+  - **Result**: 80-90% faster total load times (8-15s → 1-3s)
+
+### 🎯 **Previous Improvements (v1.6.4)**
+
+- **💰 Fixed Double Currency Symbols**: Resolved duplicate ₹ symbols in EventDetailPage for clean professional display
+- **📁 Organized Project Structure**: Created dedicated directories for docs, database, and reports
+- **📚 Enhanced Documentation**: Comprehensive documentation indices with quick start guides
+- **🗂️ Improved File Organization**: Logical separation of concerns with dedicated subdirectories
 
 ### 🚀 **Performance Revolution (v1.6.0)**
-
-### 🚀 **Performance Revolution**
 
 - **Instant Bookings**: Eliminated 3-second delays - booking data now loads in ~0ms
 - **Smart Pre-loading**: Booking data automatically fetched when user logs in
@@ -56,8 +70,8 @@ A modern, full-stack event booking platform built with React, TypeScript, and Su
 
 ### Frontend
 
-- **React 18** with TypeScript for type safety
-- **Vite** for lightning-fast development and optimized builds
+- **React 18** with TypeScript for type safety and ES6+ features
+- **Vite** for lightning-fast development and optimized builds with ES6+ target
 - **shadcn/ui** with Tailwind CSS for beautiful, consistent components
 - **React Router** for client-side routing with protected routes
 - **React Hook Form + Zod** for type-safe form validation
@@ -72,14 +86,15 @@ A modern, full-stack event booking platform built with React, TypeScript, and Su
 ### Development & Quality
 
 - **Vitest + React Testing Library** for comprehensive testing
-- **ESLint + TypeScript** for code quality and type safety
+- **ESLint + TypeScript** for code quality and type safety with ES6+ compliance
 - **Modular Architecture** for maintainable, scalable code
+- **Node.js 20+** for modern ES6+ features and Lighthouse CI compatibility
 
 ## 📋 Prerequisites
 
 Ensure you have:
 
-- **Node.js** v18 or higher
+- **Node.js** v20 or higher (required for ES6+ features and Lighthouse compatibility)
 - **npm** (comes with Node.js)
 - **Supabase Account** (free tier available)
 
@@ -118,9 +133,85 @@ npm run dev
 
 Application available at `http://localhost:5173`
 
+## 📚 Documentation
+
+### 📖 **Quick Navigation**
+
+| Category             | Document                                                           | Description                          |
+| -------------------- | ------------------------------------------------------------------ | ------------------------------------ |
+| **🏗️ Architecture**  | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)                   | System design and technical overview |
+| **📚 API Reference** | [`docs/API_DOCUMENTATION.md`](./docs/API_DOCUMENTATION.md)         | Database schema and API patterns     |
+| **🚀 Deployment**    | [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md)           | Production deployment instructions   |
+| **🧪 Testing**       | [`docs/TESTING_STRATEGY.md`](./docs/TESTING_STRATEGY.md)           | Testing patterns and TDD workflow    |
+| **🐛 Debugging**     | [`docs/DEBUG_GUIDE.md`](./docs/DEBUG_GUIDE.md)                     | Troubleshooting and debugging guide  |
+| **📊 Status**        | [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md) | Feature implementation progress      |
+| **🔄 Changes**       | [`docs/CHANGELOG.md`](./docs/CHANGELOG.md)                         | Version history and release notes    |
+
+### 🎯 **For Different Roles**
+
+#### **Developers**
+
+1. Start with [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for system understanding
+2. Follow [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md) for local setup
+3. Review [`docs/TESTING_STRATEGY.md`](./docs/TESTING_STRATEGY.md) for TDD workflow
+4. Use [`docs/DEBUG_GUIDE.md`](./docs/DEBUG_GUIDE.md) for troubleshooting
+
+#### **DevOps Engineers**
+
+1. Check [`docs/CI_CD_PIPELINE_REPORT.md`](./docs/CI_CD_PIPELINE_REPORT.md) for pipeline status
+2. Follow [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md) for production deployment
+3. Monitor [`docs/DATABASE_STATUS.md`](./docs/DATABASE_STATUS.md) for schema changes
+
+#### **Project Managers**
+
+1. Review [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md) for progress
+2. Check [`docs/CHANGELOG.md`](./docs/CHANGELOG.md) for release notes
+3. Monitor [`reports/report.md`](./reports/report.md) for project health
+
 ## 📁 Project Architecture
 
-### 📂 Folder Structure
+### 📂 Root Directory Structure
+
+```
+bookify/
+├── docs/              # 📚 Comprehensive documentation
+│   ├── README.md             # Documentation index and guide
+│   ├── CHANGELOG.md          # Version history and release notes
+│   ├── ARCHITECTURE.md       # System design and architecture
+│   ├── API_DOCUMENTATION.md  # Database schema and API guide
+│   ├── DEPLOYMENT_GUIDE.md   # Production deployment instructions
+│   ├── TESTING_STRATEGY.md   # Testing patterns and strategies
+│   ├── DEBUG_GUIDE.md        # Troubleshooting and debugging
+│   └── *.md                  # Additional documentation files
+├── database/          # 🗄️ Database files and scripts
+│   ├── README.md             # Database documentation index
+│   ├── database_complete_dump.sql     # Full database backup
+│   ├── database_data_only.sql        # Data-only restoration
+│   └── populate_database_safe.sql    # Safe sample data
+├── reports/           # 📊 Project reports and analyses
+│   ├── README.md             # Reports directory index
+│   └── report.md             # Comprehensive project assessment
+├── scripts/           # 🛠️ Development and deployment scripts
+│   ├── README.md             # Scripts documentation
+│   ├── ci.ps1               # Local CI testing pipeline
+│   ├── deploy.ps1           # Production deployment
+│   ├── database-tools.ps1   # Database management utilities
+│   └── *.ps1                # Additional PowerShell scripts
+├── src/               # 💻 Application source code
+│   ├── components/          # Reusable UI components
+│   ├── contexts/            # React contexts for state management
+│   ├── lib/                 # Core utilities and API clients
+│   ├── pages/               # Route components
+│   ├── hooks/               # Custom React hooks
+│   ├── types/               # TypeScript type definitions
+│   └── __tests__/           # Comprehensive test suites
+├── public/            # 🌐 Static assets
+├── .github/           # ⚙️ GitHub Actions workflows
+├── supabase/          # 🔧 Supabase configuration and migrations
+└── README.md          # 📖 Main project documentation
+```
+
+### 📂 Source Code Structure
 
 ```
 src/
@@ -249,111 +340,4 @@ erDiagram
 
 - **🔒 Row Level Security**: Users can only access their own data
 - **⚡ Database Functions**:
-  - `book_ticket()`: Atomic ticket booking with availability checks
-  - `get_my_bookings()`: Secure, optimized booking retrieval
-- **🖼️ Storage Integration**: Supabase Storage for event images
-- **🌐 Edge Functions**: External pincode API integration
-
-## 🧪 Testing & Quality Assurance
-
-### 🧪 **Comprehensive Test Coverage**
-
-```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run linting
-npm run lint
-
-# Health check
-npm run check
-```
-
-### ✅ **Quality Metrics**
-
-- **Zero Linter Errors**: Clean, consistent codebase
-- **100% Authentication Coverage**: All auth flows tested
-- **Complete UI Testing**: Every page component tested
-- **Mock Integration**: Isolated testing with proper mocks
-
-### 🛡️ **Security & Performance**
-
-- **Type Safety**: Full TypeScript coverage
-- **Input Validation**: Client and server-side validation
-- **Optimized Queries**: Efficient database operations
-- **Error Boundaries**: Graceful error handling
-
-## 🏗️ Architecture Highlights
-
-### 🔄 **State Management**
-
-- **AuthContext**: Centralized authentication + booking state
-- **Intelligent Caching**: 5-minute TTL for frequently accessed data
-- **Auto-refresh**: New bookings appear instantly
-- **Pre-loading**: Booking data fetched when user logs in
-
-### 🚀 **Performance Optimizations**
-
-- **Instant Bookings**: ~0ms load time for booking history
-- **Lazy Loading**: Images and components loaded on demand
-- **Code Splitting**: Optimized JavaScript bundles
-- **Efficient Queries**: Minimized database calls
-
-### 🔐 **Security Features**
-
-- **JWT Authentication**: Stateless, secure session management
-- **RLS Policies**: Database-level security for all tables
-- **Input Validation**: Type-safe validation throughout
-- **File Upload Security**: Validated image uploads
-
-## 📚 Documentation
-
-- **📖 [API Documentation](./API_DOCUMENTATION.md)**: Complete database schema and query patterns
-- **🏗️ [Architecture Guide](./ARCHITECTURE.md)**: System design and technical decisions
-- **🚀 [Deployment Guide](./DEPLOYMENT_GUIDE.md)**: Production deployment instructions
-- **🧪 [Testing Strategy](./TESTING_STRATEGY.md)**: Test coverage and quality assurance
-- **📋 [Implementation Status](./IMPLEMENTATION_STATUS.md)**: Feature completion tracking
-- **🔄 [Changelog](./CHANGELOG.md)**: Version history and updates
-
-## 🌟 What Makes Bookify Special
-
-### 🎯 **Performance-First Design**
-
-- **Instant Loading**: Zero-second booking history
-- **Smart Caching**: Intelligent data pre-loading
-- **Real-time Updates**: Live ticket availability
-
-### 🏗️ **Enterprise Architecture**
-
-- **Modular Code**: Clean, maintainable structure
-- **Type Safety**: Full TypeScript coverage
-- **Comprehensive Testing**: Robust test suites
-- **Scalable Design**: Built for growth
-
-### 🎨 **Modern User Experience**
-
-- **Beautiful UI**: shadcn/ui components
-- **Mobile-First**: Responsive design
-- **Intuitive Flow**: Seamless user journey
-- **Visual Feedback**: Loading states and notifications
-
-### 🔒 **Security & Reliability**
-
-- **Database Security**: Row Level Security policies
-- **Authentication**: Google OAuth + email/password
-- **Data Validation**: Type-safe form handling
-- **Error Handling**: Graceful failure management
-
-## 🚀 Getting Started
-
-Ready to explore Bookify? Check out our comprehensive guides:
-
-1. **📖 [Quick Start](#-quick-start)** - Get running in 5 minutes
-2. **🏗️ [Architecture Guide](./ARCHITECTURE.md)** - Understand the system design
-3. **📚 [API Documentation](./API_DOCUMENTATION.md)** - Explore the database and APIs
-4. **🚀 [Deployment Guide](./DEPLOYMENT_GUIDE.md)** - Deploy to production
-
-**Experience the future of event booking with Bookify! 🎉**
+  - `

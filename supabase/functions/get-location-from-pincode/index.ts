@@ -28,12 +28,12 @@ serve(async (req) => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
-        }
+        },
       );
     }
 
     const response = await fetch(
-      `https://api.postalpincode.in/pincode/${pincode}`
+      `https://api.postalpincode.in/pincode/${pincode}`,
     );
     if (!response.ok) {
       throw new Error(`Postal API failed with status: ${response.status}`);

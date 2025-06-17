@@ -66,7 +66,7 @@ const BookingConfirmationPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<string>("Loading location...");
   const navigate = useNavigate();
-  const { refreshBookings } = useAuth();
+  const { refreshBookings, addOptimisticBooking } = useAuth();
 
   // Handle quantity changes
   const handleQuantityChange = (delta: number) => {
@@ -104,7 +104,7 @@ const BookingConfirmationPage = () => {
         "events_venues",
         "price,event_venue_date,no_of_tickets,event_id,venue_id",
         { event_venue_id: eventVenueId },
-        { single: true }
+        { single: true },
       );
 
       if (fetchError) {
@@ -148,17 +148,17 @@ const BookingConfirmationPage = () => {
               "Content-Type": "application/json",
             },
             timeout: 10000,
-          }
+          },
         );
 
         const data = response.data;
         setLocation(
-          `${data.area}, ${data.city}, ${data.state} - ${details.pincode}`
+          `${data.area}, ${data.city}, ${data.state} - ${details.pincode}`,
         );
       } catch (error) {
         console.warn(
           `Failed to fetch location for pincode ${details.pincode}:`,
-          error
+          error,
         );
         setLocation("Location not available");
       }
@@ -206,15 +206,51 @@ const BookingConfirmationPage = () => {
         }.`,
       });
 
-      // Refresh bookings data so the new booking appears immediately
-      if (refreshBookings) {
-        debug.info("Refreshing bookings after successful booking");
-        await refreshBookings();
+      // OPTIMIZATION: Add optimistic update for immediate UI feedback
+      if (addOptimisticBooking) {
+        const newBooking = {
+          ticket_id: Date.now(), // Temporary ID until refresh
+          event_venue_id: parseInt(eventVenueId, 10),
+          ticket_price: details.price,
+          quantity: quantity,
+          created_at: new Date().toISOString(),
+          events_venues: {
+            event_venue_date: details.eventDate,
+            price: details.price,
+            no_of_tickets: details.availableTickets - quantity,
+            venues: {
+              venue_name: details.venueName,
+              locations: details.pincode
+                ? {
+                    pincode: details.pincode,
+                  }
+                : undefined,
+            },
+            events: {
+              name: details.eventName,
+              description: "",
+              start_time: details.eventDate,
+              end_time: details.eventDate,
+              image_url: "",
+              image_path: "",
+            },
+          },
+        };
+        addOptimisticBooking(newBooking);
       }
 
-      setTimeout(() => {
-        navigate("/my-bookings");
-      }, 1500);
+      // Navigate immediately for better UX
+      navigate("/my-bookings");
+
+      // Refresh bookings data in the background to sync with server
+      if (refreshBookings) {
+        debug.info(
+          "Refreshing bookings in background after successful booking",
+        );
+        refreshBookings().catch((error) => {
+          debug.warn("Background booking refresh failed:", error);
+        });
+      }
     } catch (bookingError) {
       const e = bookingError as Error;
       setError(`Booking failed: ${e.message}`);

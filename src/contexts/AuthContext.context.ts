@@ -33,6 +33,7 @@ export type AuthContextType = {
   logout: () => Promise<{ error: string | null }>;
   loginWithGoogle: () => Promise<{ error: string | null }>;
   refreshBookings: () => Promise<void>;
+  addOptimisticBooking: (newBookingData: Partial<BookingQueryResult>) => void;
 };
 
 export const AuthContext = createContext<AuthContextType>({
@@ -49,6 +50,7 @@ export const AuthContext = createContext<AuthContextType>({
   logout: async () => ({ error: null }),
   loginWithGoogle: async () => ({ error: null }),
   refreshBookings: async () => {},
+  addOptimisticBooking: () => {},
 });
 
 export const useAuth = () => {

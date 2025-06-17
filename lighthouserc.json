@@ -1,0 +1,63 @@
+{
+  "ci": {
+    "collect": {
+      "url": ["http://localhost:4173"],
+      "numberOfRuns": 1,
+      "settings": {
+        "preset": "desktop",
+        "onlyCategories": ["performance"],
+        "emulatedFormFactor": "desktop",
+        "chromeFlags": [
+          "--no-sandbox", 
+          "--disable-setuid-sandbox", 
+          "--disable-dev-shm-usage", 
+          "--disable-gpu", 
+          "--headless=new",
+          "--disable-extensions", 
+          "--disable-plugins", 
+          "--disable-default-apps", 
+          "--disable-web-security",
+          "--allow-running-insecure-content",
+          "--disable-features=VizDisplayCompositor",
+          "--run-all-compositor-stages-before-draw",
+          "--disable-background-timer-throttling",
+          "--disable-renderer-backgrounding",
+          "--disable-backgrounding-occluded-windows",
+          "--virtual-time-budget=25000",
+          "--disable-service-workers",
+          "--disable-background-sync"
+        ],
+        "maxWaitForLoad": 120000,
+        "maxWaitForFcp": 60000,
+        "pauseAfterFcpMs": 5000,
+        "pauseAfterLoadMs": 5000,
+        "networkQuietThresholdMs": 5000,
+        "cpuQuietThresholdMs": 5000,
+        "skipAudits": ["uses-http2", "redirects-http"],
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1,
+          "disabled": false
+        },
+        "throttling": {
+          "rttMs": 0,
+          "throughputKbps": 0,
+          "cpuSlowdownMultiplier": 1,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0
+        }
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["warn", {"minScore": 0.5}]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}
