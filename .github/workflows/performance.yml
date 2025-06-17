@@ -146,9 +146,35 @@ jobs:
       - name: 🔍 Run Lighthouse audit
         run: |
           npm install -g @lhci/cli
-
-          # Run Lighthouse CI using existing config
-          lhci autorun
+          
+          # Install Chrome dependencies for Ubuntu
+          sudo apt-get update
+          sudo apt-get install -y \
+            libnss3-dev \
+            libatk-bridge2.0-dev \
+            libdrm-dev \
+            libxkbcommon-dev \
+            libgtk-3-dev \
+            libxss-dev \
+            libasound2-dev \
+            xvfb
+          
+          # Set up virtual display for headless Chrome
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1366x768x24 > /dev/null 2>&1 &
+          
+          # Wait for Xvfb to start
+          sleep 2
+          
+          # Verify server is still running
+          curl -f http://localhost:4173 || (echo "Server not responding" && exit 1)
+          
+          # Run Lighthouse CI with timeout and retry
+          timeout 300 lhci autorun || {
+            echo "Lighthouse CI failed, retrying once..."
+            sleep 5
+            timeout 300 lhci autorun
+          }
 
       - name: 📊 Parse Lighthouse results
         run: |
