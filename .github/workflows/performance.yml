@@ -185,6 +185,16 @@ jobs:
             exit 1
           fi
           
+          # Check if assets are accessible
+          echo "🔍 Checking asset availability..."
+          if curl -f http://localhost:4173/assets/ 2>/dev/null | grep -q "index-"; then
+            echo "✅ Assets directory is accessible"
+          else
+            echo "⚠️ Assets directory may not be accessible"
+            echo "Available files in root:"
+            curl -s http://localhost:4173/ | grep -o 'src="[^"]*"' | head -5
+          fi
+          
           # Test with a headless browser first to ensure the app renders
           echo "🔍 Testing app rendering with headless Chrome..."
           timeout 30 google-chrome-stable \
@@ -193,7 +203,9 @@ jobs:
             --disable-setuid-sandbox \
             --disable-dev-shm-usage \
             --disable-gpu \
-            --virtual-time-budget=10000 \
+            --disable-service-workers \
+            --disable-background-sync \
+            --virtual-time-budget=15000 \
             --run-all-compositor-stages-before-draw \
             --dump-dom http://localhost:4173 > /tmp/app-content.html || {
             echo "❌ Chrome test failed, but continuing with Lighthouse..."
