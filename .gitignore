@@ -26,3 +26,12 @@ dist-ssr
 credentials.json
 .cursor
 report.md
+
+# Test coverage reports
+coverage/
+
+# Lighthouse CI temporary files
+.lighthouseci/
+
+# Local Claude settings
+.claude/settings.local.json
