@@ -28,7 +28,8 @@
       "Bash(gh run view:*)",
       "Bash(python3:*)",
       "Bash(gh run watch:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }

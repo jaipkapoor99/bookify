@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "url": ["http://localhost:4173"],
+      "url": ["http://localhost:4173/test.html"],
       "numberOfRuns": 1,
       "settings": {
         "preset": "desktop",
