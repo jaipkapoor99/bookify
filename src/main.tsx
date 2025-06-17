@@ -5,7 +5,7 @@ import "./index.css";
 import { createRoutesFromElements, Route } from "react-router-dom";
 import { initializeConsoleInterceptor } from "@/lib/console-interceptor";
 
-// Initialize console interceptor in development
+// Initialize console interceptor in development for enhanced debugging
 if (import.meta.env.DEV) {
   initializeConsoleInterceptor();
 }
