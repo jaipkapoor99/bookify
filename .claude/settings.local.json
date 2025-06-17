@@ -21,7 +21,11 @@
       "Bash(git push:*)",
       "Bash(git config:*)",
       "Bash(ls:*)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(snap install:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh workflow:*)",
+      "Bash(gh run view:*)"
     ],
     "deny": []
   }
