@@ -1,26 +1,15 @@
 /// <reference types="vitest" />
 
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import tailwindcss from "@tailwindcss/vite";
-
-// Import with type assertion to satisfy TypeScript
-const debugPlugin = (() => {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require("./vite-debug-plugin.js").default as () => Plugin;
-  } catch {
-    return () => ({ name: "debug-plugin-fallback" }) as Plugin;
-  }
-})();
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    ...(process.env.DEBUG === "true" ? [debugPlugin()] : []),
   ],
   resolve: {
     alias: {
@@ -73,8 +62,8 @@ export default defineConfig({
         },
 
         // Optimize chunk loading
-        chunkFileNames: (chunkInfo) => {
-          const name = chunkInfo.name;
+        chunkFileNames: (chunkInfo: { name?: string }) => {
+          const name = chunkInfo.name || 'unknown';
 
           // Add hash for cache busting while keeping names readable
           if (name === "vendor") return "vendor-[hash].js";

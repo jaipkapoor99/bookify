@@ -70,8 +70,8 @@ A modern, full-stack event booking platform built with React, TypeScript, and Su
 
 ### Frontend
 
-- **React 18** with TypeScript for type safety
-- **Vite** for lightning-fast development and optimized builds
+- **React 18** with TypeScript for type safety and ES6+ features
+- **Vite** for lightning-fast development and optimized builds with ES6+ target
 - **shadcn/ui** with Tailwind CSS for beautiful, consistent components
 - **React Router** for client-side routing with protected routes
 - **React Hook Form + Zod** for type-safe form validation
@@ -86,14 +86,15 @@ A modern, full-stack event booking platform built with React, TypeScript, and Su
 ### Development & Quality
 
 - **Vitest + React Testing Library** for comprehensive testing
-- **ESLint + TypeScript** for code quality and type safety
+- **ESLint + TypeScript** for code quality and type safety with ES6+ compliance
 - **Modular Architecture** for maintainable, scalable code
+- **Node.js 20+** for modern ES6+ features and Lighthouse CI compatibility
 
 ## 📋 Prerequisites
 
 Ensure you have:
 
-- **Node.js** v18 or higher
+- **Node.js** v20 or higher (required for ES6+ features and Lighthouse compatibility)
 - **npm** (comes with Node.js)
 - **Supabase Account** (free tier available)
 
