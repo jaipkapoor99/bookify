@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/SupabaseClient";
 import { Event, EventVenue } from "@/types/database.types";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,7 @@ const EventDetailPage = () => {
   const [selectedVenue, setSelectedVenue] = useState<EventVenue | null>(null);
   const [ticketCount, setTicketCount] = useState(1);
   const [isBooking, setIsBooking] = useState(false);
+  const [locationDetails, setLocationDetails] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -61,12 +62,11 @@ const EventDetailPage = () => {
 
         const { data: venueData, error: venueError } = await supabase
           .from("events_venues")
-          .select("*, venues(*)")
+          .select("*, venues(*, locations(*))")
           .eq("event_id", eventId);
 
         if (venueError) throw venueError;
         setVenues(venueData || []);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Failed to fetch event details", {
           description: error.message,
@@ -78,6 +78,39 @@ const EventDetailPage = () => {
 
     fetchEventDetails();
   }, [eventId]);
+
+  useEffect(() => {
+    const fetchLocationDetails = async () => {
+      const pincodes = [
+        ...new Set(
+          venues
+            .map((v) => v.venues?.locations?.pincode)
+            .filter((p): p is string => !!p),
+        ),
+      ];
+
+      const newLocationDetails: Record<string, string> = {};
+      for (const pincode of pincodes) {
+        try {
+          const { data, error } = await supabase.functions.invoke(
+            "get-location-from-pincode",
+            {
+              body: { pincode },
+            },
+          );
+          if (error) throw error;
+          newLocationDetails[pincode] = `${data.area}, ${data.city}, ${data.state}`;
+        } catch (error) {
+          console.error(`Failed to fetch location for pincode ${pincode}`, error);
+        }
+      }
+      setLocationDetails(newLocationDetails);
+    };
+
+    if (venues.length > 0) {
+      fetchLocationDetails();
+    }
+  }, [venues]);
 
   const handleBookNow = (venue: EventVenue) => {
     if (!user) {
@@ -212,6 +245,8 @@ const EventDetailPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {venues.map((eventVenue) => {
               const isAvailable = eventVenue.no_of_tickets > 0;
+              const pincode = eventVenue.venues?.locations?.pincode;
+              const location = pincode ? locationDetails[pincode] : "Location TBA";
               return (
                 <Card
                   key={eventVenue.event_venue_id}
@@ -227,7 +262,7 @@ const EventDetailPage = () => {
                         </CardTitle>
                         <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4" />
-                          <span className="line-clamp-1">Location TBA</span>
+                          <span className="line-clamp-1">{location}</span>
                         </div>
                       </div>
                       {isAvailable ? (
@@ -322,7 +357,10 @@ const EventDetailPage = () => {
                     size="icon"
                     onClick={() =>
                       setTicketCount(
-                        Math.min(selectedVenue.no_of_tickets, ticketCount + 1),
+                        Math.min(
+                          selectedVenue.no_of_tickets,
+                          ticketCount + 1,
+                        ),
                       )
                     }
                     disabled={ticketCount >= selectedVenue.no_of_tickets}
