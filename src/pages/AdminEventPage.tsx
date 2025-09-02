@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { dbApi } from "@/lib/api-client";
+import { supabase } from "@/SupabaseClient";
 import { uploadImage, getImageUrl, deleteImage } from "@/lib/storage";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -92,11 +92,13 @@ const AdminEventPage = () => {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const { data, error } = await dbApi.select("events", "*");
-      if (error) throw new Error(error);
+      const { data, error } = await supabase.from("events").select("*");
+      if (error) throw error;
       setEvents((data as Event[]) || []);
-    } catch {
-      toast.error("Failed to fetch events");
+    } catch (error: any) {
+      toast.error("Failed to fetch events", {
+        description: error.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -158,17 +160,18 @@ const AdminEventPage = () => {
 
       if (editingEvent) {
         // Update existing event
-        const { error } = await dbApi.update("events", eventData, {
-          event_id: editingEvent.event_id,
-        });
+        const { error } = await supabase
+          .from("events")
+          .update(eventData)
+          .eq("event_id", editingEvent.event_id);
 
-        if (error) throw new Error(error);
+        if (error) throw error;
         toast.success("Event updated successfully!");
       } else {
         // Create new event
-        const { error } = await dbApi.insert("events", eventData);
+        const { error } = await supabase.from("events").insert(eventData);
 
-        if (error) throw new Error(error);
+        if (error) throw error;
         toast.success("Event created successfully!");
       }
 
@@ -177,9 +180,9 @@ const AdminEventPage = () => {
       setEditingEvent(null);
       setImagePreview(null);
       fetchEvents();
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Failed to save event", {
-        description: error instanceof Error ? error.message : "Unknown error",
+        description: error.message,
       });
     } finally {
       setUploadingImage(false);
@@ -207,17 +210,18 @@ const AdminEventPage = () => {
       }
 
       // Delete event from database
-      const { error } = await dbApi.delete("events", {
-        event_id: event.event_id,
-      });
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("event_id", event.event_id);
 
-      if (error) throw new Error(error);
+      if (error) throw error;
 
       toast.success("Event deleted successfully!");
       fetchEvents();
-    } catch (error) {
+    } catch (error: any) {
       toast.error("Failed to delete event", {
-        description: error instanceof Error ? error.message : "Unknown error",
+        description: error.message,
       });
     }
   };
