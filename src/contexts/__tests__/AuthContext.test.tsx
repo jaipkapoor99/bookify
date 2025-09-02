@@ -1,5 +1,5 @@
 /// <reference types="vitest/globals" />
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mocked, type Mock } from "vitest";
 import { AuthProvider, useAuth } from "../AuthContext";

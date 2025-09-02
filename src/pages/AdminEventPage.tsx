@@ -36,7 +36,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Loader2, Trash2, Edit } from "lucide-react";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const eventFormSchema = z.object({
   name: z.string().min(3, "Event name must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),

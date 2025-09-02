@@ -8,7 +8,7 @@ import {
 } from "react";
 import { supabase } from "@/lib/auth-client";
 import type { Session, User } from "@supabase/supabase-js";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export interface UserProfile {
   user_id: number;
   supabase_id: string;

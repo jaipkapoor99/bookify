@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import debug from "@/lib/debug";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 // The clean data structure for the component's state.
 type ConfirmationDetails = {
   eventName: string;

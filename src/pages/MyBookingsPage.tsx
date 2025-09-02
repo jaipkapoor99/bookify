@@ -7,7 +7,7 @@ import { Calendar, MapPin, Ticket, Hash } from "lucide-react";
 import StorageImage from "@/components/ui/StorageImage";
 import debug from "@/lib/debug";
 import { supabase } from "@/lib/auth-client";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 
 const MyBookingsPage = () => {
   const { user } = useAuth();
