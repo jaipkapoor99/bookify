@@ -39,6 +39,7 @@ const MyBookingsPage = () => {
 
         if (error) throw error;
         setBookings(data || []);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Failed to fetch bookings", {
           description: error.message,

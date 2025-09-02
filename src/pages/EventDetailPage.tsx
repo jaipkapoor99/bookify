@@ -50,6 +50,7 @@ const EventDetailPage = () => {
 
         if (venueError) throw venueError;
         setVenues(venueData || []);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Failed to fetch event details", {
           description: error.message,
@@ -74,7 +75,9 @@ const EventDetailPage = () => {
 
   const handleConfirmBooking = () => {
     if (!selectedVenue) return;
-    navigate(`/book/confirm/${selectedVenue.event_venue_id}?quantity=${ticketCount}`);
+    navigate(
+      `/book/confirm/${selectedVenue.event_venue_id}?quantity=${ticketCount}`,
+    );
   };
 
   if (loading) {
@@ -143,7 +146,9 @@ const EventDetailPage = () => {
                     id="quantity"
                     type="number"
                     value={ticketCount}
-                    onChange={(e) => setTicketCount(parseInt(e.target.value, 10))}
+                    onChange={(e) =>
+                      setTicketCount(parseInt(e.target.value, 10))
+                    }
                     min="1"
                     max={selectedVenue.no_of_tickets}
                     className="w-16 text-center"

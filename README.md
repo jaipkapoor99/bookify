@@ -47,26 +47,26 @@ Bookify is a modern, performant, and secure platform for discovering and booking
 
 1. **Clone the repository:**
 
-    ```bash
-    git clone https://github.com/jaipkapoor99/bookify.git
-    cd bookify
-    ```
+   ```bash
+   git clone https://github.com/jaipkapoor99/bookify.git
+   cd bookify
+   ```
 
 2. **Install dependencies:**
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
 3. **Set up your environment:**
-    - Copy `.env.example` to `.env.local`.
-    - Fill in your Supabase project URL and anon key.
+   - Copy `.env.example` to `.env.local`.
+   - Fill in your Supabase project URL and anon key.
 
 4. **Start the development server:**
 
-    ```bash
-    npm run dev
-    ```
+   ```bash
+   npm run dev
+   ```
 
 ---
 
@@ -277,4 +277,4 @@ npm run workflows:bash
 - **Fixed:** Test environment compatibility issues.
 - **Changed:** Optimized Vite configuration for dependency pre-bundling.
 
-*(For a full history, see the `git log`)*
+_(For a full history, see the `git log`)_
