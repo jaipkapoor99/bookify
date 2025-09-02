@@ -102,6 +102,14 @@ export interface TicketWithDetails extends Ticket {
   event_venue: EventVenueWithDetails;
 }
 
+export interface EventWithVenue extends Event {
+  events_venues: {
+    venues: {
+      venue_name: string;
+    };
+  }[];
+}
+
 // Booking query result (what we get from the get_my_bookings function)
 export interface BookingQueryResult {
   ticket_id: number;

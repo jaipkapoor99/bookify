@@ -91,7 +91,8 @@ const MyBookingsPage = () => {
                   </span>
                 </div>
                 <div className="text-lg font-semibold">
-                  Total: {formatCurrency(booking.ticket_price * booking.quantity)}
+                  Total:{" "}
+                  {formatCurrency(booking.ticket_price * booking.quantity)}
                 </div>
               </CardContent>
             </Card>

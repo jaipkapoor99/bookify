@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/SupabaseClient";
-import { Event } from "@/types/database.types";
+import { EventWithVenue } from "@/types/database.types";
 import {
   Card,
   CardContent,
@@ -20,10 +20,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowUpNarrowWide, Calendar, Clock, Search } from "lucide-react";
+import {
+  ArrowUpNarrowWide,
+  Calendar,
+  Clock,
+  MapPin,
+  Search,
+  Ticket,
+} from "lucide-react";
 
 const HomePage = () => {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventWithVenue[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("start_time");
@@ -34,7 +41,7 @@ const HomePage = () => {
       try {
         const { data, error } = await supabase
           .from("events")
-          .select("*")
+          .select("*, events_venues!inner(venues!inner(venue_name))")
           .order(sortBy, { ascending: true });
 
         if (error) {
@@ -79,8 +86,9 @@ const HomePage = () => {
 
   return (
     <div className="space-y-12">
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
-        <div className="container mx-auto px-4 py-20 md:py-32 text-center">
+      <section className="relative -mx-4 sm:-mx-6 md:-mx-8 lg:-mx-10 xl:-mx-12">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 transform -skew-y-3"></div>
+        <div className="relative container mx-auto px-4 py-20 md:py-32 text-center text-white">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
             Your Gateway to Unforgettable Experiences
           </h1>
@@ -158,11 +166,19 @@ const HomePage = () => {
                       <Clock className="w-4 h-4" />
                       <span>{formatTime(event.start_time)}</span>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      <span className="truncate">
+                        {event.events_venues[0]?.venues?.venue_name ||
+                          "Venue TBA"}
+                      </span>
+                    </div>
                   </div>
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full button-press">
                     <Link to={`/events/${event.event_id}`}>
+                      <Ticket className="w-4 h-4 mr-2" />
                       View Details & Book
                     </Link>
                   </Button>

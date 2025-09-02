@@ -29,12 +29,14 @@ describe("HomePage", () => {
         name: "Rock Concert",
         start_time: "2025-06-21T18:00:00",
         image_url: "/rock-concert.jpg",
+        events_venues: [{ venues: { venue_name: "Rock Arena" } }],
       },
       {
         event_id: 2,
         name: "Jazz Night",
         start_time: "2025-06-25T20:00:00",
         image_url: "/jazz-night.jpg",
+        events_venues: [{ venues: { venue_name: "Jazz Club" } }],
       },
     ];
 
@@ -61,6 +63,7 @@ describe("HomePage", () => {
         name: "Rock Concert",
         start_time: "2025-06-21T18:00:00",
         image_url: "/rock-concert.jpg",
+        events_venues: [{ venues: { venue_name: "Rock Arena" } }],
       },
     ];
 

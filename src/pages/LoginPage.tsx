@@ -40,18 +40,18 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-12 flex-col justify-between">
-        <div>
-          <h1 className="text-4xl font-bold mb-4">
-            Welcome back to your next great experience
-          </h1>
-          <p className="text-lg">
-            Sign in to access your bookings, discover new events, and continue
-            your journey with us.
-          </p>
-        </div>
-        <div className="text-sm">
-          © {new Date().getFullYear()} Bookify. All rights reserved.
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 transform -skew-y-6"></div>
+        <div className="relative flex flex-col justify-center px-12 py-16 text-white">
+          <div className="max-w-md">
+            <h1 className="text-4xl font-bold mb-4">
+              Welcome back to your next great experience
+            </h1>
+            <p className="text-lg">
+              Sign in to access your bookings, discover new events, and continue
+              your journey with us.
+            </p>
+          </div>
         </div>
       </div>
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12">

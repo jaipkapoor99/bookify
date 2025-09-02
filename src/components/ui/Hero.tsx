@@ -7,7 +7,8 @@ const Hero = () => {
         Your Gateway to Unforgettable Experiences
       </h1>
       <p className="mt-6 text-lg leading-8 text-gray-600">
-        From intimate concerts to grand festivals, find and book tickets for events that create lasting memories.
+        From intimate concerts to grand festivals, find and book tickets for
+        events that create lasting memories.
       </p>
       <div className="mt-10 flex items-center justify-center gap-x-6">
         <Button>Get started</Button>

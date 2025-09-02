@@ -189,7 +189,9 @@ const EventDetailPage = () => {
 
       <div className="space-y-6">
         <div>
-          <h2 className="text-3xl font-bold mb-2">Select Venue & Book Tickets</h2>
+          <h2 className="text-3xl font-bold mb-2">
+            Select Venue & Book Tickets
+          </h2>
           <p className="text-muted-foreground">
             Choose your preferred venue and secure your tickets now
           </p>
@@ -225,9 +227,7 @@ const EventDetailPage = () => {
                         </CardTitle>
                         <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                           <MapPin className="h-4 w-4" />
-                          <span className="line-clamp-1">
-                            Location TBA
-                          </span>
+                          <span className="line-clamp-1">Location TBA</span>
                         </div>
                       </div>
                       {isAvailable ? (
@@ -322,10 +322,7 @@ const EventDetailPage = () => {
                     size="icon"
                     onClick={() =>
                       setTicketCount(
-                        Math.min(
-                          selectedVenue.no_of_tickets,
-                          ticketCount + 1,
-                        ),
+                        Math.min(selectedVenue.no_of_tickets, ticketCount + 1),
                       )
                     }
                     disabled={ticketCount >= selectedVenue.no_of_tickets}
@@ -334,8 +331,8 @@ const EventDetailPage = () => {
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Maximum 10 tickets per booking •{" "}
-                  {selectedVenue.no_of_tickets} available
+                  Maximum 10 tickets per booking • {selectedVenue.no_of_tickets}{" "}
+                  available
                 </p>
               </div>
               <div className="p-4 bg-muted/50 rounded-lg space-y-2">
