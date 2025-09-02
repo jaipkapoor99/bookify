@@ -10,28 +10,36 @@ import {
   type Mock,
 } from "vitest";
 import App from "../App";
-import { supabase } from "@/lib/auth-client";
+import { supabase } from "@/SupabaseClient";
 
 // Mock the Supabase client
-vi.mock("@/lib/auth-client", () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn(),
-      onAuthStateChange: vi.fn(() => ({
-        data: { subscription: { unsubscribe: vi.fn() } },
-      })),
-      signInWithOAuth: vi.fn(),
-      signOut: vi.fn(),
-    },
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn(),
+vi.mock("@/SupabaseClient", () => {
+  const onAuthStateChange = vi.fn((callback) => {
+    // Immediately invoke the callback with no session
+    callback("INITIAL_SESSION", null);
+    return {
+      data: { subscription: { unsubscribe: vi.fn() } },
+    };
+  });
+
+  return {
+    supabase: {
+      auth: {
+        getSession: vi.fn(),
+        onAuthStateChange,
+        signInWithOAuth: vi.fn(),
+        signOut: vi.fn(),
+      },
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            single: vi.fn(),
+          })),
         })),
       })),
-    })),
-  },
-}));
+    },
+  };
+});
 
 const mockedSupabase = supabase as Mocked<typeof supabase>;
 

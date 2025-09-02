@@ -45,17 +45,7 @@ const eventFormSchema = z.object({
   image: z.instanceof(File).optional(),
 });
 
-type EventFormValues = z.infer<typeof eventFormSchema>;
-
-interface Event {
-  event_id: number;
-  name: string;
-  description: string;
-  start_time: string;
-  end_time: string;
-  image_url: string;
-  image_path: string | null;
-}
+import { EventFormValues, Event } from "@/types/database.types";
 
 const AdminEventPage = () => {
   const { user } = useAuth();
@@ -199,7 +189,7 @@ const AdminEventPage = () => {
       start_time: event.start_time,
       end_time: event.end_time,
     });
-    setImagePreview(event.image_url);
+    setImagePreview(event.image_url || null);
   };
 
   const handleDelete = async (event: Event) => {

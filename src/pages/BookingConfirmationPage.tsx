@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import { supabase } from "@/lib/auth-client";
+import { supabase } from "@/SupabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,16 +26,7 @@ import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import debug from "@/lib/debug";
 
-// The clean data structure for the component's state.
-type ConfirmationDetails = {
-  eventName: string;
-  venueName: string;
-  eventDate: string;
-  price: number;
-  location: string;
-  pincode?: string;
-  availableTickets: number;
-};
+import { ConfirmationDetails } from "@/types/database.types";
 
 const BookingConfirmationPage = () => {
   const { eventVenueId } = useParams<{ eventVenueId: string }>();

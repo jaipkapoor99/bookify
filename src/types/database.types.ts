@@ -1,6 +1,8 @@
 // Database Types - Generated from current database schema
 // Based on the actual live database structure (2025-06-11)
 
+import * as z from "zod";
+
 export type Role = "customer" | "admin";
 
 // Locations table - ONLY pincode (NO city, state, area fields)
@@ -22,6 +24,14 @@ export interface Event {
   image_path?: string;
   created_at: string;
   updated_at: string;
+  events_venues: {
+    venues: {
+      venue_name: string;
+      locations: {
+        pincode: string;
+      } | null;
+    } | null;
+  }[];
 }
 
 // Venues table - NO venue_address field
@@ -43,6 +53,12 @@ export interface EventVenue {
   price: number; // in cents (e.g., 250000 = ₹2500.00)
   created_at: string;
   updated_at: string;
+  venues: {
+    venue_name: string;
+    locations: {
+      pincode: string;
+    } | null;
+  };
 }
 
 // Users table - HAS email field
@@ -154,3 +170,40 @@ export interface PaginatedResponse<T> {
   limit: number;
   totalPages: number;
 }
+
+export const eventFormSchema = z.object({
+  name: z.string().min(3, "Event name must be at least 3 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  start_time: z.string().min(1, "Start time is required"),
+  end_time: z.string().min(1, "End time is required"),
+  image: z.instanceof(File).optional(),
+});
+
+export type EventFormValues = z.infer<typeof eventFormSchema>;
+
+export type ConfirmationDetails = {
+  eventName: string;
+  venueName: string;
+  eventDate: string;
+  price: number;
+  location: string;
+  pincode?: string;
+  availableTickets: number;
+};
+
+export interface EventDetail {
+  event_id: number;
+  name: string;
+  description: string;
+  image_url: string;
+  image_path: string | null;
+  start_time: string;
+  end_time: string;
+  events_venues: EventVenue[];
+}
+
+export type LocationInfo = {
+  city: string;
+  state: string;
+  area: string;
+};

@@ -2,14 +2,16 @@
 
 ## Overview
 
-The API client has been simplified to use the Supabase SDK directly. This provides a more streamlined and maintainable architecture.
+The API client has been simplified to use the Supabase SDK directly.
+This provides a more streamlined and maintainable architecture.
 
 ## Structure
 
 ### 📁 Files
 
 - **`auth-client.ts`** - Initializes and exports the Supabase client.
-- **`database-client.ts`** - Re-exports the Supabase client as `dbApi` for database operations.
+- **`database-client.ts`** - Re-exports the Supabase client as `dbApi`
+  for database operations.
 - **`api-client.ts`** - Main entry point that re-exports `dbApi`.
 
 ### 🔐 Supabase Client (`auth-client.ts`)
@@ -23,7 +25,8 @@ The API client has been simplified to use the Supabase SDK directly. This provid
 
 **Responsibilities:**
 
-- Re-exports the Supabase client with the alias `dbApi` to maintain backwards compatibility with components that use this convention.
+- Re-exports the Supabase client with the alias `dbApi` to maintain backwards
+  compatibility with components that use this convention.
 
 ### 🔗 Main Entry Point (`api-client.ts`)
 

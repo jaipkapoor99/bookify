@@ -6,7 +6,7 @@ import {
   createContext,
   useContext,
 } from "react";
-import { supabase } from "@/lib/auth-client";
+import { supabase } from "@/SupabaseClient";
 import type { Session, User } from "@supabase/supabase-js";
 
 export interface UserProfile {
@@ -38,48 +38,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = useCallback(async (user: User | null) => {
     if (!user) {
-      setProfile(null);
-      return;
+      return null;
     }
-
     try {
       const { data, error } = await supabase
         .from("users")
         .select("*")
         .eq("supabase_id", user.id)
         .single();
-
       if (error && error.code !== "PGRST116") {
-        // PGRST116 means no rows found
         console.error("Error fetching profile:", error);
-        setProfile(null);
-      } else {
-        setProfile(data);
+        return null;
       }
+      return data;
     } catch (error) {
       console.error("Exception fetching profile:", error);
-      setProfile(null);
+      return null;
     }
   }, []);
 
   useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      await fetchProfile(session?.user ?? null);
-      setLoading(false);
-    };
-
-    getSession();
-
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
-        setUser(session?.user ?? null);
-        await fetchProfile(session?.user ?? null);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        const userProfile = await fetchProfile(currentUser);
+        setProfile(userProfile);
         setLoading(false);
       },
     );
@@ -98,6 +83,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
+    if (!error) {
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+    }
     return { error: error?.message || null };
   };
 

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
-import { supabase } from "@/lib/auth-client"; // Import the Supabase client
+import { supabase } from "@/SupabaseClient"; // Import the Supabase client
 import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 const AuthCallback = () => {

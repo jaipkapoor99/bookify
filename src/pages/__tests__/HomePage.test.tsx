@@ -3,8 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
 import { useAppState } from "@/hooks/useAppState";
-import { AppState } from "@/contexts/AppStateTypes";
+import { AppState } from "@/contexts/AppStateContext";
 import React from "react";
+import { Event } from "@/types/database.types";
 
 // Mock the useAppState hook
 vi.mock("@/hooks/useAppState");
@@ -21,7 +22,6 @@ const createMockAppState = (partialState: Partial<AppState>): AppState => ({
   eventVenues: {},
   venues: [],
   loading: {},
-  cache: {},
   ...partialState,
 });
 
@@ -31,11 +31,14 @@ describe("HomePage", () => {
   });
 
   it("should display events when they are fetched successfully", async () => {
-    const mockEvents = [
+    const mockEvents: Event[] = [
       {
         event_id: 1,
         name: "Rock Concert",
         start_time: "2025-06-21T18:00:00",
+        end_time: "2025-06-21T22:00:00",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         image_url: "/rock-concert.jpg",
         events_venues: [
           {
@@ -50,6 +53,9 @@ describe("HomePage", () => {
         event_id: 2,
         name: "Jazz Night",
         start_time: "2025-06-25T20:00:00",
+        end_time: "2025-06-25T22:00:00",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         image_url: "/jazz-night.jpg",
         events_venues: [
           {
@@ -67,7 +73,6 @@ describe("HomePage", () => {
       fetchEvents: vi.fn(),
       fetchEventVenue: vi.fn(),
       fetchVenues: vi.fn(),
-      clearCache: vi.fn(),
       isLoading: vi.fn().mockReturnValue(false),
     });
 
@@ -80,11 +85,14 @@ describe("HomePage", () => {
   });
 
   it("should wrap event cards in links to the event detail page", async () => {
-    const mockEvents = [
+    const mockEvents: Event[] = [
       {
         event_id: 1,
         name: "Rock Concert",
         start_time: "2025-06-21T18:00:00",
+        end_time: "2025-06-21T22:00:00",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         image_url: "/rock-concert.jpg",
         events_venues: [
           {
@@ -102,7 +110,6 @@ describe("HomePage", () => {
       fetchEvents: vi.fn(),
       fetchEventVenue: vi.fn(),
       fetchVenues: vi.fn(),
-      clearCache: vi.fn(),
       isLoading: vi.fn().mockReturnValue(false),
     });
 
@@ -120,7 +127,6 @@ describe("HomePage", () => {
       fetchEvents: vi.fn(),
       fetchEventVenue: vi.fn(),
       fetchVenues: vi.fn(),
-      clearCache: vi.fn(),
       isLoading: vi.fn().mockReturnValue(false),
     });
 

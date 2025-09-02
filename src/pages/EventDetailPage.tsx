@@ -33,30 +33,7 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import StorageImage from "@/components/ui/StorageImage";
 
-// Corrected Type: This now matches the structure from the error message.
-interface EventVenue {
-  event_venue_id: number;
-  event_venue_date: string; // User corrected database to use event_venue_date
-  no_of_tickets: number;
-  price: number;
-  venues: {
-    venue_name: string;
-    locations: {
-      pincode: string;
-    } | null;
-  }; // venues is now an object
-}
-
-interface EventDetail {
-  event_id: number;
-  name: string;
-  description: string;
-  image_url: string;
-  image_path: string | null;
-  start_time: string;
-  end_time: string;
-  events_venues: EventVenue[];
-}
+import { EventVenue, EventDetail } from "@/types/database.types";
 
 const EventDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();

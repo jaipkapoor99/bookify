@@ -6,7 +6,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Calendar, MapPin, Ticket, Hash } from "lucide-react";
 import StorageImage from "@/components/ui/StorageImage";
 import debug from "@/lib/debug";
-import { supabase } from "@/lib/auth-client";
+import { supabase } from "@/SupabaseClient";
 
 const MyBookingsPage = () => {
   const { user, profile } = useAuth(); // Use profile from AuthContext

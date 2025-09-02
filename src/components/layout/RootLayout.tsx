@@ -21,7 +21,7 @@ import {
   Ticket,
   Shield,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Import preload functions
 import { preloadComponents } from "@/components/LazyComponents";
@@ -34,8 +34,10 @@ const RootLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       const { error } = await logout();
       if (error) {
@@ -45,14 +47,22 @@ const RootLayout = () => {
               ? error
               : (error as { message?: string })?.message || "Unknown error",
         });
-      } else {
-        toast.success("Logged out successfully");
-        navigate("/");
+        setIsLoggingOut(false);
       }
     } catch {
       toast.error("An unexpected error occurred during logout");
+      setIsLoggingOut(false);
     }
   };
+
+  useEffect(() => {
+    // Effect to handle navigation after user state is updated
+    if (isLoggingOut && !user) {
+      toast.success("Logged out successfully");
+      navigate("/");
+      setIsLoggingOut(false);
+    }
+  }, [user, isLoggingOut, navigate]);
 
   const isActivePath = (path: string) => {
     return location.pathname === path;

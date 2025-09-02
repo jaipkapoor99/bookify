@@ -11,10 +11,10 @@ import {
   type Mock,
 } from "vitest";
 import { AuthProvider, useAuth } from "../AuthContext";
-import { supabase } from "@/lib/auth-client";
+import { supabase } from "@/SupabaseClient";
 
 // Mock the Supabase client
-vi.mock("@/lib/auth-client", () => ({
+vi.mock("@/SupabaseClient", () => ({
   supabase: {
     auth: {
       getSession: vi.fn(),
@@ -71,21 +71,26 @@ describe("AuthContext", () => {
 
   describe("Initialization", () => {
     it("should initialize with no session", async () => {
-      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({
-        data: { session: null },
-        error: null,
-      });
+      // Arrange: onAuthStateChange will be called with a null session
+      (mockedSupabase.auth.onAuthStateChange as Mock).mockImplementation(
+        (callback) => {
+          callback("INITIAL_SESSION", null);
+          return { data: { subscription: { unsubscribe: vi.fn() } } };
+        },
+      );
+
       renderWithProvider(<TestComponent />);
+
       await waitFor(() => {
-        expect(screen.getByTestId("user-id")).toHaveTextContent("no-user");
-        expect(screen.getByTestId("session-token")).toHaveTextContent(
-          "no-token",
-        );
         expect(screen.getByTestId("loading")).toHaveTextContent("false");
       });
+
+      expect(screen.getByTestId("user-id")).toHaveTextContent("no-user");
+      expect(screen.getByTestId("session-token")).toHaveTextContent("no-token");
     });
 
     it("should initialize with existing session and fetch profile", async () => {
+      // Arrange: onAuthStateChange will be called with a mock session
       const mockSession = {
         access_token: "test-token",
         refresh_token: "test-refresh",
@@ -96,10 +101,12 @@ describe("AuthContext", () => {
       };
       const mockProfile = { name: "Test User" };
 
-      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({
-        data: { session: mockSession },
-        error: null,
-      });
+      (mockedSupabase.auth.onAuthStateChange as Mock).mockImplementation(
+        (callback) => {
+          callback("INITIAL_SESSION", mockSession);
+          return { data: { subscription: { unsubscribe: vi.fn() } } };
+        },
+      );
 
       const fromMock = vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
@@ -110,7 +117,7 @@ describe("AuthContext", () => {
           }),
         }),
       });
-      mockedSupabase.from = fromMock;
+      (mockedSupabase.from as Mock).mockImplementation(fromMock);
 
       renderWithProvider(<TestComponent />);
 
@@ -140,10 +147,8 @@ describe("AuthContext", () => {
 
   describe("Google Login", () => {
     it("should initiate Google OAuth flow", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (mockedSupabase.auth.signInWithOAuth as Mock).mockResolvedValue({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: {} as any,
+        data: { provider: "google", url: "https://example.com/auth/google" },
         error: null,
       });
       renderWithProvider(<TestComponent />);

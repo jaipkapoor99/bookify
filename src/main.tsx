@@ -11,7 +11,7 @@ if (import.meta.env.DEV) {
 }
 
 import { AuthProvider } from "@/contexts/AuthContext";
-import { AppStateProvider } from "@/contexts/AppStateProvider";
+import { AppStateProvider } from "@/contexts/AppStateContext";
 import RootLayout from "@/components/layout/RootLayout";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";

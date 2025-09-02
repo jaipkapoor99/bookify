@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import { createRoutesFromElements, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { AppStateProvider } from "@/contexts/AppStateProvider";
+import { AppStateProvider } from "@/contexts/AppStateContext";
 import RootLayout from "@/components/layout/RootLayout";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { Toaster } from "@/components/ui/sonner";

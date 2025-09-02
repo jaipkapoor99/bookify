@@ -33,32 +33,10 @@ import {
 
 import StorageImage from "@/components/ui/StorageImage";
 
-export type Event = {
-  event_id: number;
-  name: string;
-  start_time: string;
-  image_url: string;
-  image_path?: string;
-  description?: string;
-  events_venues: {
-    venues: {
-      venue_name: string;
-      locations: {
-        pincode: string;
-      } | null;
-    } | null;
-  }[];
-};
-
-type LocationInfo = {
-  city: string;
-  state: string;
-  area: string;
-};
+import { Event, LocationInfo } from "@/types/database.types";
 
 const HomePage = () => {
-  const { state, fetchEvents, isLoading } =
-    useAppState() as import("@/contexts/AppStateTypes").AppStateContextType;
+  const { state, fetchEvents, isLoading } = useAppState();
 
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
