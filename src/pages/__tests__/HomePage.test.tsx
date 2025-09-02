@@ -43,7 +43,7 @@ describe("HomePage", () => {
       error: null,
       count: null,
       status: 0,
-      statusText: ""
+      statusText: "",
     });
 
     renderWithProviders(<HomePage />);
@@ -69,7 +69,7 @@ describe("HomePage", () => {
       error: null,
       count: null,
       status: 0,
-      statusText: ""
+      statusText: "",
     });
 
     renderWithProviders(<HomePage />);
@@ -86,7 +86,7 @@ describe("HomePage", () => {
       error: null,
       count: null,
       status: 0,
-      statusText: ""
+      statusText: "",
     });
 
     renderWithProviders(<HomePage />);
