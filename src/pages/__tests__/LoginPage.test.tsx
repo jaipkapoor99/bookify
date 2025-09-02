@@ -6,7 +6,6 @@ import { Toaster } from "@/components/ui/sonner";
 import LoginPage from "@/pages/LoginPage";
 import { AuthProvider } from "@/contexts/AuthContext.tsx";
 
-
 // Mock the auth functions
 const mockLoginWithGoogle = vi.fn();
 

@@ -1,281 +1,136 @@
-# Bookify
+# Bookify - Event Booking Platform
 
-A modern, full-stack event booking platform built with React, TypeScript, and Supabase. Bookify provides a complete event management and ticket booking system with instant performance, advanced caching, and enterprise-grade architecture.
+Bookify is a modern, performant, and secure platform for discovering and booking tickets for events. Built with a modern tech stack, it provides a seamless user experience for both customers and administrators.
 
-## ✨ Recent Major Updates (v1.6.5)
+## 📖 Table of Contents
 
-### 🚀 **Latest Performance Revolution (v1.6.5)**
+1.  [Features](#-features)
+2.  [Tech Stack](#-tech-stack)
+3.  [Getting Started](#-getting-started)
+4.  [Architecture Overview](#-architecture-overview)
+5.  [API Documentation](#-api-documentation)
+6.  [Deployment Guide](#-deployment-guide)
+7.  [Testing Strategy](#-testing-strategy)
+8.  [Changelog](#-changelog)
 
-- **⚡ Instant "My Bookings" Navigation**: Eliminated 5-15+ second delays completely
-  - **Zero Navigation Delay**: Removed artificial 1.5s delay for instant user experience
-  - **93% Database Optimization**: Reduced 15+ queries to 1 single efficient query
-  - **Optimistic Updates**: New bookings appear instantly with background sync
-  - **Smart Caching**: Parallel API processing with intelligent location caching
+---
 
-- **🗄️ Database Performance Overhaul**:
-  - Created `get_my_bookings_with_details()` function with proper JOINs
-  - Eliminated N+1 query problem with single optimized database call
-  - Enhanced external API timeout from 10s to 3s with parallel processing
-  - **Result**: 80-90% faster total load times (8-15s → 1-3s)
+## ✨ Features
 
-### 🎯 **Previous Improvements (v1.6.4)**
+- **Event Discovery:** Browse, search, and filter a wide range of events.
+- **Secure Booking:** A reliable and secure ticket booking process.
+- **User Authentication:** Email/password and Google OAuth for seamless login.
+- **Admin Panel:** Manage events, venues, and bookings with a dedicated admin interface.
+- **User Profiles:** Users can manage their profiles and view their booking history.
 
-- **💰 Fixed Double Currency Symbols**: Resolved duplicate ₹ symbols in EventDetailPage for clean professional display
-- **📁 Organized Project Structure**: Created dedicated directories for docs, database, and reports
-- **📚 Enhanced Documentation**: Comprehensive documentation indices with quick start guides
-- **🗂️ Improved File Organization**: Logical separation of concerns with dedicated subdirectories
-
-### 🚀 **Performance Revolution (v1.6.0)**
-
-- **Instant Bookings**: Eliminated 3-second delays - booking data now loads in ~0ms
-- **Smart Pre-loading**: Booking data automatically fetched when user logs in
-- **Auto-refresh**: New bookings appear instantly without manual refresh
-
-### 🏗️ **API Client Architecture Overhaul**
-
-- **Modular Design**: Split 437-line monolithic file into focused modules
-- **Better Maintainability**: Separate `auth-client.ts` and `database-client.ts`
-- **Zero Breaking Changes**: Full backwards compatibility maintained
-
-### 🎨 **Enhanced UI/UX**
-
-- **Beautiful Booking Cards**: Redesigned MyBookingsPage with event images and modern layout
-- **Improved Image Handling**: Fixed StorageImage component for both external URLs and Supabase storage
-- **Visual Icons**: Added Calendar, MapPin, and Ticket icons for better visual hierarchy
-
-## 🚀 Core Features
-
-### User Experience
-
-- **🔐 Complete Authentication**: Email/password + Google OAuth with instant session management
-- **📅 Smart Event Discovery**: Browse events with search, city filtering, and intelligent sorting
-- **🎫 Multiple Ticket Booking**: Purchase 1-10 tickets in a single seamless transaction
-- **📍 Location Intelligence**: Auto-fetch location details from pincode with fallback support
-- **💳 Instant Booking History**: View booking history with zero load times
-- **👤 Profile Management**: Update user profile with phone number OTP verification
-- **🔒 Admin Dashboard**: Complete event management with image upload and real-time updates
-
-### Technical Excellence
-
-- **⚡ Zero-Second Performance**: Instant booking data with smart pre-loading
-- **🎨 Modern UI**: Beautiful, responsive interface with shadcn/ui components
-- **📱 Mobile-First**: Optimized for all device sizes with responsive design
-- **🏗️ Intelligent Caching**: 5-minute TTL cache system to minimize API calls
-- **✅ Robust Validation**: Type-safe validation using Zod and React Hook Form
-- **🖼️ Smart Image Storage**: Event image uploads with automatic optimization
-- **📊 Relational Architecture**: Many-to-many relationships with proper normalization
+---
 
 ## 🛠️ Tech Stack
 
-### Frontend
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS
+- **Backend:** Supabase (PostgreSQL, Auth, Storage, Edge Functions)
+- **Testing:** Vitest, React Testing Library
+- **Deployment:** Vercel
 
-- **React 18** with TypeScript for type safety and ES6+ features
-- **Vite** for lightning-fast development and optimized builds with ES6+ target
-- **shadcn/ui** with Tailwind CSS for beautiful, consistent components
-- **React Router** for client-side routing with protected routes
-- **React Hook Form + Zod** for type-safe form validation
+---
 
-### Backend & Services
+## 🚀 Getting Started
 
-- **Supabase** (Authentication, Database, Storage, Edge Functions)
-- **PostgreSQL** with Row Level Security for data protection
-- **Edge Functions** for external API integrations
-- **Google OAuth** for social authentication
+### Prerequisites
 
-### Development & Quality
+- Node.js (v18 or higher)
+- npm
+- Supabase CLI
 
-- **Vitest + React Testing Library** for comprehensive testing
-- **ESLint + TypeScript** for code quality and type safety with ES6+ compliance
-- **Modular Architecture** for maintainable, scalable code
-- **Node.js 20+** for modern ES6+ features and Lighthouse CI compatibility
+### Installation
 
-## 📋 Prerequisites
+1.  **Clone the repository:**
 
-Ensure you have:
+    ```bash
+    git clone https://github.com/jaipkapoor99/bookify.git
+    cd bookify
+    ```
 
-- **Node.js** v20 or higher (required for ES6+ features and Lighthouse compatibility)
-- **npm** (comes with Node.js)
-- **Supabase Account** (free tier available)
+2.  **Install dependencies:**
 
-## 🚀 Quick Start
+    ```bash
+    npm install
+    ```
 
-### 1. Clone and Install
+3.  **Set up your environment:**
+    - Copy `.env.example` to `.env.local`.
+    - Fill in your Supabase project URL and anon key.
 
-```bash
-git clone https://github.com/jaipkapoor99/booking-platform.git
-cd booking-platform
-npm install
+4.  **Start the development server:**
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 🏗️ Architecture Overview
+
+This section provides a comprehensive overview of Bookify's architecture, design decisions, and system components.
+
+### High-Level Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend (React + TypeScript)"
+        Client[React Components<br/>Pages & UI]
+        Context[AuthContext<br/>Smart State Management]
+        APILayer[Modular API Client<br/>auth + database + facade]
+    end
+
+    subgraph "Supabase Backend"
+        Auth[Supabase Auth<br/>JWT + OAuth]
+        DB[PostgreSQL Database<br/>RLS + Functions]
+        Storage[Supabase Storage<br/>Event Images]
+        Edge[Edge Functions<br/>Location API]
+    end
+
+    subgraph "External Services"
+        PostalAPI[Postal Pincode API<br/>Location Data]
+        GoogleAuth[Google OAuth<br/>Social Login]
+    end
+
+    Client --> Context
+    Context --> APILayer
+    APILayer --> Auth
+    APILayer --> DB
+    APILayer --> Storage
+    APILayer --> Edge
+
+    Auth --> GoogleAuth
+    Edge --> PostalAPI
 ```
 
-### 2. Environment Setup
+### Design Principles
 
-Create `.env.local` in the root directory:
+- **Security First:** RLS, JWT, and input validation are used throughout.
+- **Performance Optimization:** Caching, lazy loading, and database optimization are key.
+- **Maintainability:** TypeScript, a component-based architecture, and clear separation of concerns are prioritized.
+- **Scalability:** A stateless design, database functions, and edge functions allow for horizontal scaling.
 
-```env
-VITE_SUPABASE_URL="YOUR_SUPABASE_PROJECT_URL"
-VITE_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
-```
+---
 
-> Find these values in your Supabase project's API settings
+## 🌐 API Documentation
 
-### 3. Database Setup
+This section provides comprehensive documentation for Bookify's backend API, database functions, and data structures.
 
-1. Create a new Supabase project
-2. Run the provided SQL migrations in Supabase SQL editor
-3. Set up Row Level Security policies from migration files
+### Database Schema
 
-### 4. Launch Application
-
-```bash
-npm run dev
-```
-
-Application available at `http://localhost:5173`
-
-## 📚 Documentation
-
-### 📖 **Quick Navigation**
-
-| Category             | Document                                                           | Description                          |
-| -------------------- | ------------------------------------------------------------------ | ------------------------------------ |
-| **🏗️ Architecture**  | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)                   | System design and technical overview |
-| **📚 API Reference** | [`docs/API_DOCUMENTATION.md`](./docs/API_DOCUMENTATION.md)         | Database schema and API patterns     |
-| **🚀 Deployment**    | [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md)           | Production deployment instructions   |
-| **🧪 Testing**       | [`docs/TESTING_STRATEGY.md`](./docs/TESTING_STRATEGY.md)           | Testing patterns and TDD workflow    |
-| **🐛 Debugging**     | [`docs/DEBUG_GUIDE.md`](./docs/DEBUG_GUIDE.md)                     | Troubleshooting and debugging guide  |
-| **📊 Status**        | [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md) | Feature implementation progress      |
-| **🔄 Changes**       | [`docs/CHANGELOG.md`](./docs/CHANGELOG.md)                         | Version history and release notes    |
-
-### 🎯 **For Different Roles**
-
-#### **Developers**
-
-1. Start with [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for system understanding
-2. Follow [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md) for local setup
-3. Review [`docs/TESTING_STRATEGY.md`](./docs/TESTING_STRATEGY.md) for TDD workflow
-4. Use [`docs/DEBUG_GUIDE.md`](./docs/DEBUG_GUIDE.md) for troubleshooting
-
-#### **DevOps Engineers**
-
-1. Check [`docs/CI_CD_PIPELINE_REPORT.md`](./docs/CI_CD_PIPELINE_REPORT.md) for pipeline status
-2. Follow [`docs/DEPLOYMENT_GUIDE.md`](./docs/DEPLOYMENT_GUIDE.md) for production deployment
-3. Monitor [`docs/DATABASE_STATUS.md`](./docs/DATABASE_STATUS.md) for schema changes
-
-#### **Project Managers**
-
-1. Review [`docs/IMPLEMENTATION_STATUS.md`](./docs/IMPLEMENTATION_STATUS.md) for progress
-2. Check [`docs/CHANGELOG.md`](./docs/CHANGELOG.md) for release notes
-3. Monitor [`reports/report.md`](./reports/report.md) for project health
-
-## 📁 Project Architecture
-
-### 📂 Root Directory Structure
-
-```
-bookify/
-├── docs/              # 📚 Comprehensive documentation
-│   ├── README.md             # Documentation index and guide
-│   ├── CHANGELOG.md          # Version history and release notes
-│   ├── ARCHITECTURE.md       # System design and architecture
-│   ├── API_DOCUMENTATION.md  # Database schema and API guide
-│   ├── DEPLOYMENT_GUIDE.md   # Production deployment instructions
-│   ├── TESTING_STRATEGY.md   # Testing patterns and strategies
-│   ├── DEBUG_GUIDE.md        # Troubleshooting and debugging
-│   └── *.md                  # Additional documentation files
-├── database/          # 🗄️ Database files and scripts
-│   ├── README.md             # Database documentation index
-│   ├── database_complete_dump.sql     # Full database backup
-│   ├── database_data_only.sql        # Data-only restoration
-│   └── populate_database_safe.sql    # Safe sample data
-├── reports/           # 📊 Project reports and analyses
-│   ├── README.md             # Reports directory index
-│   └── report.md             # Comprehensive project assessment
-├── scripts/           # 🛠️ Development and deployment scripts
-│   ├── README.md             # Scripts documentation
-│   ├── ci.ps1               # Local CI testing pipeline
-│   ├── deploy.ps1           # Production deployment
-│   ├── database-tools.ps1   # Database management utilities
-│   └── *.ps1                # Additional PowerShell scripts
-├── src/               # 💻 Application source code
-│   ├── components/          # Reusable UI components
-│   ├── contexts/            # React contexts for state management
-│   ├── lib/                 # Core utilities and API clients
-│   ├── pages/               # Route components
-│   ├── hooks/               # Custom React hooks
-│   ├── types/               # TypeScript type definitions
-│   └── __tests__/           # Comprehensive test suites
-├── public/            # 🌐 Static assets
-├── .github/           # ⚙️ GitHub Actions workflows
-├── supabase/          # 🔧 Supabase configuration and migrations
-└── README.md          # 📖 Main project documentation
-```
-
-### 📂 Source Code Structure
-
-```
-src/
-├── components/         # Reusable UI components
-│   ├── ui/            # shadcn/ui components (Button, Dialog, Card, etc.)
-│   ├── auth/          # Authentication components
-│   └── layout/        # Layout components (Header, Footer, Navigation)
-├── contexts/          # React contexts for state management
-│   ├── AuthContext.tsx      # Authentication + booking state
-│   └── AppStateContext.tsx  # App state with intelligent caching
-├── lib/               # Core utilities and API clients
-│   ├── auth-client.ts       # Authentication operations (195 lines)
-│   ├── database-client.ts   # Database operations (220 lines)
-│   ├── api-client.ts        # Main entry point (35 lines)
-│   ├── utils.ts             # General utilities
-│   └── storage.ts           # Image upload utilities
-├── pages/             # Route components
-│   ├── HomePage.tsx           # Event discovery and listing
-│   ├── EventDetailPage.tsx    # Event details with booking
-│   ├── MyBookingsPage.tsx     # Instant booking history
-│   ├── BookingConfirmationPage.tsx
-│   ├── AccountPage.tsx        # Profile management
-│   ├── AdminEventPage.tsx     # Admin dashboard
-│   └── auth/                  # Authentication pages
-├── hooks/             # Custom React hooks
-├── types/             # TypeScript type definitions
-└── __tests__/         # Comprehensive test suites
-```
-
-### 🔧 **New Modular API Architecture**
-
-#### Before (v1.5.0): Single Monolithic File
-
-```
-api-client.ts (437 lines)
-├── Authentication logic
-├── Database operations
-├── Session management
-├── Error handling
-└── Token management
-```
-
-#### After (v1.6.0): Clean Modular Design
-
-```
-lib/
-├── auth-client.ts (195 lines)      # Pure authentication
-├── database-client.ts (220 lines)  # Pure database operations
-└── api-client.ts (35 lines)        # Clean re-export facade
-```
-
-**Benefits:**
-
-- ✅ **Better Maintainability**: Single responsibility per module
-- ✅ **Easier Navigation**: Find auth logic in auth-client, DB logic in database-client
-- ✅ **Reduced Complexity**: Smaller, focused files
-- ✅ **Zero Breaking Changes**: All existing imports continue to work
-
-## 📊 Database Schema
-
-### Core Tables & Relationships
+The database follows a normalized relational design with proper foreign key constraints.
 
 ```mermaid
 erDiagram
-    USERS {
+    auth_users {
+        uuid id PK
+        text email
+        jsonb raw_user_meta_data
+    }
+
+    users {
         int user_id PK
         uuid supabase_id FK
         text name
@@ -285,25 +140,25 @@ erDiagram
         enum role
     }
 
-    EVENTS {
+    events {
         int event_id PK
         text name
         text description
         text image_url
         text image_path
-        timestamp start_time
-        timestamp end_time
+        timestamptz start_time
+        timestamptz end_time
     }
 
-    VENUES {
+    venues {
         int venue_id PK
         text venue_name
         text venue_address
         int location_id FK
     }
 
-    EVENTS_VENUES {
-        int event_venue_id PK
+    events_venues {
+        bigint event_venue_id PK
         int event_id FK
         int venue_id FK
         date event_venue_date
@@ -311,16 +166,16 @@ erDiagram
         bigint price
     }
 
-    TICKETS {
+    tickets {
         int ticket_id PK
         int customer_id FK
-        int events_venues_id FK
+        bigint events_venues_id FK
         int quantity
         bigint ticket_price
-        timestamp created_at
+        timestamptz created_at
     }
 
-    LOCATIONS {
+    locations {
         int location_id PK
         text pincode
         text area
@@ -328,15 +183,77 @@ erDiagram
         text state
     }
 
-    USERS ||--o{ TICKETS : "books"
-    EVENTS ||--o{ EVENTS_VENUES : "scheduled_at"
-    VENUES ||--o{ EVENTS_VENUES : "hosts"
-    EVENTS_VENUES ||--o{ TICKETS : "generates"
-    LOCATIONS ||--o{ VENUES : "located_at"
+    auth_users ||--|| users : "triggers profile creation"
+    users ||--o{ tickets : "customer_id"
+    events ||--o{ events_venues : "event_id"
+    venues ||--o{ events_venues : "venue_id"
+    events_venues ||--o{ tickets : "events_venues_id"
+    locations ||--o{ venues : "location_id"
 ```
 
-### Key Database Features
+### Database Functions
 
-- **🔒 Row Level Security**: Users can only access their own data
-- **⚡ Database Functions**:
-  - `
+- `book_ticket(p_event_venue_id, p_quantity)`: Books tickets for a specific event-venue combination.
+- `get_my_bookings()`: Retrieves all bookings for the currently authenticated user.
+- `create_user_profile()`: Trigger function that creates a user profile when a new account is created.
+
+### Edge Functions
+
+- `get-location-from-pincode`: Fetches location details from an Indian postal pincode.
+
+---
+
+## 🚀 Deployment Guide
+
+This guide covers deploying Bookify to production environments.
+
+### Pre-Deployment Setup
+
+1.  **Environment Variables:** Create production environment variables for Supabase URL and anon key.
+2.  **Supabase Production Setup:** Create a new Supabase project, run migrations, and set up RLS policies, authentication providers, and storage buckets.
+
+### Vercel Deployment (Recommended)
+
+1.  **Connect Repository:** Use the Vercel CLI to connect and deploy your repository.
+2.  **Environment Variables:** Add your Supabase environment variables to the Vercel dashboard.
+3.  **Build Configuration:** Use the `@vercel/static-build` preset for Vite.
+
+---
+
+## 🧪 Testing Strategy
+
+Bookify follows a comprehensive testing strategy ensuring reliability, performance, and user experience.
+
+### Testing Philosophy
+
+- **Test-Driven Development (TDD):** Write failing tests first, implement minimal code to pass, then refactor.
+- **Testing Pyramid:** A strong base of unit tests, a smaller number of integration tests, and a few end-to-end tests.
+
+### Testing Tools & Setup
+
+- **Test Runner:** Vitest
+- **Testing Library:** React Testing Library
+- **Mocking:** Vitest mocks
+
+---
+
+## 📜 Changelog
+
+### [1.6.5] - 2025-01-17
+
+- **Fixed:** Slow navigation to "My Bookings" page.
+- **Added:** Optimized database function `get_my_bookings_with_details()`.
+- **Added:** Optimistic UI updates for instant navigation.
+- **Changed:** Enhanced `AuthContext` with optimistic update capabilities.
+
+### [1.6.4] - 2025-01-17
+
+- **Fixed:** Double currency symbol issue in `EventDetailPage`.
+
+### [1.6.3] - 2025-01-17
+
+- **Fixed:** Critical Supabase module import error.
+- **Fixed:** Test environment compatibility issues.
+- **Changed:** Optimized Vite configuration for dependency pre-bundling.
+
+_(For a full history, see the `git log`)_

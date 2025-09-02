@@ -14,8 +14,6 @@ export default defineConfig({
     },
   },
   build: {
-    
-
     // Optimize build settings
     target: "esnext",
     minify: "esbuild",

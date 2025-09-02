@@ -23,10 +23,6 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
-
-
-
-
 const RootLayout = () => {
   const { user, loading, logout, profile } = useAuth();
   const navigate = useNavigate();
@@ -106,11 +102,7 @@ const RootLayout = () => {
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
-            <Link
-              to="/"
-              className="flex items-center space-x-3 cursor-pointer"
-              
-            >
+            <Link to="/" className="flex items-center space-x-3 cursor-pointer">
               <img
                 src="/Bookify_SVG.svg"
                 alt="Bookify"
@@ -121,24 +113,18 @@ const RootLayout = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-              <NavLink to="/" >
+              <NavLink to="/">
                 <Home className="w-4 h-4 inline-block mr-2" />
                 Home
               </NavLink>
               {user && (
                 <>
-                  <NavLink
-                    to="/my-bookings"
-                    
-                  >
+                  <NavLink to="/my-bookings">
                     <Ticket className="w-4 h-4 inline-block mr-2" />
                     My Bookings
                   </NavLink>
                   {isAdmin && (
-                    <NavLink
-                      to="/admin/events"
-                      
-                    >
+                    <NavLink to="/admin/events">
                       <Shield className="w-4 h-4 inline-block mr-2" />
                       Admin
                     </NavLink>
@@ -171,32 +157,20 @@ const RootLayout = () => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-56">
                         <DropdownMenuItem asChild>
-                          <Link
-                            to="/account"
-                            
-                            className="cursor-pointer"
-                          >
+                          <Link to="/account" className="cursor-pointer">
                             <Settings className="mr-2 h-4 w-4" />
                             <span>Account Settings</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link
-                            to="/my-bookings"
-                            className="cursor-pointer"
-                            
-                          >
+                          <Link to="/my-bookings" className="cursor-pointer">
                             <Calendar className="mr-2 h-4 w-4" />
                             <span>My Bookings</span>
                           </Link>
                         </DropdownMenuItem>
                         {isAdmin && (
                           <DropdownMenuItem asChild>
-                            <Link
-                              to="/admin/events"
-                              className="cursor-pointer"
-                              
-                            >
+                            <Link to="/admin/events" className="cursor-pointer">
                               <Shield className="mr-2 h-4 w-4" />
                               <span>Admin Panel</span>
                             </Link>
@@ -246,27 +220,18 @@ const RootLayout = () => {
         {mobileMenuOpen && user && (
           <div className="md:hidden border-t bg-background">
             <div className="container mx-auto px-4 py-4 space-y-2">
-              <NavLink
-                to="/"
-                onClick={() => setMobileMenuOpen(false)}
-                
-              >
+              <NavLink to="/" onClick={() => setMobileMenuOpen(false)}>
                 <Home className="w-4 h-4 inline-block mr-2" />
                 Home
               </NavLink>
               <NavLink
                 to="/my-bookings"
                 onClick={() => setMobileMenuOpen(false)}
-                
               >
                 <Ticket className="w-4 h-4 inline-block mr-2" />
                 My Bookings
               </NavLink>
-              <NavLink
-                to="/account"
-                onClick={() => setMobileMenuOpen(false)}
-                
-              >
+              <NavLink to="/account" onClick={() => setMobileMenuOpen(false)}>
                 <Settings className="w-4 h-4 inline-block mr-2" />
                 Account
               </NavLink>
@@ -274,7 +239,6 @@ const RootLayout = () => {
                 <NavLink
                   to="/admin/events"
                   onClick={() => setMobileMenuOpen(false)}
-                  
                 >
                   <Shield className="w-4 h-4 inline-block mr-2" />
                   Admin
@@ -392,8 +356,6 @@ const RootLayout = () => {
           </div>
         </div>
       </footer>
-
-      
     </div>
   );
 };

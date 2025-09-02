@@ -11,9 +11,7 @@ const AdminEventPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentEvent, setCurrentEvent] = useState<Partial<Event> | null>(
-    null,
-  );
+  const [currentEvent, setCurrentEvent] = useState<Partial<Event> | null>(null);
 
   useEffect(() => {
     fetchEvents();

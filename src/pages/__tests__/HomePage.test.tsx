@@ -38,11 +38,10 @@ describe("HomePage", () => {
       },
     ];
 
-    vi.mocked(supabase.from("events").select("*").order)
-      .mockResolvedValueOnce({
-        data: mockEvents,
-        error: null,
-      });
+    vi.mocked(supabase.from("events").select("*").order).mockResolvedValueOnce({
+      data: mockEvents,
+      error: null,
+    });
 
     renderWithProviders(<HomePage />);
 
@@ -62,11 +61,10 @@ describe("HomePage", () => {
       },
     ];
 
-    vi.mocked(supabase.from("events").select("*").order)
-      .mockResolvedValueOnce({
-        data: mockEvents,
-        error: null,
-      });
+    vi.mocked(supabase.from("events").select("*").order).mockResolvedValueOnce({
+      data: mockEvents,
+      error: null,
+    });
 
     renderWithProviders(<HomePage />);
 
@@ -77,11 +75,10 @@ describe("HomePage", () => {
   });
 
   it("should display a message if no events are available", async () => {
-    vi.mocked(supabase.from("events").select("*").order)
-      .mockResolvedValueOnce({
-        data: [],
-        error: null,
-      });
+    vi.mocked(supabase.from("events").select("*").order).mockResolvedValueOnce({
+      data: [],
+      error: null,
+    });
 
     renderWithProviders(<HomePage />);
 

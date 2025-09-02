@@ -76,9 +76,7 @@ const BookingConfirmationPage = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Confirm Your Booking</h1>
       <div className="p-4 border rounded-lg">
-        <h2 className="text-2xl font-semibold">
-          {eventVenue.events?.name}
-        </h2>
+        <h2 className="text-2xl font-semibold">{eventVenue.events?.name}</h2>
         <p>Venue: {eventVenue.venues?.venue_name}</p>
         <p>
           Date: {new Date(eventVenue.event_venue_date).toLocaleDateString()}

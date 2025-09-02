@@ -38,7 +38,10 @@ const mockVenues = [
   },
 ];
 
-const renderComponent = (user: User | null, profile: UserProfile | null = null) => {
+const renderComponent = (
+  user: User | null,
+  profile: UserProfile | null = null,
+) => {
   return render(
     <AuthContext.Provider
       value={{
@@ -55,7 +58,7 @@ const renderComponent = (user: User | null, profile: UserProfile | null = null) 
           <Route path="/events/:eventId" element={<EventDetailPage />} />
         </Routes>
       </MemoryRouter>
-    </AuthContext.Provider>
+    </AuthContext.Provider>,
   );
 };
 
@@ -73,9 +76,11 @@ describe("EventDetailPage", () => {
       status: 200,
       statusText: "OK",
     });
-    const eq = vi.fn()
+    const eq = vi
+      .fn()
       .mockReturnValueOnce({ single }) // For the first call to fetch the event
-      .mockResolvedValueOnce({ // For the second call to fetch venues
+      .mockResolvedValueOnce({
+        // For the second call to fetch venues
         data: mockVenues,
         error: null,
         count: 2,
@@ -101,7 +106,7 @@ describe("EventDetailPage", () => {
       details: "The requested resource was not found.",
       hint: "Check the event ID.",
       code: "PGRST116",
-      name: ""
+      name: "",
     };
     const single = vi.fn().mockResolvedValue({
       data: null,
