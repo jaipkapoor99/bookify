@@ -6,12 +6,30 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { toast } from "sonner";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const AdminEventPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentEvent, setCurrentEvent] = useState<Partial<Event> | null>(null);
+  const [currentEvent, setCurrentEvent] = useState<Partial<Event> | null>(
+    null,
+  );
 
   useEffect(() => {
     fetchEvents();
@@ -71,78 +89,105 @@ const AdminEventPage = () => {
     return <PageLoader />;
   }
 
-  if (isEditing && currentEvent) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">
-          {currentEvent.event_id ? "Edit Event" : "Create Event"}
-        </h1>
-        <div className="space-y-4">
-          <Input
-            placeholder="Event Name"
-            value={currentEvent.name || ""}
-            onChange={(e) =>
-              setCurrentEvent({ ...currentEvent, name: e.target.value })
-            }
-          />
-          <Textarea
-            placeholder="Description"
-            value={currentEvent.description || ""}
-            onChange={(e) =>
-              setCurrentEvent({ ...currentEvent, description: e.target.value })
-            }
-          />
-          <Input
-            type="datetime-local"
-            value={currentEvent.start_time || ""}
-            onChange={(e) =>
-              setCurrentEvent({ ...currentEvent, start_time: e.target.value })
-            }
-          />
-          <Input
-            type="datetime-local"
-            value={currentEvent.end_time || ""}
-            onChange={(e) =>
-              setCurrentEvent({ ...currentEvent, end_time: e.target.value })
-            }
-          />
-          <Input
-            placeholder="Image URL"
-            value={currentEvent.image_url || ""}
-            onChange={(e) =>
-              setCurrentEvent({ ...currentEvent, image_url: e.target.value })
-            }
-          />
-          <div className="flex gap-2">
-            <Button onClick={handleSave}>Save</Button>
-            <Button variant="outline" onClick={() => setIsEditing(false)}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Manage Events</h1>
         <Button onClick={handleCreate}>Create Event</Button>
       </div>
-      <div className="space-y-4">
-        {events.map((event) => (
-          <div
-            key={event.event_id}
-            className="p-4 border rounded-lg flex justify-between items-center"
-          >
-            <span>{event.name}</span>
-            <Button variant="outline" onClick={() => handleEdit(event)}>
-              Edit
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Start Time</TableHead>
+            <TableHead>End Time</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {events.map((event) => (
+            <TableRow key={event.event_id}>
+              <TableCell>{event.name}</TableCell>
+              <TableCell>
+                {new Date(event.start_time).toLocaleString()}
+              </TableCell>
+              <TableCell>{new Date(event.end_time).toLocaleString()}</TableCell>
+              <TableCell>
+                <Button variant="outline" onClick={() => handleEdit(event)}>
+                  Edit
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <Dialog open={isEditing} onOpenChange={setIsEditing}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {currentEvent?.event_id ? "Edit Event" : "Create Event"}
+            </DialogTitle>
+            <DialogDescription>
+              Fill in the details for the event.
+            </DialogDescription>
+          </DialogHeader>
+          {currentEvent && (
+            <div className="space-y-4">
+              <Input
+                placeholder="Event Name"
+                value={currentEvent.name || ""}
+                onChange={(e) =>
+                  setCurrentEvent({ ...currentEvent, name: e.target.value })
+                }
+              />
+              <Textarea
+                placeholder="Description"
+                value={currentEvent.description || ""}
+                onChange={(e) =>
+                  setCurrentEvent({
+                    ...currentEvent,
+                    description: e.target.value,
+                  })
+                }
+              />
+              <Input
+                type="datetime-local"
+                value={currentEvent.start_time || ""}
+                onChange={(e) =>
+                  setCurrentEvent({
+                    ...currentEvent,
+                    start_time: e.target.value,
+                  })
+                }
+              />
+              <Input
+                type="datetime-local"
+                value={currentEvent.end_time || ""}
+                onChange={(e) =>
+                  setCurrentEvent({ ...currentEvent, end_time: e.target.value })
+                }
+              />
+              <Input
+                placeholder="Image URL"
+                value={currentEvent.image_url || ""}
+                onChange={(e) =>
+                  setCurrentEvent({
+                    ...currentEvent,
+                    image_url: e.target.value,
+                  })
+                }
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditing(false)}>
+              Cancel
             </Button>
-          </div>
-        ))}
-      </div>
+            <Button onClick={handleSave}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

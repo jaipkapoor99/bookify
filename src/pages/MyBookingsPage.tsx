@@ -4,6 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Ticket, EventVenue, Event, Venue } from "@/types/database.types";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, MapPin, Ticket as TicketIcon } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 type BookingWithDetails = Ticket & {
   events_venues: EventVenue & {
@@ -62,16 +65,36 @@ const MyBookingsPage = () => {
       {bookings.length === 0 ? (
         <p>You have no bookings.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {bookings.map((booking) => (
-            <div key={booking.ticket_id} className="p-4 border rounded-lg">
-              <h2 className="text-xl font-semibold">
-                {booking.events_venues.events.name}
-              </h2>
-              <p>Venue: {booking.events_venues.venues.venue_name}</p>
-              <p>Date: {new Date(booking.created_at).toLocaleDateString()}</p>
-              <p>Tickets: {booking.quantity}</p>
-            </div>
+            <Card key={booking.ticket_id}>
+              <CardHeader>
+                <CardTitle>{booking.events_venues.events.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    {booking.events_venues.venues.venue_name}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    {new Date(booking.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TicketIcon className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    {booking.quantity} ticket(s)
+                  </span>
+                </div>
+                <div className="text-lg font-semibold">
+                  Total: {formatCurrency(booking.ticket_price * booking.quantity)}
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

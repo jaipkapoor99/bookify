@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, MapPin, Ticket } from "lucide-react";
 
 const BookingConfirmationPage = () => {
   const { eventVenueId } = useParams<{ eventVenueId: string }>();
@@ -76,30 +78,47 @@ const BookingConfirmationPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Confirm Your Booking</h1>
-      <div className="p-4 border rounded-lg">
-        <h2 className="text-2xl font-semibold">{eventVenue.events?.name}</h2>
-        <p>Venue: {eventVenue.venues?.venue_name}</p>
-        <p>
-          Date: {new Date(eventVenue.event_venue_date).toLocaleDateString()}
-        </p>
-        <p>Price per ticket: {formatCurrency(eventVenue.price)}</p>
-        <div className="flex items-center gap-4 my-4">
-          <label>Tickets:</label>
-          <input
-            type="number"
-            min="1"
-            value={ticketCount}
-            onChange={(e) => setTicketCount(parseInt(e.target.value, 10))}
-            className="w-20 p-2 border rounded"
-          />
-        </div>
-        <p className="text-xl font-bold">
-          Total: {formatCurrency(ticketCount * eventVenue.price)}
-        </p>
-        <Button onClick={handleConfirmBooking} className="mt-4">
-          Confirm Booking
-        </Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{eventVenue.events?.name}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-muted-foreground" />
+            <span className="text-muted-foreground">
+              {eventVenue.venues?.venue_name}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-muted-foreground" />
+            <span className="text-muted-foreground">
+              {new Date(eventVenue.event_venue_date).toLocaleDateString()}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Ticket className="w-4 h-4 text-muted-foreground" />
+            <span className="text-muted-foreground">
+              Price per ticket: {formatCurrency(eventVenue.price)}
+            </span>
+          </div>
+          <div className="flex items-center gap-4 my-4">
+            <label>Tickets:</label>
+            <input
+              type="number"
+              min="1"
+              value={ticketCount}
+              onChange={(e) => setTicketCount(parseInt(e.target.value, 10))}
+              className="w-20 p-2 border rounded"
+            />
+          </div>
+          <div className="text-2xl font-bold">
+            Total: {formatCurrency(ticketCount * eventVenue.price)}
+          </div>
+          <Button onClick={handleConfirmBooking} className="mt-4">
+            Confirm Booking
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };

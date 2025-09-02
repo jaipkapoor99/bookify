@@ -43,7 +43,7 @@ describe("HomePage", () => {
       error: null,
       count: null,
       status: 0,
-      statusText: "",
+      statusText: ""
     });
 
     renderWithProviders(<HomePage />);
@@ -69,13 +69,15 @@ describe("HomePage", () => {
       error: null,
       count: null,
       status: 0,
-      statusText: "",
+      statusText: ""
     });
 
     renderWithProviders(<HomePage />);
 
     await waitFor(() => {
-      const links = screen.getAllByRole("link", { name: /view details/i });
+      const links = screen.getAllByRole("link", {
+        name: /view details/i,
+      });
       expect(links[0]).toHaveAttribute("href", "/events/1");
     });
   });
@@ -86,13 +88,13 @@ describe("HomePage", () => {
       error: null,
       count: null,
       status: 0,
-      statusText: "",
+      statusText: ""
     });
 
     renderWithProviders(<HomePage />);
 
     await waitFor(() => {
-      expect(screen.getByText("No events found.")).toBeInTheDocument();
+      expect(screen.getByText("No events found")).toBeInTheDocument();
     });
   });
 });
