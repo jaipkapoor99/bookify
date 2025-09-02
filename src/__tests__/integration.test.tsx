@@ -13,33 +13,23 @@ import App from "../App";
 import { supabase } from "@/SupabaseClient";
 
 // Mock the Supabase client
-vi.mock("@/SupabaseClient", () => {
-  const onAuthStateChange = vi.fn((callback) => {
-    // Immediately invoke the callback with no session
-    callback("INITIAL_SESSION", null);
-    return {
-      data: { subscription: { unsubscribe: vi.fn() } },
-    };
-  });
-
-  return {
-    supabase: {
-      auth: {
-        getSession: vi.fn(),
-        onAuthStateChange,
-        signInWithOAuth: vi.fn(),
-        signOut: vi.fn(),
-      },
-      from: vi.fn(() => ({
-        select: vi.fn(() => ({
-          eq: vi.fn(() => ({
-            single: vi.fn(),
-          })),
-        })),
-      })),
+vi.mock("@/SupabaseClient", () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+      onAuthStateChange: vi.fn().mockReturnValue({
+        data: { subscription: { unsubscribe: vi.fn() } },
+      }),
+      signInWithOAuth: vi.fn(),
+      signOut: vi.fn(),
     },
-  };
-});
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        order: vi.fn().mockResolvedValue({ data: [], error: null }),
+      })),
+    })),
+  },
+}));
 
 const mockedSupabase = supabase as Mocked<typeof supabase>;
 
@@ -50,10 +40,6 @@ describe("Integration Tests", () => {
 
   describe("Authentication Flow", () => {
     it("should handle Google OAuth flow", async () => {
-      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({
-        data: { session: null },
-        error: null,
-      });
       (mockedSupabase.auth.signInWithOAuth as Mock).mockResolvedValue({
         data: { provider: "google", url: "https://example.com/auth/google" },
         error: null,
@@ -81,10 +67,15 @@ describe("Integration Tests", () => {
 
   describe("Navigation and Routing", () => {
     it("should protect authenticated routes", async () => {
-      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({
-        data: { session: null },
-        error: null,
+      // Simulate no user being logged in
+      const onAuthStateChange = mockedSupabase.auth.onAuthStateChange as Mock;
+      onAuthStateChange.mockImplementation((callback) => {
+        callback("INITIAL_SESSION", null);
+        return {
+          data: { subscription: { unsubscribe: vi.fn() } },
+        };
       });
+
       render(<App initialEntries={["/my-bookings"]} />);
       await waitFor(() => {
         expect(

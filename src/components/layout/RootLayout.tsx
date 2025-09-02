@@ -23,11 +23,9 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
-// Import preload functions
-import { preloadComponents } from "@/components/LazyComponents";
 
-// Import DevTools for development
-import DevTools from "@/components/DevTools";
+
+
 
 const RootLayout = () => {
   const { user, loading, logout, profile } = useAuth();
@@ -111,7 +109,7 @@ const RootLayout = () => {
             <Link
               to="/"
               className="flex items-center space-x-3 cursor-pointer"
-              onMouseEnter={() => preloadComponents.homepage()}
+              
             >
               <img
                 src="/Bookify_SVG.svg"
@@ -123,7 +121,7 @@ const RootLayout = () => {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-              <NavLink to="/" onMouseEnter={() => preloadComponents.homepage()}>
+              <NavLink to="/" >
                 <Home className="w-4 h-4 inline-block mr-2" />
                 Home
               </NavLink>
@@ -131,7 +129,7 @@ const RootLayout = () => {
                 <>
                   <NavLink
                     to="/my-bookings"
-                    onMouseEnter={() => preloadComponents.bookings()}
+                    
                   >
                     <Ticket className="w-4 h-4 inline-block mr-2" />
                     My Bookings
@@ -139,7 +137,7 @@ const RootLayout = () => {
                   {isAdmin && (
                     <NavLink
                       to="/admin/events"
-                      onMouseEnter={() => preloadComponents.admin()}
+                      
                     >
                       <Shield className="w-4 h-4 inline-block mr-2" />
                       Admin
@@ -175,7 +173,7 @@ const RootLayout = () => {
                         <DropdownMenuItem asChild>
                           <Link
                             to="/account"
-                            onMouseEnter={() => preloadComponents.account()}
+                            
                             className="cursor-pointer"
                           >
                             <Settings className="mr-2 h-4 w-4" />
@@ -186,7 +184,7 @@ const RootLayout = () => {
                           <Link
                             to="/my-bookings"
                             className="cursor-pointer"
-                            onMouseEnter={() => preloadComponents.bookings()}
+                            
                           >
                             <Calendar className="mr-2 h-4 w-4" />
                             <span>My Bookings</span>
@@ -197,7 +195,7 @@ const RootLayout = () => {
                             <Link
                               to="/admin/events"
                               className="cursor-pointer"
-                              onMouseEnter={() => preloadComponents.admin()}
+                              
                             >
                               <Shield className="mr-2 h-4 w-4" />
                               <span>Admin Panel</span>
@@ -251,7 +249,7 @@ const RootLayout = () => {
               <NavLink
                 to="/"
                 onClick={() => setMobileMenuOpen(false)}
-                onMouseEnter={() => preloadComponents.homepage()}
+                
               >
                 <Home className="w-4 h-4 inline-block mr-2" />
                 Home
@@ -259,7 +257,7 @@ const RootLayout = () => {
               <NavLink
                 to="/my-bookings"
                 onClick={() => setMobileMenuOpen(false)}
-                onMouseEnter={() => preloadComponents.bookings()}
+                
               >
                 <Ticket className="w-4 h-4 inline-block mr-2" />
                 My Bookings
@@ -267,7 +265,7 @@ const RootLayout = () => {
               <NavLink
                 to="/account"
                 onClick={() => setMobileMenuOpen(false)}
-                onMouseEnter={() => preloadComponents.account()}
+                
               >
                 <Settings className="w-4 h-4 inline-block mr-2" />
                 Account
@@ -276,7 +274,7 @@ const RootLayout = () => {
                 <NavLink
                   to="/admin/events"
                   onClick={() => setMobileMenuOpen(false)}
-                  onMouseEnter={() => preloadComponents.admin()}
+                  
                 >
                   <Shield className="w-4 h-4 inline-block mr-2" />
                   Admin
@@ -395,8 +393,7 @@ const RootLayout = () => {
         </div>
       </footer>
 
-      {/* Development Tools Panel */}
-      <DevTools />
+      
     </div>
   );
 };

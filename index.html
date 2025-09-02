@@ -53,27 +53,7 @@
       type="image/svg+xml"
     />
 
-    <!-- Service Worker Registration for Smart Lazy Loading -->
-    <script>
-      // Feature detection and progressive enhancement
-      if ("serviceWorker" in navigator && "caches" in window) {
-        window.addEventListener("load", function () {
-          navigator.serviceWorker
-            .register("/sw.js", { scope: "/" })
-            .then(function (registration) {
-              console.log(
-                "✅ Service Worker registered for lazy loading cache",
-              );
-            })
-            .catch(function (registrationError) {
-              console.log(
-                "❌ Service Worker registration failed:",
-                registrationError,
-              );
-            });
-        });
-      }
-    </script>
+    
   </head>
   <body>
     <div id="root"></div>

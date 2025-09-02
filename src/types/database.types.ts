@@ -24,14 +24,6 @@ export interface Event {
   image_path?: string;
   created_at: string;
   updated_at: string;
-  events_venues: {
-    venues: {
-      venue_name: string;
-      locations: {
-        pincode: string;
-      } | null;
-    } | null;
-  }[];
 }
 
 // Venues table - NO venue_address field
@@ -53,12 +45,8 @@ export interface EventVenue {
   price: number; // in cents (e.g., 250000 = ₹2500.00)
   created_at: string;
   updated_at: string;
-  venues: {
-    venue_name: string;
-    locations: {
-      pincode: string;
-    } | null;
-  };
+  events?: Event;
+  venues?: Venue;
 }
 
 // Users table - HAS email field
@@ -85,6 +73,15 @@ export interface Ticket {
   quantity: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface Booking {
+  booking_id: number;
+  user_id: number;
+  event_venue_id: number;
+  booking_date: string;
+  no_of_tickets: number;
+  events_venues?: EventVenue;
 }
 
 // Extended types with relationships for complex queries

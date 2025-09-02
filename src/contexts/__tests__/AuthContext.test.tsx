@@ -10,8 +10,9 @@ import {
   type Mocked,
   type Mock,
 } from "vitest";
-import { AuthProvider, useAuth } from "../AuthContext";
+import { useAuth } from "../AuthContext";
 import { supabase } from "@/SupabaseClient";
+import { AuthProvider } from "../AuthContext.tsx";
 
 // Mock the Supabase client
 vi.mock("@/SupabaseClient", () => ({
