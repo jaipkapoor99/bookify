@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Minus, Plus } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 
 const EventDetailPage = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -110,7 +111,7 @@ const EventDetailPage = () => {
               <p className="text-sm text-muted-foreground">
                 {new Date(eventVenue.event_venue_date).toLocaleDateString()}
               </p>
-              <p className="text-sm">${eventVenue.price}</p>
+              <p className="text-sm">{formatCurrency(eventVenue.price)}</p>
             </div>
             <Button onClick={() => handleBookNow(eventVenue)}>Book Now</Button>
           </div>
@@ -171,7 +172,7 @@ const EventDetailPage = () => {
                 {selectedVenue.no_of_tickets} tickets available
               </p>
               <div className="text-2xl font-bold">
-                Total: ${ticketCount * selectedVenue.price}
+                Total: {formatCurrency(ticketCount * selectedVenue.price)}
               </div>
             </div>
           )}
