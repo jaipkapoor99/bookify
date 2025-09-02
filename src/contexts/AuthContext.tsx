@@ -8,7 +8,7 @@ import {
 } from "react";
 import { supabase } from "@/lib/auth-client";
 import type { Session, User } from "@supabase/supabase-js";
- 
+
 export interface UserProfile {
   user_id: number;
   supabase_id: string;
@@ -120,4 +120,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

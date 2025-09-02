@@ -42,13 +42,17 @@ describe("LoginPage", () => {
 
   it("renders the login page with Google login button", () => {
     renderWithProviders(<LoginPage />);
-    expect(screen.getByRole("button", { name: /continue with google/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /continue with google/i }),
+    ).toBeInTheDocument();
   });
 
   it("calls loginWithGoogle when Google button is clicked", async () => {
     mockLoginWithGoogle.mockResolvedValue({ error: null });
     renderWithProviders(<LoginPage />);
-    fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /continue with google/i }),
+    );
     await waitFor(() => {
       expect(mockLoginWithGoogle).toHaveBeenCalled();
     });
@@ -57,10 +61,11 @@ describe("LoginPage", () => {
   it("displays error message when Google login fails", async () => {
     mockLoginWithGoogle.mockResolvedValue({ error: "Google login failed" });
     renderWithProviders(<LoginPage />);
-    fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /continue with google/i }),
+    );
     await waitFor(() => {
       expect(mockLoginWithGoogle).toHaveBeenCalled();
     });
   });
 });
-

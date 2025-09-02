@@ -10,10 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import {
-  Loader2,
-  Chrome,
-} from "lucide-react";
+import { Loader2, Chrome } from "lucide-react";
 
 const LoginPage = () => {
   const { loginWithGoogle } = useAuth();

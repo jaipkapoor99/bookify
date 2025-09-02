@@ -1,6 +1,14 @@
 /// <reference types="vitest/globals" />
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mocked, type Mock } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  type Mocked,
+  type Mock,
+} from "vitest";
 import App from "../App";
 import { supabase } from "@/lib/auth-client";
 
@@ -34,7 +42,10 @@ describe("Integration Tests", () => {
 
   describe("Authentication Flow", () => {
     it("should handle Google OAuth flow", async () => {
-      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({ data: { session: null }, error: null });
+      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({
+        data: { session: null },
+        error: null,
+      });
       (mockedSupabase.auth.signInWithOAuth as Mock).mockResolvedValue({
         data: { provider: "google", url: "https://example.com/auth/google" },
         error: null,
@@ -43,25 +54,35 @@ describe("Integration Tests", () => {
       render(<App initialEntries={["/login"]} />);
 
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: "Continue with Google" })).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: "Continue with Google" }),
+        ).toBeInTheDocument();
       });
 
-      fireEvent.click(screen.getByRole("button", { name: "Continue with Google" }));
+      fireEvent.click(
+        screen.getByRole("button", { name: "Continue with Google" }),
+      );
 
       await waitFor(() => {
-        expect(mockedSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({ provider: "google" });
+        expect(mockedSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+          provider: "google",
+        });
       });
     });
   });
 
   describe("Navigation and Routing", () => {
     it("should protect authenticated routes", async () => {
-      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({ data: { session: null }, error: null });
+      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({
+        data: { session: null },
+        error: null,
+      });
       render(<App initialEntries={["/my-bookings"]} />);
       await waitFor(() => {
-        expect(screen.getByRole("button", { name: /continue with google/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole("button", { name: /continue with google/i }),
+        ).toBeInTheDocument();
       });
     });
   });
 });
-

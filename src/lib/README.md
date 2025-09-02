@@ -46,4 +46,3 @@ The API client has been simplified to use the Supabase SDK directly. This provid
 ### ✅ **Type Safety**
 
 - Leverages the built-in types from the Supabase SDK.
-

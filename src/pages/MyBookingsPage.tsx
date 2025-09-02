@@ -7,7 +7,6 @@ import { Calendar, MapPin, Ticket, Hash } from "lucide-react";
 import StorageImage from "@/components/ui/StorageImage";
 import debug from "@/lib/debug";
 import { supabase } from "@/lib/auth-client";
- 
 
 const MyBookingsPage = () => {
   const { user } = useAuth();

@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import debug from "@/lib/debug";
- 
+
 // The clean data structure for the component's state.
 type ConfirmationDetails = {
   eventName: string;
@@ -167,7 +167,10 @@ const BookingConfirmationPage = () => {
 
       debug.booking("Attempting to book ticket", bookingParams);
 
-      const { error: rpcError } = await supabase.rpc("book_ticket", bookingParams);
+      const { error: rpcError } = await supabase.rpc(
+        "book_ticket",
+        bookingParams,
+      );
 
       if (rpcError) {
         debug.error("Booking RPC failed", rpcError);

@@ -36,7 +36,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Loader2, Trash2, Edit } from "lucide-react";
- 
+
 const eventFormSchema = z.object({
   name: z.string().min(3, "Event name must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
@@ -95,7 +95,7 @@ const AdminEventPage = () => {
       const { data, error } = await supabase.from("events").select("*");
       if (error) throw error;
       setEvents((data as Event[]) || []);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error("Failed to fetch events", {
         description: error.message,

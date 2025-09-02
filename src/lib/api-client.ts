@@ -14,4 +14,3 @@
 
 // Re-export database functionality
 export { dbApi } from "./database-client";
-

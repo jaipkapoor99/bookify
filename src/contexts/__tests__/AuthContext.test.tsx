@@ -1,7 +1,15 @@
 /// <reference types="vitest/globals" />
- 
+
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, type Mocked, type Mock } from "vitest";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  type Mocked,
+  type Mock,
+} from "vitest";
 import { AuthProvider, useAuth } from "../AuthContext";
 import { supabase } from "@/lib/auth-client";
 
@@ -30,13 +38,16 @@ const mockedSupabase = supabase as Mocked<typeof supabase>;
 
 // Test component to use the auth context
 const TestComponent = () => {
-  const { user, session, loading, profile, logout, loginWithGoogle } = useAuth();
+  const { user, session, loading, profile, logout, loginWithGoogle } =
+    useAuth();
 
   return (
     <div>
       <div data-testid="user-id">{user?.id || "no-user"}</div>
       <div data-testid="user-email">{user?.email || "no-email"}</div>
-      <div data-testid="session-token">{session?.access_token || "no-token"}</div>
+      <div data-testid="session-token">
+        {session?.access_token || "no-token"}
+      </div>
       <div data-testid="loading">{loading.toString()}</div>
       <div data-testid="profile-name">{profile?.name || "no-profile"}</div>
       <button data-testid="logout-btn" onClick={logout}>
@@ -60,11 +71,16 @@ describe("AuthContext", () => {
 
   describe("Initialization", () => {
     it("should initialize with no session", async () => {
-      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({ data: { session: null }, error: null });
+      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({
+        data: { session: null },
+        error: null,
+      });
       renderWithProvider(<TestComponent />);
       await waitFor(() => {
         expect(screen.getByTestId("user-id")).toHaveTextContent("no-user");
-        expect(screen.getByTestId("session-token")).toHaveTextContent("no-token");
+        expect(screen.getByTestId("session-token")).toHaveTextContent(
+          "no-token",
+        );
         expect(screen.getByTestId("loading")).toHaveTextContent("false");
       });
     });
@@ -80,24 +96,32 @@ describe("AuthContext", () => {
       };
       const mockProfile = { name: "Test User" };
 
-      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({ data: { session: mockSession }, error: null });
-      
+      (mockedSupabase.auth.getSession as Mock).mockResolvedValue({
+        data: { session: mockSession },
+        error: null,
+      });
+
       const fromMock = vi.fn().mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({ data: mockProfile, error: null }),
+            single: vi
+              .fn()
+              .mockResolvedValue({ data: mockProfile, error: null }),
           }),
         }),
       });
       mockedSupabase.from = fromMock;
 
-
       renderWithProvider(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId("user-id")).toHaveTextContent("test-user-id");
-        expect(screen.getByTestId("session-token")).toHaveTextContent("test-token");
-        expect(screen.getByTestId("profile-name")).toHaveTextContent("Test User");
+        expect(screen.getByTestId("session-token")).toHaveTextContent(
+          "test-token",
+        );
+        expect(screen.getByTestId("profile-name")).toHaveTextContent(
+          "Test User",
+        );
         expect(screen.getByTestId("loading")).toHaveTextContent("false");
       });
     });
@@ -117,11 +141,16 @@ describe("AuthContext", () => {
   describe("Google Login", () => {
     it("should initiate Google OAuth flow", async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (mockedSupabase.auth.signInWithOAuth as Mock).mockResolvedValue({ data: {} as any, error: null });
+      (mockedSupabase.auth.signInWithOAuth as Mock).mockResolvedValue({
+        data: {} as any,
+        error: null,
+      });
       renderWithProvider(<TestComponent />);
       fireEvent.click(screen.getByTestId("google-login-btn"));
       await waitFor(() => {
-        expect(mockedSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({ provider: "google" });
+        expect(mockedSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+          provider: "google",
+        });
       });
     });
   });

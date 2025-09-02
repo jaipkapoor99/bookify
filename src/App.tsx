@@ -56,7 +56,7 @@ const createRouter = (initialEntries?: string[]) => {
                 </Suspense>
               }
             />
-            
+
             <Route
               path="/auth/callback"
               element={
