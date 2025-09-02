@@ -111,7 +111,9 @@ const EventDetailPage = () => {
               <p className="text-sm text-muted-foreground">
                 {new Date(eventVenue.event_venue_date).toLocaleDateString()}
               </p>
-              <p className="text-sm">{formatCurrency(eventVenue.price)}</p>
+              <p className="text-sm">
+                {formatCurrency(eventVenue.price / 100)}
+              </p>
             </div>
             <Button onClick={() => handleBookNow(eventVenue)}>Book Now</Button>
           </div>
@@ -172,7 +174,8 @@ const EventDetailPage = () => {
                 {selectedVenue.no_of_tickets} tickets available
               </p>
               <div className="text-2xl font-bold">
-                Total: {formatCurrency(ticketCount * selectedVenue.price)}
+                Total:{" "}
+                {formatCurrency((ticketCount * selectedVenue.price) / 100)}
               </div>
             </div>
           )}

@@ -82,7 +82,7 @@ const BookingConfirmationPage = () => {
         <p>
           Date: {new Date(eventVenue.event_venue_date).toLocaleDateString()}
         </p>
-        <p>Price per ticket: {formatCurrency(eventVenue.price)}</p>
+        <p>Price per ticket: {formatCurrency(eventVenue.price / 100)}</p>
         <div className="flex items-center gap-4 my-4">
           <label>Tickets:</label>
           <input
@@ -94,7 +94,7 @@ const BookingConfirmationPage = () => {
           />
         </div>
         <p className="text-xl font-bold">
-          Total: {formatCurrency(ticketCount * eventVenue.price)}
+          Total: {formatCurrency((ticketCount * eventVenue.price) / 100)}
         </p>
         <Button onClick={handleConfirmBooking} className="mt-4">
           Confirm Booking
