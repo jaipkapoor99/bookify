@@ -41,6 +41,9 @@ describe("HomePage", () => {
     vi.mocked(supabase.from("events").select("*").order).mockResolvedValueOnce({
       data: mockEvents,
       error: null,
+      count: null,
+      status: 0,
+      statusText: ""
     });
 
     renderWithProviders(<HomePage />);
@@ -64,6 +67,9 @@ describe("HomePage", () => {
     vi.mocked(supabase.from("events").select("*").order).mockResolvedValueOnce({
       data: mockEvents,
       error: null,
+      count: null,
+      status: 0,
+      statusText: ""
     });
 
     renderWithProviders(<HomePage />);
@@ -78,6 +84,9 @@ describe("HomePage", () => {
     vi.mocked(supabase.from("events").select("*").order).mockResolvedValueOnce({
       data: [],
       error: null,
+      count: null,
+      status: 0,
+      statusText: ""
     });
 
     renderWithProviders(<HomePage />);
