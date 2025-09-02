@@ -4,14 +4,15 @@ Bookify is a modern, performant, and secure platform for discovering and booking
 
 ## 📖 Table of Contents
 
-1.  [Features](#-features)
-2.  [Tech Stack](#-tech-stack)
-3.  [Getting Started](#-getting-started)
-4.  [Architecture Overview](#-architecture-overview)
-5.  [API Documentation](#-api-documentation)
-6.  [Deployment Guide](#-deployment-guide)
-7.  [Testing Strategy](#-testing-strategy)
-8.  [Changelog](#-changelog)
+1. [Features](#-features)
+2. [Tech Stack](#-tech-stack)
+3. [Getting Started](#-getting-started)
+4. [Architecture Overview](#-architecture-overview)
+5. [API Documentation](#-api-documentation)
+6. [Deployment Guide](#-deployment-guide)
+7. [Testing Strategy](#-testing-strategy)
+8. [Local Workflows](#-local-workflows)
+9. [Changelog](#-changelog)
 
 ---
 
@@ -44,24 +45,25 @@ Bookify is a modern, performant, and secure platform for discovering and booking
 
 ### Installation
 
-1.  **Clone the repository:**
+1. **Clone the repository:**
 
     ```bash
     git clone https://github.com/jaipkapoor99/bookify.git
     cd bookify
     ```
 
-2.  **Install dependencies:**
+2. **Install dependencies:**
 
     ```bash
     npm install
     ```
 
-3.  **Set up your environment:**
+3. **Set up your environment:**
     - Copy `.env.example` to `.env.local`.
     - Fill in your Supabase project URL and anon key.
 
-4.  **Start the development server:**
+4. **Start the development server:**
+
     ```bash
     npm run dev
     ```
@@ -209,14 +211,14 @@ This guide covers deploying Bookify to production environments.
 
 ### Pre-Deployment Setup
 
-1.  **Environment Variables:** Create production environment variables for Supabase URL and anon key.
-2.  **Supabase Production Setup:** Create a new Supabase project, run migrations, and set up RLS policies, authentication providers, and storage buckets.
+1. **Environment Variables:** Create production environment variables for Supabase URL and anon key.
+2. **Supabase Production Setup:** Create a new Supabase project, run migrations, and set up RLS policies, authentication providers, and storage buckets.
 
 ### Vercel Deployment (Recommended)
 
-1.  **Connect Repository:** Use the Vercel CLI to connect and deploy your repository.
-2.  **Environment Variables:** Add your Supabase environment variables to the Vercel dashboard.
-3.  **Build Configuration:** Use the `@vercel/static-build` preset for Vite.
+1. **Connect Repository:** Use the Vercel CLI to connect and deploy your repository.
+2. **Environment Variables:** Add your Supabase environment variables to the Vercel dashboard.
+3. **Build Configuration:** Use the `@vercel/static-build` preset for Vite.
 
 ---
 
@@ -234,6 +236,25 @@ Bookify follows a comprehensive testing strategy ensuring reliability, performan
 - **Test Runner:** Vitest
 - **Testing Library:** React Testing Library
 - **Mocking:** Vitest mocks
+
+---
+
+## Local Workflows
+
+This project includes scripts to run all GitHub Actions workflows locally, ensuring your code is safe to push to the remote repository.
+
+### Quick Start
+
+```bash
+# Run all workflows (Windows/PowerShell)
+npm run workflows
+
+# Quick run (skip non-essential checks)
+npm run workflows:quick
+
+# Run all workflows (Linux/macOS/Bash)
+npm run workflows:bash
+```
 
 ---
 
@@ -256,4 +277,4 @@ Bookify follows a comprehensive testing strategy ensuring reliability, performan
 - **Fixed:** Test environment compatibility issues.
 - **Changed:** Optimized Vite configuration for dependency pre-bundling.
 
-_(For a full history, see the `git log`)_
+*(For a full history, see the `git log`)*

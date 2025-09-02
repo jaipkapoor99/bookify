@@ -207,9 +207,6 @@ const RootLayout = () => {
                   <Button asChild variant="ghost" size="sm">
                     <Link to="/login">Sign In</Link>
                   </Button>
-                  <Button asChild size="sm">
-                    <Link to="/signup">Sign Up</Link>
-                  </Button>
                 </div>
               )}
             </div>
