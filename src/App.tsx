@@ -15,7 +15,6 @@ import { Toaster } from "@/components/ui/sonner";
 import {
   LazyHomePage,
   LazyLoginPage,
-  LazySignupPage,
   LazyEventDetailPage,
   LazyMyBookingsPage,
   LazyBookingConfirmationPage,
@@ -57,14 +56,7 @@ const createRouter = (initialEntries?: string[]) => {
                 </Suspense>
               }
             />
-            <Route
-              path="/signup"
-              element={
-                <Suspense fallback={<PageLoader chunkName="SignupPage" />}>
-                  <LazySignupPage />
-                </Suspense>
-              }
-            />
+            
             <Route
               path="/auth/callback"
               element={
@@ -148,14 +140,6 @@ const createRouter = (initialEntries?: string[]) => {
             element={
               <Suspense fallback={<PageLoader />}>
                 <LazyLoginPage />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/signup"
-            element={
-              <Suspense fallback={<PageLoader />}>
-                <LazySignupPage />
               </Suspense>
             }
           />

@@ -10,8 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-*.local
-
+credentials.json
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,6 +22,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.production
 credentials.json
 .cursor
 report.md
@@ -35,3 +35,4 @@ coverage/
 
 # Local Claude settings
 .claude/settings.local.json
+.vercel

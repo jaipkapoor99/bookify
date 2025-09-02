@@ -9,7 +9,8 @@
     "paths": {
       "@/*": ["src/*"],
       "@radix-ui/*": ["node_modules/@radix-ui/*"],
-      "lucide-react": ["node_modules/lucide-react"]
+      "lucide-react": ["node_modules/lucide-react"],
+      "types": ["vitest/globals"]
     },
     "typeRoots": ["node_modules/@types", "src/types"],
     "skipLibCheck": true,

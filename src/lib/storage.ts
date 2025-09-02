@@ -1,4 +1,4 @@
-import { supabase } from "@/SupabaseClient";
+import { supabase } from "@/lib/auth-client";
 
 export interface UploadImageOptions {
   file: File;

@@ -12,26 +12,6 @@
  * - Cleaner code organization
  */
 
-// Re-export authentication functionality
-export {
-  // Types
-  type ApiResponse,
-  type User,
-  type Session,
-  type AuthResponse,
-
-  // Functions
-  authApi,
-  getCurrentUser,
-  getStoredSession,
-  storeSession,
-} from "./auth-client";
-
 // Re-export database functionality
-export { dbApi, setAuthToken, initializeDbAuth } from "./database-client";
+export { dbApi } from "./database-client";
 
-// Maintain backwards compatibility - ensure database auth is initialized when this module is imported
-import { initializeDbAuth } from "./database-client";
-
-// Initialize database auth when module is loaded
-initializeDbAuth();

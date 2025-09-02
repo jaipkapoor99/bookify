@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import { dbApi } from "@/lib/api-client";
+import { supabase } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,23 +25,6 @@ import {
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import debug from "@/lib/debug";
-import { useAuth } from "@/contexts/AuthContext";
-
-// TODO: This type may be needed for future complex data handling
-// type RawConfirmationData = {
-//   price: number;
-//   event_venue_date: string;
-//   no_of_tickets: number;
-//   events: {
-//     name: string;
-//   }; // It's an object now
-//   venues: {
-//     venue_name: string;
-//     locations: {
-//       pincode: string;
-//     } | null;
-//   }; // It's an object now
-// };
 
 // The clean data structure for the component's state.
 type ConfirmationDetails = {
@@ -66,7 +49,6 @@ const BookingConfirmationPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<string>("Loading location...");
   const navigate = useNavigate();
-  const { refreshBookings, addOptimisticBooking } = useAuth();
 
   // Handle quantity changes
   const handleQuantityChange = (delta: number) => {
@@ -99,30 +81,24 @@ const BookingConfirmationPage = () => {
       if (!eventVenueId) return;
 
       setLoading(true);
-      // Simplified query without complex joins for now
-      const { data, error: fetchError } = await dbApi.select(
-        "events_venues",
-        "price,event_venue_date,no_of_tickets,event_id,venue_id",
-        { event_venue_id: eventVenueId },
-        { single: true },
-      );
+      const { data, error: fetchError } = await supabase
+        .from("events_venues")
+        .select("*, events(*), venues(*, locations(*))")
+        .eq("event_venue_id", eventVenueId)
+        .single();
 
       if (fetchError) {
-        setError(`Error fetching details: ${fetchError}`);
+        setError(`Error fetching details: ${fetchError.message}`);
         setLocation("Location not available");
       } else if (data) {
-        // TODO: Implement proper joins - for now use mock data for testing
         setDetails({
-          price: (data as { price?: number }).price || 1500, // 1500 paise = ₹15.00
-          eventDate:
-            (data as { event_venue_date?: string }).event_venue_date ||
-            new Date().toISOString(),
-          eventName: "Tech Conference 2025", // Mock data
-          venueName: "Grand Convention Hall", // Mock data
+          price: data.price || 1500,
+          eventDate: data.event_venue_date || new Date().toISOString(),
+          eventName: data.events.name || "Event Name",
+          venueName: data.venues.venue_name || "Venue Name",
           location: "Loading location...",
-          pincode: "110001", // Mock pincode
-          availableTickets:
-            (data as { no_of_tickets?: number }).no_of_tickets || 10,
+          pincode: data.venues.locations?.pincode || "110001",
+          availableTickets: data.no_of_tickets || 10,
         });
       }
       setLoading(false);
@@ -191,7 +167,7 @@ const BookingConfirmationPage = () => {
 
       debug.booking("Attempting to book ticket", bookingParams);
 
-      const { error: rpcError } = await dbApi.rpc("book_ticket", bookingParams);
+      const { error: rpcError } = await supabase.rpc("book_ticket", bookingParams);
 
       if (rpcError) {
         debug.error("Booking RPC failed", rpcError);
@@ -206,56 +182,11 @@ const BookingConfirmationPage = () => {
         }.`,
       });
 
-      // OPTIMIZATION: Add optimistic update for immediate UI feedback
-      if (addOptimisticBooking) {
-        const newBooking = {
-          ticket_id: Date.now(), // Temporary ID until refresh
-          event_venue_id: parseInt(eventVenueId, 10),
-          ticket_price: details.price,
-          quantity: quantity,
-          created_at: new Date().toISOString(),
-          events_venues: {
-            event_venue_date: details.eventDate,
-            price: details.price,
-            no_of_tickets: details.availableTickets - quantity,
-            venues: {
-              venue_name: details.venueName,
-              locations: details.pincode
-                ? {
-                    pincode: details.pincode,
-                  }
-                : undefined,
-            },
-            events: {
-              name: details.eventName,
-              description: "",
-              start_time: details.eventDate,
-              end_time: details.eventDate,
-              image_url: "",
-              image_path: "",
-            },
-          },
-        };
-        addOptimisticBooking(newBooking);
-      }
-
-      // Navigate immediately for better UX
       navigate("/my-bookings");
-
-      // Refresh bookings data in the background to sync with server
-      if (refreshBookings) {
-        debug.info(
-          "Refreshing bookings in background after successful booking",
-        );
-        refreshBookings().catch((error) => {
-          debug.warn("Background booking refresh failed:", error);
-        });
-      }
-    } catch (bookingError) {
-      const e = bookingError as Error;
-      setError(`Booking failed: ${e.message}`);
+    } catch (bookingError: any) {
+      setError(`Booking failed: ${bookingError.message}`);
       toast.error("Booking failed", {
-        description: e.message,
+        description: bookingError.message,
       });
     } finally {
       setBooking(false);

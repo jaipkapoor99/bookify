@@ -250,7 +250,6 @@ class SmartLazyLoadingManager {
       > = {
         "/": () => import("@/pages/HomePage"),
         "/login": () => import("@/pages/LoginPage"),
-        "/signup": () => import("@/pages/SignupPage"),
         "/my-bookings": () => import("@/pages/MyBookingsPage"),
         "/account": () => import("@/pages/AccountPage"),
         "/admin/events": () => import("@/pages/AdminEventPage"),

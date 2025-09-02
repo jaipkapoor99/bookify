@@ -2,124 +2,48 @@
 
 ## Overview
 
-The API client has been refactored from a single 437-line file into a modular architecture for better maintainability and separation of concerns.
+The API client has been simplified to use the Supabase SDK directly. This provides a more streamlined and maintainable architecture.
 
 ## Structure
 
 ### 📁 Files
 
-- **`api-client.ts`** - Main entry point (35 lines)
-- **`auth-client.ts`** - Authentication operations (195 lines)
-- **`database-client.ts`** - Database operations (220 lines)
+- **`auth-client.ts`** - Initializes and exports the Supabase client.
+- **`database-client.ts`** - Re-exports the Supabase client as `dbApi` for database operations.
+- **`api-client.ts`** - Main entry point that re-exports `dbApi`.
 
-### 🔐 Authentication Client (`auth-client.ts`)
+### 🔐 Supabase Client (`auth-client.ts`)
 
 **Responsibilities:**
 
-- User authentication (login/logout)
-- OAuth flow management (Google)
-- Session management and storage
-- Token refresh and validation
-
-**Key Exports:**
-
-```typescript
-import {
-  authApi, // Authentication operations
-  getCurrentUser, // Get current user
-  getStoredSession, // Session utilities
-  storeSession, // Session storage
-  type User, // User type
-  type Session, // Session type
-  type AuthResponse, // Auth response type
-} from "./auth-client";
-```
+- Initializes the Supabase client with environment variables.
+- Exports the Supabase client for use in other modules.
 
 ### 📊 Database Client (`database-client.ts`)
 
 **Responsibilities:**
 
-- CRUD operations (Create, Read, Update, Delete)
-- RPC function calls
-- Query filtering and options
-- Database error handling
-- Auth token management for database calls
-
-**Key Exports:**
-
-```typescript
-import {
-  dbApi, // Database operations
-  setAuthToken, // Set auth token for requests
-  initializeDbAuth, // Initialize database auth
-} from "./database-client";
-```
+- Re-exports the Supabase client with the alias `dbApi` to maintain backwards compatibility with components that use this convention.
 
 ### 🔗 Main Entry Point (`api-client.ts`)
 
 **Responsibilities:**
 
-- Re-export all functionality from specialized modules
-- Maintain backwards compatibility
-- Single import point for existing code
-
-**Usage (unchanged):**
-
-```typescript
-import { authApi, dbApi, type User } from "@/lib/api-client";
-```
+- Re-exports `dbApi` for a single import point.
 
 ## Benefits
 
+### ✅ **Simplicity**
+
+- Eliminates unnecessary abstractions and custom logic.
+- Directly uses the powerful and well-documented Supabase SDK.
+
 ### ✅ **Maintainability**
 
-- **Focused modules**: Each file has a single responsibility
-- **Smaller files**: 195 + 220 + 35 lines vs 437 lines
-- **Clear separation**: Auth logic separate from database logic
+- Easier to understand and maintain.
+- Reduces the amount of custom code that needs to be tested.
 
-### ✅ **Developer Experience**
+### ✅ **Type Safety**
 
-- **Better navigation**: Easier to find specific functionality
-- **Reduced complexity**: Less cognitive load per file
-- **Type safety**: Maintained across all modules
+- Leverages the built-in types from the Supabase SDK.
 
-### ✅ **Backwards Compatibility**
-
-- **No breaking changes**: Existing imports continue to work
-- **Same API**: All existing function signatures unchanged
-- **Zero refactoring**: No changes needed in application code
-
-### ✅ **Testing & Debugging**
-
-- **Isolated testing**: Can test auth and database logic separately
-- **Clearer errors**: Easier to identify which module has issues
-- **Better debugging**: Smaller surface area per module
-
-## Migration Path
-
-### For New Code
-
-Consider importing from specific modules for clarity:
-
-```typescript
-// More explicit - shows what you're using
-import { authApi } from "./auth-client";
-import { dbApi } from "./database-client";
-
-// Still works - backwards compatible
-import { authApi, dbApi } from "./api-client";
-```
-
-### For Existing Code
-
-No changes required! All existing imports continue to work exactly as before.
-
-## Architecture Principles
-
-1. **Single Responsibility**: Each module handles one domain
-2. **Loose Coupling**: Modules are independent where possible
-3. **High Cohesion**: Related functionality is grouped together
-4. **Backwards Compatibility**: Existing code continues to work
-5. **Type Safety**: Full TypeScript support throughout
-
-This architecture follows industry best practices for API client organization and makes the codebase more maintainable for long-term development.

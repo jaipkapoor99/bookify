@@ -2,7 +2,7 @@
  * Auth utilities for enhanced session management and refresh optimization
  */
 
-import { supabase } from "@/SupabaseClient";
+import { supabase } from "@/lib/auth-client";
 import type { Session } from "@supabase/supabase-js";
 
 export interface SessionHealth {

@@ -124,11 +124,6 @@ export const LazyLoginPage = withLazyLoading(
   "LoginPage",
 );
 
-export const LazySignupPage = withLazyLoading(
-  () => import("@/pages/SignupPage"),
-  "SignupPage",
-);
-
 export const LazyEventDetailPage = withLazyLoading(
   () => import("@/pages/EventDetailPage"),
   "EventDetailPage",

@@ -176,7 +176,6 @@ export const useSmartPreloading = () => {
     > = {
       "/": () => import("@/pages/HomePage"),
       "/login": () => import("@/pages/LoginPage"),
-      "/signup": () => import("@/pages/SignupPage"),
       "/events": () => import("@/pages/EventDetailPage"),
       "/my-bookings": () => import("@/pages/MyBookingsPage"),
       "/account": () => import("@/pages/AccountPage"),

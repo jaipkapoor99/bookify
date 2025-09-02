@@ -15,7 +15,6 @@ import { AppStateProvider } from "@/contexts/AppStateProvider";
 import RootLayout from "@/components/layout/RootLayout";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
-import SignupPage from "@/pages/SignupPage";
 import EventDetailPage from "@/pages/EventDetailPage";
 import MyBookingsPage from "@/pages/MyBookingsPage";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -32,7 +31,6 @@ const router = createBrowserRouter(
         <Route index element={<HomePage />} />
         <Route path="/events/:eventId" element={<EventDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/my-bookings" element={<MyBookingsPage />} />

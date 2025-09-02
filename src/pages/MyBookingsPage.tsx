@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { BookingQueryResult } from "@/types/database.types";
@@ -7,16 +6,38 @@ import { formatCurrency } from "@/lib/utils";
 import { Calendar, MapPin, Ticket, Hash } from "lucide-react";
 import StorageImage from "@/components/ui/StorageImage";
 import debug from "@/lib/debug";
+import { supabase } from "@/lib/auth-client";
 
 const MyBookingsPage = () => {
-  const {
-    user,
-    bookings = [], // Default to empty array
-    loadingBookings = false, // Default to false
-    bookingsError = null, // Default to null
-    locationDetails = {}, // Default to empty object
-    refreshBookings,
-  } = useAuth();
+  const { user } = useAuth();
+  const [bookings, setBookings] = useState<BookingQueryResult[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [bookingsError, setBookingsError] = useState<string | null>(null);
+  const [locationDetails] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!user) {
+        setLoadingBookings(false);
+        return;
+      }
+
+      setLoadingBookings(true);
+      const { data, error } = await supabase
+        .from("tickets")
+        .select("*, events_venues(*, events(*), venues(*, locations(*)))")
+        .eq("customer_id", user.id);
+
+      if (error) {
+        setBookingsError(error.message);
+      } else {
+        setBookings(data as BookingQueryResult[]);
+      }
+      setLoadingBookings(false);
+    };
+
+    fetchBookings();
+  }, [user]);
 
   // Debug log when component mounts
   useEffect(() => {
@@ -75,15 +96,6 @@ const MyBookingsPage = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">My Bookings</h1>
-        {refreshBookings && (
-          <Button
-            onClick={refreshBookings}
-            disabled={loadingBookings}
-            variant="outline"
-          >
-            {loadingBookings ? "Refreshing..." : "Refresh"}
-          </Button>
-        )}
       </div>
 
       {loadingBookings && bookings.length === 0 && (
@@ -96,16 +108,6 @@ const MyBookingsPage = () => {
         <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
           <h3 className="text-red-800 font-medium">Error loading bookings</h3>
           <p className="text-red-600 mt-1">{bookingsError}</p>
-          {refreshBookings && (
-            <Button
-              onClick={refreshBookings}
-              className="mt-3"
-              size="sm"
-              variant="outline"
-            >
-              Try Again
-            </Button>
-          )}
         </div>
       )}
 
@@ -122,7 +124,7 @@ const MyBookingsPage = () => {
 
       {bookings.length > 0 && (
         <div className="space-y-6">
-          {bookings.map((ticket) => (
+          {bookings.map((ticket: BookingQueryResult) => (
             <Card
               key={ticket.ticket_id}
               className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
