@@ -51,7 +51,6 @@ const EventDetailPage = () => {
 
         if (venueError) throw venueError;
         setVenues(venueData || []);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Failed to fetch event details", {
           description: error.message,
@@ -111,9 +110,7 @@ const EventDetailPage = () => {
               <p className="text-sm text-muted-foreground">
                 {new Date(eventVenue.event_venue_date).toLocaleDateString()}
               </p>
-              <p className="text-sm">
-                {formatCurrency(eventVenue.price / 100)}
-              </p>
+              <p className="text-sm">{formatCurrency(eventVenue.price)}</p>
             </div>
             <Button onClick={() => handleBookNow(eventVenue)}>Book Now</Button>
           </div>
@@ -161,7 +158,10 @@ const EventDetailPage = () => {
                     size="icon"
                     onClick={() =>
                       setTicketCount(
-                        Math.min(selectedVenue.no_of_tickets, ticketCount + 1),
+                        Math.min(
+                          selectedVenue.no_of_tickets,
+                          ticketCount + 1,
+                        ),
                       )
                     }
                     disabled={ticketCount >= selectedVenue.no_of_tickets}
@@ -175,7 +175,7 @@ const EventDetailPage = () => {
               </p>
               <div className="text-2xl font-bold">
                 Total:{" "}
-                {formatCurrency((ticketCount * selectedVenue.price) / 100)}
+                {formatCurrency(ticketCount * selectedVenue.price)}
               </div>
             </div>
           )}
