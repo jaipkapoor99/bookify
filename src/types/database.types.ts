@@ -81,7 +81,7 @@ export interface Booking {
   event_venue_id: number;
   booking_date: string;
   no_of_tickets: number;
-  events_venues?: EventVenue;
+  events_venues?: EventVenue[];
 }
 
 // Extended types with relationships for complex queries

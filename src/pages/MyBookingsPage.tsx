@@ -59,9 +59,9 @@ const MyBookingsPage = () => {
           {bookings.map((booking) => (
             <div key={booking.booking_id} className="p-4 border rounded-lg">
               <h2 className="text-xl font-semibold">
-                {booking.events_venues?.events?.name}
+                {booking.events_venues?.[0]?.events?.name}
               </h2>
-              <p>Venue: {booking.events_venues?.venues?.venue_name}</p>
+              <p>Venue: {booking.events_venues?.[0]?.venues?.venue_name}</p>
               <p>Date: {new Date(booking.booking_date).toLocaleDateString()}</p>
               <p>Tickets: {booking.no_of_tickets}</p>
             </div>
