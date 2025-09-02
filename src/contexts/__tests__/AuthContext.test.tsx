@@ -79,7 +79,7 @@ describe("AuthContext", () => {
       await waitFor(() => {
         expect(screen.getByTestId("user-id")).toHaveTextContent("no-user");
         expect(screen.getByTestId("session-token")).toHaveTextContent(
-          "no-token"
+          "no-token",
         );
         expect(screen.getByTestId("loading")).toHaveTextContent("false");
       });
@@ -117,10 +117,10 @@ describe("AuthContext", () => {
       await waitFor(() => {
         expect(screen.getByTestId("user-id")).toHaveTextContent("test-user-id");
         expect(screen.getByTestId("session-token")).toHaveTextContent(
-          "test-token"
+          "test-token",
         );
         expect(screen.getByTestId("profile-name")).toHaveTextContent(
-          "Test User"
+          "Test User",
         );
         expect(screen.getByTestId("loading")).toHaveTextContent("false");
       });

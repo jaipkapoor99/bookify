@@ -80,7 +80,6 @@ VITE_SENTRY_DSN="your-sentry-dsn"
 #### Authentication Setup
 
 1. **Configure OAuth Providers**
-
    - Go to Authentication > Providers in Supabase dashboard
    - Enable Google OAuth
    - Add production URLs to redirect URLs

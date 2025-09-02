@@ -322,7 +322,6 @@ These PowerShell scripts complement the npm scripts defined in `package.json`:
    ```
 
 3. **Node.js version issues:**
-
    - Install Node.js 20+ from [nodejs.org](https://nodejs.org/)
 
 4. **Permission errors:**

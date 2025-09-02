@@ -16,13 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Added
 
 - **🗄️ Optimized Database Function**: Created `get_my_bookings_with_details()` function with proper JOINs
-
   - **Single Query Efficiency**: Eliminates N+1 query problem by fetching all booking data in one optimized query
   - **93% Reduction**: Reduced 15+ separate database queries to 1 single efficient query
   - **Backward Compatible**: Maintains legacy `get_my_bookings()` function for fallback support
 
 - **⚡ Optimistic Updates**: Implemented immediate UI feedback system
-
   - **Instant Navigation**: Zero delay navigation to "My Bookings" (0ms vs 1500ms)
   - **Immediate Visual Feedback**: New bookings appear instantly with optimistic updates
   - **Background Sync**: Data consistency maintained through background refresh
@@ -36,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 - **📊 AuthContext Enhancement**: Extended with optimistic update capabilities
-
   - Added `addOptimisticBooking()` function for immediate UI updates
   - Enhanced `fetchBookings()` with efficient database function integration
   - Implemented `fetchLocationDetailsBatch()` for parallel location fetching
@@ -101,13 +98,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixed
 
 - **🚨 Supabase Module Import Error**: Resolved critical ESM/CommonJS compatibility issue preventing application startup
-
   - **Error**: `Uncaught SyntaxError: The requested module '/node_modules/@supabase/postgrest-js/dist/cjs/index.js?v=7ffe7cc6' does not provide an export named 'default'`
   - **Solution**: Updated Vite configuration to include Supabase dependencies in `optimizeDeps.include`
   - **Impact**: Application now starts successfully in development mode
 
 - **🧪 Test Environment Compatibility**: Fixed HTMLCanvasElement errors in JSDOM test environment
-
   - Enhanced `checkWebPSupport` function with proper try-catch error handling
   - Added graceful fallbacks for browser features not available in test environments
   - Resolved multiple integration test failures
@@ -243,7 +238,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Booking data now loads in ~0ms through AuthContext pre-loading
   - Auto-refresh functionality - new bookings appear instantly without manual refresh
 - **🏗️ Modular API Client Architecture**: Complete refactoring of the API layer
-
   - Split monolithic `api-client.ts` (437 lines) into focused modules:
     - `auth-client.ts` (195 lines) - Pure authentication operations
     - `database-client.ts` (220 lines) - Pure database operations
@@ -262,13 +256,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Fixed
 
 - **🖼️ Image Loading Issues**: Resolved StorageImage component problems
-
   - Fixed handling of both external URLs (Unsplash) and Supabase storage paths
   - Proper error handling and fallback support
   - Images now display correctly across all components
 
 - **📍 Pincode API Integration**: Fixed location data fetching
-
   - Corrected environment variable access (`import.meta.env` vs `process.env`)
   - Added proper Authorization headers for Supabase Edge Functions
   - Enhanced error handling with fallback to database location data
@@ -282,7 +274,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Changed
 
 - **📊 AuthContext Architecture**: Major state management improvements
-
   - Extended AuthContext with booking-specific state:
     - `bookings`, `loadingBookings`, `bookingsError`
     - `locationDetails`, `refreshBookings()`
@@ -299,7 +290,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Technical Improvements
 
 - **📝 Enhanced Documentation**: New modular API architecture documentation
-
   - Migration guide for developers
   - Architecture principles and benefits
   - Clear separation of concerns explanation

@@ -12,7 +12,6 @@ navigating to "My Bookings" page after successfully booking a ticket.
 ### Performance Bottlenecks Identified
 
 1. **❌ N+1 Query Problem**
-
    - `fetchBookings()` made multiple separate database queries instead of using JOINs
    - Example: For 5 bookings, this resulted in 15+ separate API calls:
      - 1 query for tickets
@@ -22,13 +21,11 @@ navigating to "My Bookings" page after successfully booking a ticket.
      - 5 queries for locations
 
 2. **🐌 Sequential External API Calls**
-
    - Each booking triggered separate pincode-to-location API calls
    - 10-second timeout per call executed sequentially
    - No caching mechanism for repeated location lookups
 
 3. **⏳ Artificial Navigation Delay**
-
    - 1.5-second `setTimeout()` delay before navigation
    - No optimistic updates - complete data refetch required
 
@@ -56,7 +53,7 @@ navigating to "My Bookings" page after successfully booking a ticket.
 
 ### 2. **Optimistic Updates** - ✅ COMPLETED
 
-## Implemented Immediate UI Feedback**
+## Implemented Immediate UI Feedback\*\*
 
 ```typescript
 // Added to AuthContext
