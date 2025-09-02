@@ -1,5 +1,4 @@
 import { useState } from "react";
-// import { authApi } from "@/lib/api-client"; // TODO: Enable when phone update functionality is implemented
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";

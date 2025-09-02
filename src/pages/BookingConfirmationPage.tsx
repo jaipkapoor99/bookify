@@ -45,11 +45,11 @@ const BookingConfirmationPage = () => {
     if (!profile || !eventVenue) return;
 
     try {
-      const { error } = await supabase.from("bookings").insert({
-        user_id: profile.user_id,
+      const { error } = await supabase.from("tickets").insert({
+        customer_id: profile.user_id,
         event_venue_id: eventVenue.event_venue_id,
-        no_of_tickets: ticketCount,
-        booking_date: new Date().toISOString(),
+        quantity: ticketCount,
+        ticket_price: eventVenue.price,
       });
 
       if (error) throw error;
