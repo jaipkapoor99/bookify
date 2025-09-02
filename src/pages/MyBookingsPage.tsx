@@ -1,13 +1,20 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/SupabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
-import { Booking } from "@/types/database.types";
+import { Ticket, EventVenue, Event, Venue } from "@/types/database.types";
 import { PageLoader } from "@/components/ui/PageLoader";
 import { toast } from "sonner";
 
+type BookingWithDetails = Ticket & {
+  events_venues: EventVenue & {
+    events: Event;
+    venues: Venue;
+  };
+};
+
 const MyBookingsPage = () => {
   const { profile } = useAuth();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,22 +24,21 @@ const MyBookingsPage = () => {
       setLoading(true);
       try {
         const { data, error } = await supabase
-          .from("bookings")
+          .from("tickets")
           .select(
             `
             *,
-            events_venues (
+            events_venues!inner (
               *,
-              events (*),
-              venues (*)
+              events!inner (*),
+              venues!inner (*)
             )
           `,
           )
-          .eq("user_id", profile.user_id);
+          .eq("customer_id", profile.user_id);
 
         if (error) throw error;
         setBookings(data || []);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Failed to fetch bookings", {
           description: error.message,
@@ -57,13 +63,13 @@ const MyBookingsPage = () => {
       ) : (
         <div className="space-y-4">
           {bookings.map((booking) => (
-            <div key={booking.booking_id} className="p-4 border rounded-lg">
+            <div key={booking.ticket_id} className="p-4 border rounded-lg">
               <h2 className="text-xl font-semibold">
-                {booking.events_venues?.[0]?.events?.name}
+                {booking.events_venues.events.name}
               </h2>
-              <p>Venue: {booking.events_venues?.[0]?.venues?.venue_name}</p>
-              <p>Date: {new Date(booking.booking_date).toLocaleDateString()}</p>
-              <p>Tickets: {booking.no_of_tickets}</p>
+              <p>Venue: {booking.events_venues.venues.venue_name}</p>
+              <p>Date: {new Date(booking.created_at).toLocaleDateString()}</p>
+              <p>Tickets: {booking.quantity}</p>
             </div>
           ))}
         </div>
