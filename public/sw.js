@@ -8,7 +8,6 @@ const STATIC_ASSETS = [
   "/",
   "/Bookify_SVG.svg",
   "/placeholder.svg",
-  "/manifest.json",
 ];
 
 // Lazy chunk patterns to cache
