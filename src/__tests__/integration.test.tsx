@@ -35,7 +35,10 @@ describe("Integration Tests", () => {
   describe("Authentication Flow", () => {
     it("should handle Google OAuth flow", async () => {
       (mockedSupabase.auth.getSession as Mock).mockResolvedValue({ data: { session: null }, error: null });
-      (mockedSupabase.auth.signInWithOAuth as Mock).mockResolvedValue({ data: {} as any, error: null });
+      (mockedSupabase.auth.signInWithOAuth as Mock).mockResolvedValue({
+        data: { provider: "google", url: "https://example.com/auth/google" },
+        error: null,
+      });
 
       render(<App initialEntries={["/login"]} />);
 

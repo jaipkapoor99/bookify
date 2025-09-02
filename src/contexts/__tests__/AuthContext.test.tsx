@@ -1,4 +1,5 @@
 /// <reference types="vitest/globals" />
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mocked, type Mock } from "vitest";
 import { AuthProvider, useAuth } from "../AuthContext";
@@ -74,6 +75,7 @@ describe("AuthContext", () => {
         refresh_token: "test-refresh",
         expires_in: 3600,
         token_type: "Bearer",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         user: { id: "test-user-id", email: "test@example.com" } as any,
       };
       const mockProfile = { name: "Test User" };
@@ -114,6 +116,7 @@ describe("AuthContext", () => {
 
   describe("Google Login", () => {
     it("should initiate Google OAuth flow", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (mockedSupabase.auth.signInWithOAuth as Mock).mockResolvedValue({ data: {} as any, error: null });
       renderWithProvider(<TestComponent />);
       fireEvent.click(screen.getByTestId("google-login-btn"));

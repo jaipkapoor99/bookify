@@ -7,12 +7,14 @@ import { Calendar, MapPin, Ticket, Hash } from "lucide-react";
 import StorageImage from "@/components/ui/StorageImage";
 import debug from "@/lib/debug";
 import { supabase } from "@/lib/auth-client";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 const MyBookingsPage = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<BookingQueryResult[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [bookingsError, setBookingsError] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [locationDetails] = useState<Record<string, any>>({});
 
   useEffect(() => {

@@ -25,7 +25,7 @@ import {
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import debug from "@/lib/debug";
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 // The clean data structure for the component's state.
 type ConfirmationDetails = {
   eventName: string;
@@ -183,6 +183,7 @@ const BookingConfirmationPage = () => {
       });
 
       navigate("/my-bookings");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (bookingError: any) {
       setError(`Booking failed: ${bookingError.message}`);
       toast.error("Booking failed", {
