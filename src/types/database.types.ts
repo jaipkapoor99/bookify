@@ -46,7 +46,7 @@ export interface EventVenue {
   created_at: string;
   updated_at: string;
   events?: Event;
-  venues?: Venue;
+  venues?: Venue & { locations?: Location };
 }
 
 // Users table - HAS email field

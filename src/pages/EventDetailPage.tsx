@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/SupabaseClient";
 import { Event, EventVenue } from "@/types/database.types";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,9 @@ const EventDetailPage = () => {
   const [selectedVenue, setSelectedVenue] = useState<EventVenue | null>(null);
   const [ticketCount, setTicketCount] = useState(1);
   const [isBooking, setIsBooking] = useState(false);
-  const [locationDetails, setLocationDetails] = useState<Record<string, string>>({});
+  const [locationDetails, setLocationDetails] = useState<
+    Record<string, string>
+  >({});
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -67,6 +69,7 @@ const EventDetailPage = () => {
 
         if (venueError) throw venueError;
         setVenues(venueData || []);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         toast.error("Failed to fetch event details", {
           description: error.message,
@@ -99,9 +102,13 @@ const EventDetailPage = () => {
             },
           );
           if (error) throw error;
-          newLocationDetails[pincode] = `${data.area}, ${data.city}, ${data.state}`;
+          newLocationDetails[pincode] =
+            `${data.area}, ${data.city}, ${data.state}`;
         } catch (error) {
-          console.error(`Failed to fetch location for pincode ${pincode}`, error);
+          console.error(
+            `Failed to fetch location for pincode ${pincode}`,
+            error,
+          );
         }
       }
       setLocationDetails(newLocationDetails);
@@ -246,7 +253,9 @@ const EventDetailPage = () => {
             {venues.map((eventVenue) => {
               const isAvailable = eventVenue.no_of_tickets > 0;
               const pincode = eventVenue.venues?.locations?.pincode;
-              const location = pincode ? locationDetails[pincode] : "Location TBA";
+              const location = pincode
+                ? locationDetails[pincode]
+                : "Location TBA";
               return (
                 <Card
                   key={eventVenue.event_venue_id}
@@ -357,10 +366,7 @@ const EventDetailPage = () => {
                     size="icon"
                     onClick={() =>
                       setTicketCount(
-                        Math.min(
-                          selectedVenue.no_of_tickets,
-                          ticketCount + 1,
-                        ),
+                        Math.min(selectedVenue.no_of_tickets, ticketCount + 1),
                       )
                     }
                     disabled={ticketCount >= selectedVenue.no_of_tickets}
