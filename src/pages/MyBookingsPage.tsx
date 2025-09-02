@@ -9,7 +9,7 @@ import debug from "@/lib/debug";
 import { supabase } from "@/lib/auth-client";
 
 const MyBookingsPage = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth(); // Use profile from AuthContext
   const [bookings, setBookings] = useState<BookingQueryResult[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
   const [bookingsError, setBookingsError] = useState<string | null>(null);
@@ -18,7 +18,8 @@ const MyBookingsPage = () => {
 
   useEffect(() => {
     const fetchBookings = async () => {
-      if (!user) {
+      // Use the profile from the context, which has the integer user_id
+      if (!profile) {
         setLoadingBookings(false);
         return;
       }
@@ -27,7 +28,7 @@ const MyBookingsPage = () => {
       const { data, error } = await supabase
         .from("tickets")
         .select("*, events_venues(*, events(*), venues(*, locations(*)))")
-        .eq("customer_id", user.id);
+        .eq("customer_id", profile.user_id); // Use profile.user_id
 
       if (error) {
         setBookingsError(error.message);
@@ -37,18 +38,22 @@ const MyBookingsPage = () => {
       setLoadingBookings(false);
     };
 
-    fetchBookings();
-  }, [user]);
+    // Only fetch bookings if the profile is loaded
+    if (profile) {
+      fetchBookings();
+    }
+  }, [profile]); // Depend on profile
 
   // Debug log when component mounts
   useEffect(() => {
     debug.info("MyBookingsPage mounted", {
       hasUser: !!user,
+      hasProfile: !!profile,
       bookingsCount: bookings?.length || 0,
       loading: loadingBookings,
       error: bookingsError,
     });
-  }, [user, bookings?.length, loadingBookings, bookingsError]);
+  }, [user, profile, bookings?.length, loadingBookings, bookingsError]);
 
   // Early return if user is not authenticated
   if (!user) {
