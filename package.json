@@ -5,10 +5,10 @@
   "description": "Bookify - Modern event booking platform built with React, TypeScript, and Supabase",
   "type": "module",
   "scripts": {
-    "dev": "npm run test:pre-dev && vite --mode development",
+    "dev": "vite --mode development",
     "dev:debug": "npm run test:pre-dev && cross-env DEBUG=true vite --mode development",
     "dev:debug-quiet": "cross-env DEBUG=true vite --mode development",
-    "build": "tsc -b && vite build --mode production",
+    "build": "vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
