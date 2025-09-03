@@ -5,8 +5,7 @@
   "description": "Bookify - Modern event booking platform built with React, TypeScript, and Supabase",
   "type": "module",
   "overrides": {
-    "path-to-regexp": "^6.2.3",
-    "undici": "^5.30.0"
+    "path-to-regexp": "^6.2.3"
   },
   "scripts": {
     "dev": "vite --mode development",
@@ -69,6 +68,7 @@
     "supabase": "^2.39.2",
     "tw-animate-css": "^1.3.8",
     "typescript-eslint": "^8.41.0",
+    "vercel": "^47.0.1",
     "vite": "^7.1.4",
     "vitest": "^3.2.4"
   }
