@@ -26,7 +26,7 @@
     "workflows:quick": "pwsh ./scripts/run-all-workflows-locally.ps1 -QuickRun",
     "workflows:bash": "./scripts/run-all-workflows-locally.sh",
     "type-check": "tsc --noEmit",
-    "vercel-build": "npm run build"
+    "vercel-build": "npx vite build --mode production"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
