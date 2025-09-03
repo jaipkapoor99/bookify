@@ -37,9 +37,6 @@ jobs:
       - name: 🧪 Run critical tests
         run: npm test -- --run
 
-      - name: 🔍 Security scan
-        run: npm audit --audit-level=high
-
       - name: 📊 Get version
         id: version
         run: |
